@@ -154,7 +154,7 @@ const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(
 
 export default defineConfig({
   plugins,
-  base: '/', // <--- EZT A SORT ADTAM HOZZÁ
+  base: '/',
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -166,7 +166,7 @@ export default defineConfig({
   root: path.resolve(import.meta.dirname, "client"),
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, "client", "dist"), // <--- JAVÍTVA: most a client/dist mappába kerül
     emptyOutDir: true,
   },
   server: {
