@@ -155,8 +155,8 @@ export default function UserDashboard() {
           <CardContent>
             {user.plan === "essential" && (
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
-                <span className="text-sm font-semibold text-amber-700">⚡ 10 free AI scans included</span>
-                <span className="text-sm text-amber-600">· Upgrade for unlimited</span>
+                <span className="text-sm font-semibold text-amber-700">{t('userDashboard.freeScansIncluded')}</span>
+                <span className="text-sm text-amber-600">{t('userDashboard.upgradeForUnlimited')}</span>
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">

@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ISIC_0000000",
+    "filename": "ISIC_0000000.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000001",
+    "filename": "ISIC_0000001.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000002",
+    "filename": "ISIC_0000002.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000003",
+    "filename": "ISIC_0000003.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000004",
+    "filename": "ISIC_0000004.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000005",
+    "filename": "ISIC_0000005.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000006",
+    "filename": "ISIC_0000006.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000007",
+    "filename": "ISIC_0000007.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000008",
+    "filename": "ISIC_0000008.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000009",
+    "filename": "ISIC_0000009.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000010",
+    "filename": "ISIC_0000010.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000011",
+    "filename": "ISIC_0000011.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000012",
+    "filename": "ISIC_0000012.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000013",
+    "filename": "ISIC_0000013.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000014",
+    "filename": "ISIC_0000014.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000015",
+    "filename": "ISIC_0000015.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000016",
+    "filename": "ISIC_0000016.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000017",
+    "filename": "ISIC_0000017.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000018",
+    "filename": "ISIC_0000018.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000019",
+    "filename": "ISIC_0000019.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000020",
+    "filename": "ISIC_0000020.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000021",
+    "filename": "ISIC_0000021.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000022",
+    "filename": "ISIC_0000022.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000023",
+    "filename": "ISIC_0000023.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000024",
+    "filename": "ISIC_0000024.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000025",
+    "filename": "ISIC_0000025.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000026",
+    "filename": "ISIC_0000026.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000027",
+    "filename": "ISIC_0000027.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000028",
+    "filename": "ISIC_0000028.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000029",
+    "filename": "ISIC_0000029.jpg",
+    "diagnosis": "melanoma",
+    "risk": "high",
+    "benign_malignant": "malignant"
+  },
+  {
+    "id": "ISIC_0000000",
+    "filename": "ISIC_0000000.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000001",
+    "filename": "ISIC_0000001.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000002",
+    "filename": "ISIC_0000002.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000003",
+    "filename": "ISIC_0000003.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000004",
+    "filename": "ISIC_0000004.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000005",
+    "filename": "ISIC_0000005.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000006",
+    "filename": "ISIC_0000006.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000007",
+    "filename": "ISIC_0000007.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000008",
+    "filename": "ISIC_0000008.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000009",
+    "filename": "ISIC_0000009.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000010",
+    "filename": "ISIC_0000010.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000011",
+    "filename": "ISIC_0000011.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000012",
+    "filename": "ISIC_0000012.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000013",
+    "filename": "ISIC_0000013.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000014",
+    "filename": "ISIC_0000014.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000015",
+    "filename": "ISIC_0000015.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000016",
+    "filename": "ISIC_0000016.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000017",
+    "filename": "ISIC_0000017.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000018",
+    "filename": "ISIC_0000018.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000019",
+    "filename": "ISIC_0000019.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000020",
+    "filename": "ISIC_0000020.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000021",
+    "filename": "ISIC_0000021.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000022",
+    "filename": "ISIC_0000022.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000023",
+    "filename": "ISIC_0000023.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000024",
+    "filename": "ISIC_0000024.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000025",
+    "filename": "ISIC_0000025.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000026",
+    "filename": "ISIC_0000026.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000027",
+    "filename": "ISIC_0000027.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000028",
+    "filename": "ISIC_0000028.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  },
+  {
+    "id": "ISIC_0000029",
+    "filename": "ISIC_0000029.jpg",
+    "diagnosis": "nevus",
+    "risk": "low",
+    "benign_malignant": "benign"
+  }
+]

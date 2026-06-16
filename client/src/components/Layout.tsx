@@ -2,7 +2,7 @@
  * Bright teal navigation, clean white background, professional typography
  */
 import { Link, useLocation, useRoute } from "wouter";
-import { Shield, LayoutDashboard, User, Camera, MapPin, CreditCard, Menu, X, LogIn, LogOut, FileText, TrendingUp, Facebook, Mail, UserPlus, Video, HelpCircle, Phone, Github, Twitter, Instagram, Linkedin, Youtube, Send, Heart } from "lucide-react";
+import { Shield, LayoutDashboard, User, Camera, MapPin, CreditCard, Menu, X, LogIn, LogOut, FileText, TrendingUp, Facebook, Mail, UserPlus, Video, HelpCircle, Phone, Github, Twitter, Instagram, Linkedin, Youtube, Send, Heart, Info, FlaskConical, BookOpen, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useSkinStore } from "@/contexts/SkinStore";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -61,7 +61,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/pricing", label: t('nav.pricing'), icon: CreditCard },
     { href: "/videos", label: t('nav.videos'), icon: Video },
     { href: "/faq", label: t('nav.faq'), icon: HelpCircle },
-    { href: "/contact", label: t('nav.contact'), icon: Phone },
+    { href: "/test", label: t('nav.testKnowledge'), icon: FlaskConical },
   ];
 
   return (
@@ -228,6 +228,18 @@ export default function Layout({ children }: LayoutProps) {
         )}
       </AnimatePresence>
 
+      {/* Animated Logo Banner */}
+      <div className="w-full flex justify-center items-center py-2 bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-100">
+        <video
+          src="/sglogoanim.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="h-16 md:h-20 w-auto object-contain pointer-events-none select-none"
+        />
+      </div>
+
       {/* Main Content */}
       {children}
 
@@ -249,16 +261,6 @@ export default function Layout({ children }: LayoutProps) {
               <p className="text-sm text-slate-400 mb-4">
                 {t('footer.about.description')}
               </p>
-              <div className="flex gap-3">
-                <a href="#" className="text-slate-400 hover:text-white transition-colors">
-                  <span className="sr-only">Google Play</span>
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186 18.217 12 3.608 1.814z"/></svg>
-                </a>
-                <a href="#" className="text-slate-400 hover:text-white transition-colors">
-                  <span className="sr-only">App Store</span>
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                </a>
-              </div>
             </div>
 
             {/* Quick Links */}
@@ -268,7 +270,10 @@ export default function Layout({ children }: LayoutProps) {
                 <li><Link href="/" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.home')}</Link></li>
                 <li><Link href="/dashboard" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.dashboard')}</Link></li>
                 <li><Link href="/pricing" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.pricing')}</Link></li>
+                <li><Link href="/test" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.testKnowledge')}</Link></li>
                 <li><Link href="/contact" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.contact')}</Link></li>
+                <li><Link href="/about" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.about')}</Link></li>
+                <li><Link href="/faq#sources" className="text-slate-400 hover:text-white no-underline transition-colors flex items-center gap-1"><BookOpen className="w-3 h-3" /> {t('footer.sources')}</Link></li>
               </ul>
             </div>
 
@@ -279,6 +284,7 @@ export default function Layout({ children }: LayoutProps) {
                 <li><Link href="/legal" className="text-slate-400 hover:text-white no-underline transition-colors">{t('footer.legal.privacy')}</Link></li>
                 <li><Link href="/legal" className="text-slate-400 hover:text-white no-underline transition-colors">{t('footer.legal.terms')}</Link></li>
                 <li><Link href="/legal" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.legalNotice')}</Link></li>
+                <li><Link href="/disclaimer" className="text-slate-400 hover:text-red-400 no-underline transition-colors flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {t('disclaimer.title')}</Link></li>
               </ul>
             </div>
 
@@ -342,42 +348,26 @@ export default function Layout({ children }: LayoutProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-slate-400 hover:text-white transition-colors"
-                  aria-label="Facebook"
+                  aria-label="Facebook Group"
                 >
                   <Facebook className="w-5 h-5" />
                 </a>
                 <a
-                  href="#"
+                  href="https://www.tiktok.com/@skinguardai"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-slate-400 hover:text-white transition-colors"
-                  aria-label="Instagram"
+                  aria-label="TikTok"
                 >
-                  <Instagram className="w-5 h-5" />
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.77 1.52V6.75a4.85 4.85 0 0 1-1-.06z"/>
+                  </svg>
                 </a>
                 <a
-                  href="#"
+                  href="https://www.youtube.com/@SkinGuardAI"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-slate-400 hover:text-white transition-colors"
-                  aria-label="X (Twitter)"
-                >
-                  <Twitter className="w-5 h-5" />
-                </a>
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-400 hover:text-white transition-colors"
-                  aria-label="LinkedIn"
-                >
-                  <Linkedin className="w-5 h-5" />
-                </a>
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-slate-400 hover:text-red-500 transition-colors"
                   aria-label="YouTube"
                 >
                   <Youtube className="w-5 h-5" />

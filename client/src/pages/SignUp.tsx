@@ -287,7 +287,7 @@ export default function SignUp() {
               className="w-full py-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-amber-800 font-medium transition-colors flex items-center justify-center gap-2"
             >
               <Gift className="w-5 h-5" />
-              <span>{showPromoField ? "PROMÓ KÓD ELREJTÉSE" : "PROMÓ KÓD"}</span>
+              <span>{showPromoField ? t("auth.promoHide") : t("auth.promoShow")}</span>
             </button>
             {showPromoField && (
               <input

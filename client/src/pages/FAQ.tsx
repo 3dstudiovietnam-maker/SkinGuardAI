@@ -71,6 +71,16 @@ const FAQ_STRUCTURE: FAQItem[] = [
       { qKey: "faq.ts_q4", aKey: "faq.ts_a4" },
     ],
   },
+  {
+    category: "Sources & Credibility",
+    categoryKey: "faq.sources",
+    questions: [
+      { qKey: "faq.src_q1", aKey: "faq.src_a1" },
+      { qKey: "faq.src_q2", aKey: "faq.src_a2" },
+      { qKey: "faq.src_q3", aKey: "faq.src_a3" },
+      { qKey: "faq.src_q4", aKey: "faq.src_a4" },
+    ],
+  },
 ];
 
 export default function FAQ() {
@@ -142,6 +152,7 @@ export default function FAQ() {
         {filteredFAQ.map((category, catIndex) => (
           <motion.div
             key={category.category}
+            id={category.category === "Sources & Credibility" ? "sources" : undefined}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: catIndex * 0.1 }}

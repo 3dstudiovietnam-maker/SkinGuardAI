@@ -18,7 +18,8 @@ interface PlanFeature {
 
 // Feature list – keys mapped to translations
 const ALL_FEATURES: PlanFeature[] = [
-  { nameKey: "pricing.feat_1",  essential: true,  pro: true, proPlus: true, lifetime: true },
+  { nameKey: "pricing.feat_scans",  essential: true, pro: false, proPlus: false, lifetime: false },
+  { nameKey: "pricing.feat_1",  essential: false,  pro: true, proPlus: true, lifetime: true },
   { nameKey: "pricing.feat_2",  essential: true,  pro: true, proPlus: true, lifetime: true },
   { nameKey: "pricing.feat_3",  essential: true,  pro: true, proPlus: true, lifetime: true },
   { nameKey: "pricing.feat_4",  essential: true,  pro: true, proPlus: true, lifetime: true },

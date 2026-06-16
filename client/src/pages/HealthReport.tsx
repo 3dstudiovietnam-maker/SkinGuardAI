@@ -2,7 +2,8 @@
  * SkinGuard AI - Health Report
  * Two views: My Data (SkinStore) + System Overview (DB)
  */
-import { Download, Share2, FileText, Calendar, AlertCircle, Users, User, Activity, Shield, TrendingUp, BarChart2, Lock } from "lucide-react";
+import { Download, Share2, FileText, Calendar, AlertCircle, Users, User, Activity, Shield, TrendingUp, BarChart2, Lock, ExternalLink } from "lucide-react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -14,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 
 export default function HealthReport() {
+  const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"personal" | "system">("personal");
   const [selectedMoleId, setSelectedMoleId] = useState<string | null>(null);
   const [showPromoModal, setShowPromoModal] = useState(false);
@@ -24,7 +26,7 @@ export default function HealthReport() {
   const systemStatsQuery = trpc.stats.getSystemStats.useQuery();
   const systemStats = systemStatsQuery.data;
 
-  const isPremium = user?.plan === "pro" || user?.plan === "pro_plus";
+  const isPremium = user?.plan === "pro" || user?.plan === "pro_plus" || user?.plan === "lifetime";
 
   const highRisk   = moles.filter(m => m.riskLevel === "high").length;
   const mediumRisk = moles.filter(m => m.riskLevel === "medium").length;
@@ -394,12 +396,8 @@ export default function HealthReport() {
                       {moles.map(mole => (
                         <div
                           key={mole.id}
-                          onClick={() => setSelectedMoleId(mole.id)}
-                          className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
-                            selectedMoleId === mole.id
-                              ? "bg-cyan-50 border-cyan-300"
-                              : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                          }`}
+                          onClick={() => navigate(`/mole/${mole.id}`)}
+                          className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border bg-slate-50 border-slate-200 hover:bg-cyan-50 hover:border-cyan-300"
                         >
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm text-slate-800 truncate">{mole.name}</p>
@@ -415,6 +413,18 @@ export default function HealthReport() {
                           }`}>
                             {(mole.riskLevel ?? "unknown").toUpperCase()}
                           </span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="shrink-0 h-8 w-8 p-0 text-cyan-500 hover:text-cyan-700"
+                            title="View AI Analysis"
+                            onClick={e => {
+                              e.stopPropagation();
+                              navigate(`/mole/${mole.id}`);
+                            }}
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Button>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -556,6 +566,10 @@ export default function HealthReport() {
                       <p className="text-xs text-slate-500 mb-1">{t('healthReport.proPlusSubscribers')}</p>
                       <p className="font-heading text-3xl font-bold text-purple-600">{systemStats?.proPlusUsers ?? 0}</p>
                     </div>
+                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-300/60">
+                      <p className="text-xs text-slate-500 mb-1">⚡ Lifetime</p>
+                      <p className="font-heading text-3xl font-bold text-amber-600">{systemStats?.lifetimeUsers ?? 0}</p>
+                    </div>
                   </div>
 
                   {(systemStats?.totalUsers ?? 0) > 0 && (
@@ -580,11 +594,18 @@ export default function HealthReport() {
                             className="bg-purple-600"
                           />
                         )}
+                        {(systemStats?.lifetimeUsers ?? 0) > 0 && (
+                          <div
+                            style={{ width: `${((systemStats?.lifetimeUsers ?? 0) / (systemStats?.totalUsers ?? 1)) * 100}%` }}
+                            className="bg-amber-500"
+                          />
+                        )}
                       </div>
-                      <div className="flex gap-4 mt-2 text-xs text-slate-500">
+                      <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-500">
                         <span><span className="inline-block w-2 h-2 rounded-full bg-slate-400 mr-1" />Essential ({systemStats?.essentialUsers ?? 0})</span>
                         <span><span className="inline-block w-2 h-2 rounded-full bg-cyan-500 mr-1" />Pro ({systemStats?.proUsers ?? 0})</span>
                         <span><span className="inline-block w-2 h-2 rounded-full bg-purple-600 mr-1" />Pro+ ({systemStats?.proPlusUsers ?? 0})</span>
+                        <span><span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1" />Lifetime ({systemStats?.lifetimeUsers ?? 0})</span>
                       </div>
                     </div>
                   )}

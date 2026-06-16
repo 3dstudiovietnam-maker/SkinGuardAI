@@ -1,11 +1,13 @@
 /* DermIQ Dashboard - Clinical Serenity Design */
+import { useState } from "react";
 import { Link } from "wouter";
-import { Plus, MapPin, Clock, AlertTriangle, CheckCircle, ChevronRight, Shield, Zap, Sparkles } from "lucide-react";
+import { Plus, MapPin, Clock, AlertTriangle, CheckCircle, ChevronRight, Shield, Zap, Sparkles, Gift, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSkinStore } from "@/contexts/SkinStore";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
+import { trpc } from "@/lib/trpc";
 
 // Plan feature data for the logged-in dashboard card
 const PLAN_INFO: Record<string, { labelKey: string; color: string; featureKeys: string[] }> = {
@@ -35,9 +37,29 @@ export default function Dashboard() {
   const { moles } = useSkinStore();
   const { isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
+  const [promoCode, setPromoCode] = useState("");
+  const [promoError, setPromoError] = useState("");
+  const [promoSuccess, setPromoSuccess] = useState(false);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const redeemMutation = trpc.auth.redeemPromoCode.useMutation();
+
+  const handlePromoRedeem = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError("");
+    try {
+      await redeemMutation.mutateAsync({ code: promoCode.trim() });
+      setPromoSuccess(true);
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (err: any) {
+      setPromoError(err.message || t("auth.promoInvalidCode") || "Invalid promo code.");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const totalMoles = moles.length;
-  const totalPhotos = moles.reduce((sum, m) => sum + m.photos.length, 0);
+  const totalPhotos = moles.reduce((sum, m) => sum + (m.photoCount ?? 0), 0);
   const highRisk = moles.filter(m => m.riskLevel === "high").length;
   const needsCheck = moles.filter(m => {
     const daysSince = (Date.now() - m.lastChecked) / (1000 * 60 * 60 * 24);
@@ -53,7 +75,9 @@ export default function Dashboard() {
           </div>
           <h1 className="font-heading text-3xl font-bold mb-3">{t('dashboard.yourDashboard')}</h1>
           <p className="text-muted-foreground mb-6">{t('dashboard.signInDesc')}</p>
-          <Button className="bg-primary hover:bg-primary/90">{t('dashboard.getStarted')}</Button>
+          <Link href="/login">
+            <Button className="bg-primary hover:bg-primary/90">{t('dashboard.getStarted')}</Button>
+          </Link>
         </div>
       </div>
     );
@@ -113,8 +137,51 @@ export default function Dashboard() {
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-600" />
             <span className="text-sm font-medium text-amber-800">
-              {t('dashboard.freeScansInfo') || "10 ingyenes AI elemzés"}
+              {t('dashboard.freeScansInfo')}
             </span>
+          </div>
+        )}
+
+        {/* Promo code input - csak Essential esetén */}
+        {(plan === "essential" || !plan) && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <Gift className="w-4 h-4 text-amber-600" />
+              <span className="text-sm font-semibold text-amber-800">{t("auth.havePromoCode")}</span>
+            </div>
+            {promoSuccess ? (
+              <div className="flex items-center gap-2 text-green-700 text-sm font-semibold">
+                <CheckCircle className="w-4 h-4" />
+                <span>{t("auth.promoActivated")}</span>
+              </div>
+            ) : (
+              <>
+                {promoError && (
+                  <p className="text-xs text-red-600 mb-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {promoError}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); }}
+                    placeholder={t("auth.promoCodePlaceholder") || "e.g. SKIN-LT-0550"}
+                    className="flex-1 px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white"
+                    disabled={promoLoading}
+                    onKeyDown={e => e.key === "Enter" && handlePromoRedeem()}
+                  />
+                  <Button
+                    onClick={handlePromoRedeem}
+                    disabled={promoLoading || !promoCode.trim()}
+                    size="sm"
+                    className="bg-amber-500 hover:bg-amber-600 text-white font-semibold"
+                  >
+                    {promoLoading ? "..." : t("auth.activateBtn")}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         )}
         
@@ -178,9 +245,9 @@ export default function Dashboard() {
               return (
                 <Link key={mole.id} href={`/mole/${mole.id}`}>
                   <div className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors">
-                    {mole.photos.length > 0 ? (
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0">
-                        <img src={mole.photos[mole.photos.length - 1].dataUrl} alt="" className="w-full h-full object-cover" />
+                    {(mole.photoCount ?? 0) > 0 ? (
+                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <MapPin className="w-6 h-6 text-primary" />
                       </div>
                     ) : (
                       <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -190,7 +257,7 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{mole.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {mole.region} &middot; {mole.photos.length} {t('dashboard.photosLabel')}
+                        {mole.region} &middot; {mole.photoCount ?? 0} {t('dashboard.photosLabel')}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

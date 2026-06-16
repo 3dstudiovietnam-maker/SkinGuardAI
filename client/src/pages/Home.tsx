@@ -91,7 +91,6 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{t('home.healthyStatus')}</p>
-                    <p className="text-xs text-slate-500">{t('home.lastScan', { days: 2 })}</p>
                   </div>
                 </div>
               </div>
@@ -271,7 +270,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Testimonials Section */}
       <section className="bg-slate-50 py-16 md:py-20">
         <div className="container">
           <motion.div
@@ -287,6 +286,143 @@ export default function Home() {
               {t('social.subtitle')}
             </p>
           </motion.div>
+
+          {/* Testimonial Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {/* Sarah M. - Canada */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+            >
+              <div className="flex items-center gap-1 text-amber-400">
+                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
+              </div>
+              <p className="text-slate-700 text-sm leading-relaxed italic">
+                "Okay so — full transparency — I downloaded SkinGuard AI on a whim after seeing it mentioned in a health forum. I almost didn't bother. I've had this spot on my cheek basically forever and figured it was just... there. You know how it is.<br/><br/>The app flagged it as HIGH risk. Asymmetric borders, mixed pigmentation. I honestly didn't want to believe it. But I booked a dermatologist appointment anyway — just to be sure, I told myself.<br/><br/>She was really thorough and really clear: this needs watching. Monthly monitoring, no direct sun, come back regularly. She wasn't alarmist about it, but she was serious.<br/><br/>I've been using the app every four weeks since then to track any changes. It keeps me accountable in a way I wouldn't be otherwise. Like, I'd probably forget to check without it.<br/><br/>I'm not saying it saved my life — I genuinely don't know. But I'm really glad I didn't scroll past it."
+              </p>
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+                <img
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face"
+                  alt="Sarah M."
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-sm text-slate-800">Sarah M., 41</p>
+                  <p className="text-xs text-slate-500">🇨🇦 Toronto, Canada</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* James W. - Australia */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+            >
+              <div className="flex items-center gap-1 text-amber-400">
+                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
+              </div>
+              <p className="text-slate-700 text-sm leading-relaxed italic">
+                "Look, I'm not realy a 'go to the doctor' kind of bloke. My girlfreind basically forced me to try SkinGuard AI. Got a HIGH risk result on a spot I'd had for ages. We have the highest melanoma rates in the world, us Aussies. This app forced me to act. Mate, just downlod it."
+              </p>
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+                <img
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face"
+                  alt="James W."
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-sm text-slate-800">James W., 38</p>
+                  <p className="text-xs text-slate-500">🇦🇺 Sydney, Australia</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Attila K. - Founder */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-cyan-200 flex flex-col gap-4 relative"
+            >
+              <span className="absolute top-4 right-4 text-xs bg-cyan-100 text-cyan-700 font-semibold px-2 py-0.5 rounded-full">Founder</span>
+              <div className="flex items-center gap-1 text-amber-400">
+                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
+              </div>
+              <p className="text-slate-700 text-sm leading-relaxed italic">
+                "I am the founder of SkinGuard AI. I say this not to promote, but because the context matters.<br/><br/>I built this platform because I believed that AI could do what most people cannot — look at a mole objectively, without dismissing it, without hoping it is nothing. I believed in the concept. I did not expect to become one of its cases.<br/><br/>I live in Southeast Asia. The sun here is not something you step into — it surrounds you. I tested the app on myself, as I had done many times. This time the result was different. HIGH risk. My own face.<br/><br/>My dermatologist confirmed what the AI flagged. The borders were irregular. Pigmentation inconsistent. She was direct: monthly monitoring, no sun exposure, return immediately if anything changes. In Asia. Where the UV index is extreme every single day.<br/><br/>I follow every instruction. Wide hat, SPF 50, shade when possible. I scan it every four weeks. I watch every millimetre.<br/><br/>I built this for you. It turned out I also built it for myself.<br/><br/>We have a saying: Better safe than sorry.... Jobb félni mint megijedni...."
+              </p>
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+                <img
+                  src="/attila.jpg"
+                  alt="Attila K."
+                  className="w-10 h-10 rounded-full object-cover border-2 border-cyan-300"
+                />
+                <div>
+                  <p className="font-semibold text-sm text-slate-800">Attila Koch, 52</p>
+                  <p className="text-xs text-slate-500">🇭🇺 Founder, HealthGuardAI</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Short testimonials row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Erik H. - Norway */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+            >
+              <div className="flex items-center gap-1 text-amber-400">
+                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
+              </div>
+              <p className="text-slate-700 text-sm leading-relaxed italic">
+                "I am not someone who writs reviews for apps. But this one is diferent. HIGH risk detected on my neck. My doktor agreed. Monthly monitoring since. It works. That is all I will say."
+              </p>
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+                <img
+                  src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=80&h=80&fit=crop&crop=face"
+                  alt="Erik H."
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-sm text-slate-800">Erik H., 50</p>
+                  <p className="text-xs text-slate-500">🇳🇴 Oslo, Norway</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Margaret L. - USA */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+            >
+              <div className="flex items-center gap-1 text-amber-400">
+                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
+              </div>
+              <p className="text-slate-700 text-sm leading-relaxed italic">
+                "I want to start by saying — I am 65 years old and I have lived in Arizona my whole life. Sun capital of America, honey. I thought I knew everything about taking care of my skin.<br/><br/>My granddaughter put SkinGuard AI on my phone during Christmas. I humored her. I scanned a spot I'd had on my forearm for years.<br/><br/>HIGH risk. My doctor — who I've been going to for twenty years — said the same thing. Monthly monitoring. No more sitting by the pool without full sun protection. At 65, in Phoenix.<br/><br/>I'll tell you what though — I'd rather be sitting in the shade and here, than the alternative. I scan every month. I follow the rules.<br/><br/>Thank you to whoever built this. And thank you to my granddaughter for making me try it."
+              </p>
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+                <img
+                  src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=80&h=80&fit=crop&crop=face"
+                  alt="Margaret L."
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-sm text-slate-800">Margaret L., 65</p>
+                  <p className="text-xs text-slate-500">🇺🇸 Phoenix, Arizona</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 

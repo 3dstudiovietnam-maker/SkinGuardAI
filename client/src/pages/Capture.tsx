@@ -39,7 +39,7 @@ export default function Capture() {
 
   const FREE_LIMIT = 10;
   const isPremium = user?.plan === "pro" || user?.plan === "pro_plus" || user?.plan === "lifetime";
-  const totalCaptures = moles.reduce((sum, m) => sum + m.photos.length, 0);
+  const totalCaptures = moles.reduce((sum, m) => sum + (m.photoCount ?? 0), 0);
   const limitReached = !isPremium && totalCaptures >= FREE_LIMIT;
 
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function Capture() {
       setCameraActive(true);
     } catch (err: unknown) {
       const msg = err instanceof DOMException ? err.message : "Camera unavailable";
-      toast.error(`Unable to access camera: ${msg}. Please allow camera permissions or upload from gallery.`);
+      toast.error(t('capture.errCameraAccess'));
     }
   }, [facingMode]);
 
@@ -94,7 +94,7 @@ export default function Capture() {
       videoRef.current.srcObject = streamRef.current;
       videoRef.current.play().catch((err) => {
         console.error("Video play error:", err);
-        toast.error("Could not start camera preview. Please try again.");
+        toast.error(t('capture.errCameraPreview'));
       });
     }
   }, [cameraActive]);
@@ -146,7 +146,7 @@ export default function Capture() {
     if (!capturedImage) return;
 
     if (limitReached) {
-      toast.error("You've reached the 10 free scan limit. Upgrade to Pro for unlimited scans.", { duration: 5000 });
+      toast.error(t('capture.errScanLimit'), { duration: 5000 });
       return;
     }
 
@@ -170,12 +170,12 @@ export default function Capture() {
         imageBase64: capturedImage,
         mimeType: "image/jpeg",
       });
-      toast.success("🔬 AI analysis complete!");
+      toast.success(t('capture.successAnalysis'));
     } catch (err: unknown) {
       // Graceful degradation: save without AI analysis if it fails
       const message = err instanceof Error ? err.message : "AI analysis unavailable";
       console.warn("AI analysis failed:", message);
-      toast.warning("AI analysis unavailable — saving without it.", {
+      toast.warning(t('capture.warnAnalysis'), {
         description: message,
         duration: 4000,
       });
@@ -183,29 +183,25 @@ export default function Capture() {
       setIsAnalyzing(false);
     }
 
-    // Create photo object with required fields
-    const photo = {
-      dataUrl: capturedImage,
-      notes: "",
-      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: Date.now(),
-      aiAnalysis,
-    };
-
     if (isNewMole) {
-      const id = addMole({
+      const moleId = await addMole({
         name: moleName.trim(),
         region: selectedRegion,
-        photos: [photo],
         reminderDays: 90,
-        riskLevel: aiAnalysis
-          ? (aiAnalysis.overallRisk === "high" ? "high" : aiAnalysis.overallRisk === "medium" ? "medium" : "low")
-          : "unknown",
+      });
+      await addPhotoToMole(moleId, {
+        dataUrl: capturedImage,
+        notes: "",
+        aiAnalysis,
       });
       toast.success(t('capture.savedSuccess'));
-      navigate(`/mole/${id}`);
+      navigate(`/mole/${moleId}`);
     } else {
-      addPhotoToMole(existingMoleId, photo);
+      await addPhotoToMole(existingMoleId, {
+        dataUrl: capturedImage,
+        notes: "",
+        aiAnalysis,
+      });
       toast.success(t('capture.photoAdded'));
       navigate(`/mole/${existingMoleId}`);
     }
@@ -494,7 +490,7 @@ export default function Capture() {
                     <MapPin className="w-4 h-4 text-primary shrink-0" />
                     <div>
                       <p className="text-sm font-medium">{mole.name}</p>
-                      <p className="text-xs text-muted-foreground">{mole.region} &middot; {mole.photos.length} photos</p>
+                      <p className="text-xs text-muted-foreground">{mole.region} &middot; {mole.photoCount ?? 0} photos</p>
                     </div>
                     {existingMoleId === mole.id && <Check className="w-4 h-4 text-primary ml-auto" />}
                   </button>

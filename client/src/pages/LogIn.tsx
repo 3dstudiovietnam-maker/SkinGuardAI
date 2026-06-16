@@ -24,6 +24,10 @@ export default function LogIn() {
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPlanSelection, setShowPlanSelection] = useState(false);
+  const [planPromoCode, setPlanPromoCode] = useState("");
+  const [planPromoError, setPlanPromoError] = useState("");
+  const [planPromoSuccess, setPlanPromoSuccess] = useState(false);
+  const [planPromoLoading, setPlanPromoLoading] = useState(false);
 
   // Promo code — pre-fill from localStorage if signup stored one
   const pendingPromo = typeof window !== "undefined" ? (localStorage.getItem("skinguard_pending_promo") ?? "") : "";
@@ -115,6 +119,22 @@ export default function LogIn() {
       setError(err.message || "Failed to update plan");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePlanPromoRedeem = async () => {
+    if (!planPromoCode.trim()) return;
+    setPlanPromoLoading(true);
+    setPlanPromoError("");
+    try {
+      await redeemMutation.mutateAsync({ code: planPromoCode.trim() });
+      localStorage.removeItem("skinguard_pending_promo");
+      setPlanPromoSuccess(true);
+      setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
+    } catch (err: any) {
+      setPlanPromoError(err.message || "Invalid promo code. Please try again.");
+    } finally {
+      setPlanPromoLoading(false);
     }
   };
 
@@ -315,6 +335,49 @@ export default function LogIn() {
               </div>
             </motion.div>
           </div>
+
+          {/* ── Promo Code Redemption on Plan Selection ── */}
+          <div className="mt-10 max-w-md mx-auto">
+            <div className="bg-amber-50 border border-amber-300 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Gift className="w-5 h-5 text-amber-600" />
+                <span className="font-semibold text-amber-800 text-sm">{t("auth.havePromoCode")}</span>
+              </div>
+              {planPromoSuccess ? (
+                <div className="flex items-center gap-2 text-green-700 font-semibold">
+                  <CheckCircle className="w-5 h-5" />
+                  <span>{t("auth.promoActivated")}</span>
+                </div>
+              ) : (
+                <>
+                  {planPromoError && (
+                    <p className="text-sm text-red-600 mb-2 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" /> {planPromoError}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={planPromoCode}
+                      onChange={e => { setPlanPromoCode(e.target.value.toUpperCase()); setPlanPromoError(""); }}
+                      placeholder={t("auth.promoCodePlaceholder") || "e.g. SKIN-LT-0550"}
+                      className="flex-1 px-4 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white"
+                      disabled={planPromoLoading}
+                      onKeyDown={e => e.key === "Enter" && handlePlanPromoRedeem()}
+                    />
+                    <Button
+                      onClick={handlePlanPromoRedeem}
+                      disabled={planPromoLoading || !planPromoCode.trim()}
+                      className="bg-amber-500 hover:bg-amber-600 text-white px-4 rounded-lg font-semibold"
+                    >
+                      {planPromoLoading ? "..." : t("auth.activateBtn")}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
         </motion.div>
       </div>
     );
@@ -476,7 +539,7 @@ export default function LogIn() {
               className="w-full py-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-amber-800 font-medium transition-colors flex items-center justify-center gap-2"
             >
               <Gift className="w-5 h-5" />
-              <span>{showPromoField ? "PROMO CODE ELREJTÉSE" : "PROMO CODE"}</span>
+              <span>{showPromoField ? t("auth.promoHide") : t("auth.promoShow")}</span>
             </button>
             {showPromoField && (
               <input

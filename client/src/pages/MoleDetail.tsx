@@ -1,30 +1,70 @@
 /* DermIQ Mole Detail - Timeline, AI Analysis, Photo History */
 import { useParams, Link, useLocation } from "wouter";
 import { useSkinStore, type AIAnalysis } from "@/contexts/SkinStore";
-import { Camera, Trash2, ArrowLeft, GitCompareArrows, AlertTriangle, CheckCircle, Clock, Shield, Share2, Lock } from "lucide-react";
+import { Camera, Trash2, ArrowLeft, GitCompareArrows, AlertTriangle, CheckCircle, Clock, Shield, Share2, Lock, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { trpc } from "@/lib/trpc";
+import { AnimatedLogo } from "@/components/AnimatedLogo";
+
+const biyovisPromoTexts: Record<string, string> = {
+  en: "💧 Taking care of your skin is just as important as monitoring it. Biyovis® 4-LEVEL HYDRO ACTIVE hydrating gel provides medical-grade regeneration. 👉 www.biyovis.hu/HU-eng",
+  hu: "💧 Bőröd figyelése mellett a megfelelő ápolás is fontos. A Biyovis® 4-LEVEL HYDRO ACTIVE hidratáló gél orvosi minőségű regenerációt nyújt. 👉 www.biyovis.hu/HU-eng",
+  vi: "💧 Chăm sóc da cũng quan trọng không kém việc theo dõi. Gel dưỡng ẩm Biyovis® 4-LEVEL HYDRO ACTIVE cung cấp khả năng tái tạo cấp độ y tế. 👉 www.biyovis.hu/HU-eng",
+  hi: "💧 आपकी त्वचा की देखभाल करना उतना ही महत्वपूर्ण है जितना उसकी निगरानी करना। Biyovis® 4-LEVEL HYDRO ACTIVE हाइड्रेटिंग जेल मेडिकल-ग्रेड पुनर्जनन प्रदान करता है। 👉 www.biyovis.hu/HU-eng",
+  th: "💧 การดูแลผิวของคุณสำคัญพอๆ กับการสังเกตผิว Biyovis® 4-LEVEL HYDRO ACTIVE เจลให้ความชุ่มชื้นคุณภาพทางการแพทย์เพื่อการฟื้นฟูผิว 👉 www.biyovis.hu/HU-eng",
+  zh: "💧 护理皮肤与监测皮肤同样重要。Biyovis® 4-LEVEL HYDRO ACTIVE 保湿凝胶提供医疗级修复。 👉 www.biyovis.hu/HU-eng",
+  de: "💧 Die Pflege Ihrer Haut ist genauso wichtig wie ihre Überwachung. Biyovis® 4-LEVEL HYDRO ACTIVE feuchtigkeitsspendendes Gel bietet medizinische Regeneration. 👉 www.biyovis.hu/HU-eng",
+  es: "💧 Cuidar tu piel es tan importante como monitorearla. El gel hidratante Biyovis® 4-LEVEL HYDRO ACTIVE proporciona regeneración de grado médico. 👉 www.biyovis.hu/HU-eng",
+  ru: "💧 Уход за кожей так же важен, как и ее мониторинг. Увлажняющий гель Biyovis® 4-LEVEL HYDRO ACTIVE обеспечивает медицинскую регенерацию. 👉 www.biyovis.hu/HU-eng",
+  pt: "💧 Cuidar da sua pele é tão importante quanto monitorizá-la. O gel hidratante Biyovis® 4-LEVEL HYDRO ACTIVE oferece regeneração de grau médico. 👉 www.biyovis.hu/HU-eng",
+  ro: "💧 Îngrijirea pielii tale este la fel de importantă ca și monitorizarea acesteia. Gelul hidratant Biyovis® 4-LEVEL HYDRO ACTIVE oferă regenerare de calitate medicală. 👉 www.biyovis.hu/HU-eng",
+};
 
 export default function MoleDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const { getMole, deleteMole, updateMole } = useSkinStore();
+  const { getMole, deleteMole, updateMole, userId, isLoading: isMolesLoading } = useSkinStore();
   const { user } = useAuth();
-  const { t } = useLanguage();
-  const isPremium = user?.plan === "pro" || user?.plan === "pro_plus";
+  const { t, language } = useLanguage();
+  const isPremium = user?.plan === "pro" || user?.plan === "pro_plus" || user?.plan === "lifetime";
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const mole = getMole(id || "");
 
+  // Load photos from DB (includes analyses data via LEFT JOIN)
+  const photosQuery = trpc.photo.getByMoleId.useQuery(
+    { moleId: Number(id) },
+    { enabled: !!id && !isNaN(Number(id)) && !!mole }
+  );
+  const photos = photosQuery.data ?? [];
+
   // Get AI analysis from the most recent photo (if available)
-  const analysis: AIAnalysis | null =
-    mole && mole.photos.length > 0
-      ? (mole.photos[mole.photos.length - 1].aiAnalysis ?? null)
-      : null;
+  const lastPhoto = photos.length > 0 ? photos[photos.length - 1] : null;
+  const analysis: AIAnalysis | null = lastPhoto?.asymmetryScore != null
+    ? {
+        asymmetry: { score: lastPhoto.asymmetryScore, descriptionCode: lastPhoto.asymmetryCode ?? "" },
+        border: { score: lastPhoto.borderScore!, descriptionCode: lastPhoto.borderCode ?? "" },
+        color: { score: lastPhoto.colorScore!, descriptionCode: lastPhoto.colorCode ?? "" },
+        diameter: { score: lastPhoto.diameterScore!, descriptionCode: lastPhoto.diameterCode ?? "" },
+        overallRisk: (lastPhoto.overallRisk ?? "low") as "low" | "medium" | "high",
+        recommendationCode: lastPhoto.recommendationCode ?? "",
+        disclaimer: "",
+      }
+    : null;
+
+  // Show spinner while moles are still loading from DB
+  if (isMolesLoading && !mole) {
+    return (
+      <div className="container py-20 text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+      </div>
+    );
+  }
 
   if (!mole) {
     return (
@@ -60,10 +100,14 @@ export default function MoleDetail() {
     return "text-red-600 bg-red-50";
   };
 
+
+  const biyovisText = biyovisPromoTexts[language] ?? biyovisPromoTexts['en'];
+
   const daysSinceLastCheck = Math.floor((Date.now() - mole.lastChecked) / (1000 * 60 * 60 * 24));
+  const componentKey = userId || 'no-user';
 
   return (
-    <div className="container py-8 max-w-3xl mx-auto">
+    <div key={componentKey} className="container py-8 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link href="/dashboard">
@@ -73,7 +117,7 @@ export default function MoleDetail() {
         </Link>
         <div className="flex-1">
           <h1 className="font-heading text-2xl font-bold">{mole.name}</h1>
-          <p className="text-sm text-muted-foreground">{mole.region} &middot; {mole.photos.length} {t('moleDetail.photos')}</p>
+          <p className="text-sm text-muted-foreground">{mole.region} &middot; {photos.length} {t('moleDetail.photos')}</p>
         </div>
         <div className="flex gap-2">
           <Link href={`/capture/${encodeURIComponent(mole.region)}`}>
@@ -107,12 +151,17 @@ export default function MoleDetail() {
       </div>
 
       {/* AI Analysis Card */}
-      {analysis ? (
+      {!photosQuery.isLoading && analysis ? (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-card rounded-2xl border border-border/60 p-6 mb-6"
         >
+          {/* Animated logo centred above analysis */}
+          <div className="flex justify-center mb-4">
+            <AnimatedLogo riskLevel={analysis.overallRisk} size={130} />
+          </div>
+
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
@@ -125,8 +174,8 @@ export default function MoleDetail() {
                 ? "bg-amber-100 text-amber-700"
                 : "bg-green-100 text-green-700"
             }`}>
-              {analysis.overallRisk === "high" ? t('moleDetail.riskHigh') : 
-               analysis.overallRisk === "medium" ? t('moleDetail.riskMedium') : 
+              {analysis.overallRisk === "high" ? t('moleDetail.riskHigh') :
+               analysis.overallRisk === "medium" ? t('moleDetail.riskMedium') :
                t('moleDetail.riskLow')} {t('moleDetail.risk')}
             </span>
           </div>
@@ -190,13 +239,37 @@ export default function MoleDetail() {
             </div>
           )}
 
-          {/* Disclaimer from translation */}
-          <p className="text-xs text-muted-foreground mt-3 italic leading-relaxed">
-            ⚠️ {t('aiDescriptions.AI_DISCLAIMER')}
-          </p>
+          {/* Biyovis Promo Card - permanent */}
+          <div className="mt-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4">
+            <a href="https://www.biyovis.hu/HU-eng" target="_blank" rel="noopener noreferrer" className="block hover:opacity-90 transition-opacity">
+              <img
+                src="/Biyovislogo.jpg"
+                alt="Biyovis® HOLDING"
+                className="h-10 w-auto mb-2 object-contain"
+              />
+              <p className="text-sm text-blue-900 leading-relaxed hover:underline">
+                {biyovisText}
+              </p>
+            </a>
+          </div>
+
+          {/* Disclaimer */}
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-start gap-2">
+            <p className="text-xs text-muted-foreground italic leading-relaxed flex-1">
+              ⚠️ {t('aiDescriptions.AI_DISCLAIMER')}
+            </p>
+            <Link href="/disclaimer">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg cursor-pointer transition-colors whitespace-nowrap shrink-0">
+                <ExternalLink className="w-3 h-3" />
+                {t('disclaimer.readBtn')}
+              </span>
+            </Link>
+          </div>
         </motion.div>
-      ) : mole && mole.photos.length > 0 ? (
-        /* No analysis yet — show info card */
+      ) : null}
+
+      {!photosQuery.isLoading && analysis ? null : !photosQuery.isLoading && photos.length > 0 ? (
+        /* Photos exist but no analysis */
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -241,7 +314,7 @@ export default function MoleDetail() {
       <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
         <div className="p-5 border-b border-border/60 flex items-center justify-between">
           <h2 className="font-heading text-lg font-semibold">{t('moleDetail.photoTimeline')}</h2>
-          {mole.photos.length >= 2 && (
+          {photos.length >= 2 && (
             <Link href={`/comparison/${mole.id}`}>
               <Button size="sm" variant="outline" className="text-primary border-primary/20">
                 <GitCompareArrows className="w-4 h-4 mr-1" /> {t('moleDetail.compare')}
@@ -249,14 +322,18 @@ export default function MoleDetail() {
             </Link>
           )}
         </div>
-        {mole.photos.length === 0 ? (
+        {photosQuery.isLoading ? (
+          <div className="p-8 text-center">
+            <Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" />
+          </div>
+        ) : photos.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-sm text-muted-foreground">{t('moleDetail.noPhotos')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4">
-            {[...mole.photos].reverse().map(photo => (
-              <div key={photo.id} className="relative group rounded-xl overflow-hidden bg-muted aspect-square">
+            {[...photos].reverse().map(photo => (
+              <div key={`${userId}-${photo.id}`} className="relative group rounded-xl overflow-hidden bg-muted aspect-square">
                 <img src={photo.dataUrl} alt="" className="w-full h-full object-cover" />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
                   <p className="text-white text-[10px]">

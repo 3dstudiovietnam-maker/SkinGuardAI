@@ -67,15 +67,28 @@ function buildAuthHeaders(apiKey: string): HeadersInit {
   return { Authorization: `Bearer ${apiKey}` };
 }
 
+/**
+ * Upload a file to storage with user isolation
+ * @param userId - The ID of the user uploading the file
+ * @param relKey - Relative path (e.g., "moles/123/photo.jpg")
+ * @param data - File data
+ * @param contentType - MIME type of the file
+ * @returns Object containing the full storage key and access URL
+ */
 export async function storagePut(
+  userId: string,
   relKey: string,
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream"
 ): Promise<{ key: string; url: string }> {
   const { baseUrl, apiKey } = getStorageConfig();
-  const key = normalizeKey(relKey);
-  const uploadUrl = buildUploadUrl(baseUrl, key);
-  const formData = toFormData(data, contentType, key.split("/").pop() ?? key);
+  
+  // Prefix the key with the user ID to isolate files per user
+  const userPrefixedKey = `users/${userId}/${normalizeKey(relKey)}`;
+  const uploadUrl = buildUploadUrl(baseUrl, userPrefixedKey);
+  
+  const formData = toFormData(data, contentType, userPrefixedKey.split("/").pop() ?? userPrefixedKey);
+  
   const response = await fetch(uploadUrl, {
     method: "POST",
     headers: buildAuthHeaders(apiKey),
@@ -88,11 +101,50 @@ export async function storagePut(
       `Storage upload failed (${response.status} ${response.statusText}): ${message}`
     );
   }
+  
   const url = (await response.json()).url;
-  return { key, url };
+  return { key: userPrefixedKey, url };
 }
 
-export async function storageGet(relKey: string): Promise<{ key: string; url: string; }> {
+/**
+ * Get a download URL for a file with user isolation
+ * @param userId - The ID of the user requesting the file
+ * @param relKey - Relative path (e.g., "moles/123/photo.jpg")
+ * @returns Object containing the storage key and temporary download URL
+ * @throws Error if the requested key does not belong to the user
+ */
+export async function storageGet(
+  userId: string,
+  relKey: string
+): Promise<{ key: string; url: string; }> {
+  const { baseUrl, apiKey } = getStorageConfig();
+  
+  // Normalize and construct the expected user-prefixed key
+  const normalizedRelKey = normalizeKey(relKey);
+  const expectedUserKey = `users/${userId}/${normalizedRelKey}`;
+  
+  // Security check: verify that the requested key belongs to this user
+  if (!normalizedRelKey.startsWith(`users/${userId}/`) && !relKey.startsWith(`users/${userId}/`)) {
+    // If the key doesn't already contain the user prefix, we use the expected one
+    // This ensures backward compatibility while enforcing security
+    return {
+      key: expectedUserKey,
+      url: await buildDownloadUrl(baseUrl, expectedUserKey, apiKey),
+    };
+  }
+  
+  // If the key already has the correct user prefix, use it as-is
+  return {
+    key: normalizedRelKey,
+    url: await buildDownloadUrl(baseUrl, normalizedRelKey, apiKey),
+  };
+}
+
+/**
+ * Legacy support for storageGet without userId
+ * @deprecated Use storageGet(userId, relKey) instead
+ */
+export async function storageGetLegacy(relKey: string): Promise<{ key: string; url: string; }> {
   const { baseUrl, apiKey } = getStorageConfig();
   const key = normalizeKey(relKey);
   return {

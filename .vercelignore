@@ -3,4 +3,13 @@ client/node_modules
 .git
 README.md
 *.log
-dist
+/dist
+client/src
+client/public/__manus__
+server
+drizzle
+ideas.md
+todo.md
+secrets
+patches
+references

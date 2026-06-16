@@ -10,11 +10,11 @@ var __export = (target, all) => {
 
 // drizzle/schema.ts
 import { boolean, integer, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
-var planEnum, roleEnum, statusEnum, users, userSubscriptions, emailNotifications, userPreferences, passwordResetTokens, emailVerificationTokens, socialLogins;
+var planEnum, roleEnum, statusEnum, users, userSubscriptions, emailNotifications, userPreferences, passwordResetTokens, emailVerificationTokens, socialLogins, moles, photos, analyses;
 var init_schema = __esm({
   "drizzle/schema.ts"() {
     "use strict";
-    planEnum = pgEnum("plan", ["essential", "pro", "pro_plus"]);
+    planEnum = pgEnum("plan", ["essential", "pro", "pro_plus", "lifetime"]);
     roleEnum = pgEnum("role", ["user", "admin"]);
     statusEnum = pgEnum("status", ["active", "cancelled", "expired"]);
     users = pgTable("users", {
@@ -87,6 +87,43 @@ var init_schema = __esm({
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().notNull()
     });
+    moles = pgTable("moles", {
+      id: serial("id").primaryKey(),
+      userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+      name: text("name").notNull(),
+      region: text("region").notNull(),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      lastChecked: timestamp("last_checked").defaultNow().notNull(),
+      reminderDays: integer("reminder_days").default(90).notNull(),
+      riskLevel: text("risk_level").default("unknown").notNull()
+      // low, medium, high, unknown
+    });
+    photos = pgTable("photos", {
+      id: serial("id").primaryKey(),
+      moleId: integer("mole_id").notNull().references(() => moles.id, { onDelete: "cascade" }),
+      dataUrl: text("data_url").notNull(),
+      // base64 kép (vagy külső storage URL)
+      timestamp: timestamp("timestamp").defaultNow().notNull(),
+      notes: text("notes").default(""),
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    analyses = pgTable("analyses", {
+      id: serial("id").primaryKey(),
+      photoId: integer("photo_id").notNull().references(() => photos.id, { onDelete: "cascade" }).unique(),
+      asymmetryScore: integer("asymmetry_score").notNull(),
+      asymmetryCode: text("asymmetry_code").notNull(),
+      borderScore: integer("border_score").notNull(),
+      borderCode: text("border_code").notNull(),
+      colorScore: integer("color_score").notNull(),
+      colorCode: text("color_code").notNull(),
+      diameterScore: integer("diameter_score").notNull(),
+      diameterCode: text("diameter_code").notNull(),
+      overallRisk: text("overall_risk").notNull(),
+      // low, medium, high
+      recommendationCode: text("recommendation_code").notNull(),
+      disclaimer: text("disclaimer").default("This AI screening is for informational purposes only and is not a medical diagnosis. Always consult a qualified dermatologist for professional evaluation."),
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
   }
 });
 
@@ -131,8 +168,8 @@ import { drizzle } from "drizzle-orm/neon-http";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      const sql = neon(process.env.DATABASE_URL);
-      _db = drizzle(sql);
+      const sql2 = neon(process.env.DATABASE_URL);
+      _db = drizzle(sql2);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -967,26 +1004,41 @@ var systemRouter = router({
 // server/ai.ts
 import { z as z3 } from "zod";
 import { TRPCError as TRPCError4 } from "@trpc/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+var ipLimitMap = /* @__PURE__ */ new Map();
+function checkIpLimit(ip, maxPerDay = 3) {
+  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const entry = ipLimitMap.get(ip);
+  if (!entry || entry.date !== today) {
+    ipLimitMap.set(ip, { count: 1, date: today });
+    return maxPerDay - 1;
+  }
+  if (entry.count >= maxPerDay) {
+    throw new TRPCError4({ code: "TOO_MANY_REQUESTS", message: "Daily limit reached" });
+  }
+  entry.count++;
+  return maxPerDay - entry.count;
+}
+var GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
+var GEMINI_MODEL = "gemini-2.5-flash";
 var ABCDE_PROMPT = `You are a dermatology screening AI assistant. Analyze this skin mole/lesion image using the ABCDE dermoscopy criteria.
 
 Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) with this EXACT structure:
 {
-  "asymmetry": { 
-    "score": <integer 0-100>, 
-    "descriptionCode": "<code from list below>" 
+  "asymmetry": {
+    "score": <integer 0-100>,
+    "descriptionCode": "<code from list below>"
   },
-  "border": { 
-    "score": <integer 0-100>, 
-    "descriptionCode": "<code from list below>" 
+  "border": {
+    "score": <integer 0-100>,
+    "descriptionCode": "<code from list below>"
   },
-  "color": { 
-    "score": <integer 0-100>, 
-    "descriptionCode": "<code from list below>" 
+  "color": {
+    "score": <integer 0-100>,
+    "descriptionCode": "<code from list below>"
   },
-  "diameter": { 
-    "score": <integer 0-100>, 
-    "descriptionCode": "<code from list below>" 
+  "diameter": {
+    "score": <integer 0-100>,
+    "descriptionCode": "<code from list below>"
   },
   "overallRisk": "<low|medium|high>",
   "recommendationCode": "<code from list below>",
@@ -1025,19 +1077,38 @@ RECOMMENDATION_CODES:
 - "RECOMMENDATION_HIGH": "Given the high risk assessment, please schedule an appointment with a dermatologist as soon as possible for professional evaluation. Do not delay seeking medical advice."
 - "RECOMMENDATION_URGENT": "This lesion shows concerning features. Please consult a dermatologist immediately for professional evaluation."
 
-Scoring guide (0 = no concern, 100 = high concern):
-- A (Asymmetry): One half unlike the other half in shape
-- B (Border): Irregular, ragged, notched, or blurred edges
-- C (Color): Variation in color \u2014 multiple shades of brown, black, red, white, or blue
-- D (Diameter): Estimated size relative to a 6mm pencil eraser
+Scoring guide \u2014 each score is independent (0 = no concern at all, 100 = maximum concern):
+- A (Asymmetry): 0 = perfectly symmetrical, 100 = highly asymmetrical in both axes
+- B (Border): 0 = smooth well-defined edges, 100 = very irregular ragged notched edges
+- C (Color): 0 = completely uniform single color, 100 = multiple colors significant variation
+- D (Diameter): 0 = tiny lesion clearly under 6mm, 100 = very large lesion well over 6mm
 
-overallRisk determination:
-- "low": all scores below 30
-- "medium": any score 30-60 or average 25-50
-- "high": any score above 60 or average above 50
+IMPORTANT SCORING RULES:
+- A normal healthy mole with no concerning features should score 0-20 on ALL criteria.
+- Only score 60+ if that specific feature is clearly and significantly abnormal.
+- Do NOT inflate scores. A slightly irregular border is 30-45, not 70.
+- The scores MUST reflect only what you actually see in the image.
+- Set overallRisk based ONLY on the scores you assign, using this exact table:
+  * "low"   \u2192 weighted average below 30 (weights: A=30%, B=30%, C=25%, D=15%)
+  * "medium" \u2192 weighted average 30\u201354
+  * "high"  \u2192 weighted average 55 or above
 
 IMPORTANT: Choose the most appropriate code from the lists above. Do not write free text descriptions.`;
-function getGeminiClient() {
+function computeRisk(analysis) {
+  const s = (key) => {
+    const val = analysis[key]?.score;
+    return typeof val === "number" ? Math.max(0, Math.min(100, val)) : 0;
+  };
+  const a = s("asymmetry");
+  const b = s("border");
+  const c = s("color");
+  const d = s("diameter");
+  const weighted = a * 0.3 + b * 0.3 + c * 0.25 + d * 0.15;
+  if (weighted < 30) return "low";
+  if (weighted < 55) return "medium";
+  return "high";
+}
+function getApiKey() {
   const apiKey = process.env.GOOGLE_AI_STUDIO_KEY;
   if (!apiKey) {
     throw new TRPCError4({
@@ -1045,35 +1116,90 @@ function getGeminiClient() {
       message: "GOOGLE_AI_STUDIO_KEY environment variable is not set."
     });
   }
-  return new GoogleGenerativeAI(apiKey);
+  return apiKey;
 }
-async function callGeminiWithRetry(model, prompt, base64Data, mimeType, maxRetries = 3) {
+function extractJson(raw) {
+  let text2 = raw.replace(/^```(?:json)?\s*/im, "").replace(/\s*```\s*$/im, "").trim();
+  try {
+    return JSON.parse(text2);
+  } catch {
+  }
+  const match = text2.match(/\{[\s\S]*\}/);
+  if (match) {
+    try {
+      return JSON.parse(match[0]);
+    } catch {
+    }
+  }
+  throw new Error("Cannot extract valid JSON from Gemini response");
+}
+async function callGeminiWithRetry(base64Data, mimeType, maxRetries = 3) {
+  const apiKey = getApiKey();
+  const url = `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   let lastError = null;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const result = await model.generateContent([
-        prompt,
-        {
-          inlineData: {
-            mimeType,
-            data: base64Data
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: ABCDE_PROMPT },
+                {
+                  inlineData: {
+                    mimeType,
+                    data: base64Data
+                  }
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            responseMimeType: "application/json",
+            // Force JSON output — prevents markdown wrapping
+            maxOutputTokens: 1024,
+            temperature: 0.1,
+            // Disable thinking tokens — gemini-2.5-flash puts them in parts[0]
+            // with {thought:true} which breaks our JSON extraction.
+            thinkingConfig: {
+              thinkingBudget: 0
+            }
+          }
+        })
+      });
+      if (!response.ok) {
+        let errText = await response.text();
+        if (response.status === 404) {
+          try {
+            const listResp = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=20`
+            );
+            const listData = await listResp.json();
+            const names = (listData.models ?? []).map((m) => m.name).join(" | ");
+            errText += ` || AVAILABLE_MODELS: [${names || "NONE \u2014 key may be invalid"}]`;
+          } catch {
           }
         }
-      ]);
-      const rawText = result.response?.text();
+        throw new Error(`HTTP ${response.status}: ${errText}`);
+      }
+      const data = await response.json();
+      const parts = data.candidates?.[0]?.content?.parts ?? [];
+      const outputPart = parts.find((p) => !p.thought && typeof p.text === "string");
+      const rawText = outputPart?.text ?? parts[0]?.text;
       if (!rawText) {
         throw new Error("Empty response received from Gemini.");
       }
-      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
       try {
-        return JSON.parse(cleaned);
-      } catch (parseError) {
-        lastError = new Error(`Invalid JSON (attempt ${attempt}/${maxRetries})`);
-        console.warn(`Gemini JSON parse failed on attempt ${attempt}, retrying...`);
+        return extractJson(rawText);
+      } catch {
+        lastError = new Error(`Invalid JSON on attempt ${attempt}/${maxRetries}: ${rawText.slice(0, 120)}`);
+        console.warn(`Gemini JSON parse failed on attempt ${attempt}:`, lastError.message);
         if (attempt === maxRetries) {
           throw new TRPCError4({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Gemini returned an invalid JSON response after multiple attempts. Please try again later."
+            message: "Gemini returned an invalid JSON response after multiple attempts."
           });
         }
         continue;
@@ -1089,7 +1215,7 @@ async function callGeminiWithRetry(model, prompt, base64Data, mimeType, maxRetri
       }
     }
   }
-  throw lastError || new Error("Unknown error in Gemini call");
+  throw lastError ?? new Error("Unknown error in Gemini call");
 }
 var aiRouter = router({
   analyzeImage: protectedProcedure.input(
@@ -1098,38 +1224,49 @@ var aiRouter = router({
       mimeType: z3.string().default("image/jpeg")
     })
   ).mutation(async ({ input }) => {
-    const genAI = getGeminiClient();
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        responseMimeType: "application/json",
-        maxOutputTokens: 1024,
-        temperature: 0.1
-      }
-    });
     const base64Data = input.imageBase64.replace(
       /^data:image\/[a-z+]+;base64,/i,
       ""
     );
     const parsedAnalysis = await callGeminiWithRetry(
-      model,
-      ABCDE_PROMPT,
       base64Data,
       input.mimeType,
       3
-      // max 3 attempts
     );
-    if (!["low", "medium", "high"].includes(parsedAnalysis.overallRisk)) {
-      parsedAnalysis.overallRisk = "medium";
-    }
+    parsedAnalysis.overallRisk = computeRisk(parsedAnalysis);
     return parsedAnalysis;
+  }),
+  // ── Public endpoint: no auth required, IP-rate-limited (3/day) ─────────────
+  // Premium/Lifetime logged-in users bypass the IP limit entirely.
+  publicAnalyzeImage: publicProcedure.input(
+    z3.object({
+      imageBase64: z3.string().min(100, "Image data is too short"),
+      mimeType: z3.string().default("image/jpeg")
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const isPremiumUser = ctx.user !== null && ["pro", "pro_plus", "lifetime"].includes(ctx.user.plan ?? "");
+    let remaining;
+    if (isPremiumUser) {
+      remaining = 999;
+    } else {
+      const ip = ctx.req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || ctx.req.socket?.remoteAddress || "unknown";
+      remaining = checkIpLimit(ip, 3);
+    }
+    const base64Data = input.imageBase64.replace(
+      /^data:image\/[a-z+]+;base64,/i,
+      ""
+    );
+    const parsedAnalysis = await callGeminiWithRetry(base64Data, input.mimeType, 3);
+    parsedAnalysis.overallRisk = computeRisk(parsedAnalysis);
+    return { ...parsedAnalysis, remainingToday: remaining };
   })
 });
 
 // server/routers.ts
 init_db();
 init_schema();
-import { eq as eq3 } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import { eq as eq3, and, count } from "drizzle-orm";
 import { z as z4 } from "zod";
 import bcrypt from "bcryptjs";
 import { TRPCError as TRPCError5 } from "@trpc/server";
@@ -1310,9 +1447,7 @@ var appRouter = router({
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
-      return {
-        success: true
-      };
+      return { success: true };
     }),
     // Email signup
     signupEmail: publicProcedure.input(z4.object({
@@ -1320,7 +1455,7 @@ var appRouter = router({
       email: z4.string().email("Invalid email address"),
       password: z4.string().min(8, "Password must be at least 8 characters"),
       plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
-    })).mutation(async ({ input, ctx }) => {
+    })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const existingUser = await db.select().from(users).where(eq3(users.email, input.email)).limit(1);
@@ -1328,7 +1463,7 @@ var appRouter = router({
         throw new TRPCError5({ code: "CONFLICT", message: "Email already registered" });
       }
       const passwordHash = await bcrypt.hash(input.password, 10);
-      const result = await db.insert(users).values({
+      await db.insert(users).values({
         name: input.name,
         email: input.email,
         passwordHash,
@@ -1341,23 +1476,11 @@ var appRouter = router({
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create user" });
       }
       const userId = insertedUser[0].id;
-      await db.insert(userSubscriptions).values({
-        userId,
-        plan: input.plan,
-        status: "active"
-      });
-      await db.insert(userPreferences).values({
-        userId,
-        weeklyEmailEnabled: true,
-        skinAlertEmailEnabled: true
-      });
+      await db.insert(userSubscriptions).values({ userId, plan: input.plan, status: "active" });
+      await db.insert(userPreferences).values({ userId, weeklyEmailEnabled: true, skinAlertEmailEnabled: true });
       const verificationToken = crypto.randomBytes(32).toString("hex");
       const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1e3);
-      await db.insert(emailVerificationTokens).values({
-        userId,
-        token: verificationToken,
-        expiresAt: verificationExpiresAt
-      });
+      await db.insert(emailVerificationTokens).values({ userId, token: verificationToken, expiresAt: verificationExpiresAt });
       await sendEmailVerificationEmail(input.email, input.name, verificationToken);
       return { success: true, userId, plan: input.plan, message: "Verification email sent" };
     }),
@@ -1373,16 +1496,10 @@ var appRouter = router({
         throw new TRPCError5({ code: "UNAUTHORIZED", message: "Invalid email or password" });
       }
       const user = userList[0];
-      if (!user.passwordHash) {
-        throw new TRPCError5({ code: "UNAUTHORIZED", message: "Invalid email or password" });
-      }
+      if (!user.passwordHash) throw new TRPCError5({ code: "UNAUTHORIZED", message: "Invalid email or password" });
       const isPasswordValid = await bcrypt.compare(input.password, user.passwordHash);
-      if (!isPasswordValid) {
-        throw new TRPCError5({ code: "UNAUTHORIZED", message: "Invalid email or password" });
-      }
-      await db.update(users).set({
-        lastSignedIn: /* @__PURE__ */ new Date()
-      }).where(eq3(users.id, user.id));
+      if (!isPasswordValid) throw new TRPCError5({ code: "UNAUTHORIZED", message: "Invalid email or password" });
+      await db.update(users).set({ lastSignedIn: /* @__PURE__ */ new Date() }).where(eq3(users.id, user.id));
       const openId = user.openId || `email_${user.id}`;
       const sessionToken = await sdk.createSessionToken(openId, {
         name: user.name || user.email || "",
@@ -1392,105 +1509,90 @@ var appRouter = router({
       ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       return { success: true, userId: user.id, plan: user.plan };
     }),
-    // Redeem promo code → upgrade to Pro
-    // Supports two systems:
-    //   1. PERSONAL_PROMO_CODES: "CODE:email" pairs — email-tied, one user per code (lifetime)
-    //   2. PROMO_CODES: generic codes anyone can use
-    redeemPromoCode: protectedProcedure.input(z4.object({
-      code: z4.string().min(1, "Please enter a promo code")
-    })).mutation(async ({ input, ctx }) => {
+    // Redeem promo code → upgrade plan
+    redeemPromoCode: protectedProcedure.input(z4.object({ code: z4.string().min(1, "Please enter a promo code") })).mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const inputCode = input.code.trim().toUpperCase();
       const userEmail = (ctx.user.email ?? "").toLowerCase();
-      const personalEntries = (process.env.PERSONAL_PROMO_CODES ?? "").split(",").map((entry) => {
-        const colonIdx = entry.indexOf(":");
-        if (colonIdx === -1) return null;
-        return {
-          code: entry.slice(0, colonIdx).trim().toUpperCase(),
-          email: entry.slice(colonIdx + 1).trim().toLowerCase()
-        };
-      }).filter((e) => !!e && !!e.code && !!e.email);
-      const personalMatch = personalEntries.find((e) => e.code === inputCode);
-      if (personalMatch) {
-        if (personalMatch.email !== userEmail) {
-          throw new TRPCError5({
-            code: "UNAUTHORIZED",
-            message: "This code is not registered to your email address."
-          });
+      let dbCodePlan = null;
+      try {
+        const dbResult = await db.execute(
+          sql`SELECT id, plan, used, user_id FROM activation_codes WHERE code = ${inputCode} LIMIT 1`
+        );
+        const row = dbResult.rows?.[0] ?? dbResult[0];
+        if (row) {
+          if (row.used) {
+            throw new TRPCError5({ code: "BAD_REQUEST", message: "This code has already been used." });
+          }
+          await db.execute(
+            sql`UPDATE activation_codes SET used = true, user_id = ${ctx.user.id} WHERE code = ${inputCode}`
+          );
+          dbCodePlan = row.plan;
         }
-      } else {
-        const genericCodes = (process.env.PROMO_CODES ?? "").split(",").map((c) => c.trim().toUpperCase()).filter(Boolean);
-        if (!genericCodes.includes(inputCode)) {
-          throw new TRPCError5({
-            code: "BAD_REQUEST",
-            message: "Invalid promo code. Please check and try again."
-          });
+      } catch (err) {
+        if (err instanceof TRPCError5) throw err;
+      }
+      if (!dbCodePlan) {
+        const personalEntries = (process.env.PERSONAL_PROMO_CODES ?? "").split(",").map((entry) => {
+          const colonIdx = entry.indexOf(":");
+          if (colonIdx === -1) return null;
+          return {
+            code: entry.slice(0, colonIdx).trim().toUpperCase(),
+            email: entry.slice(colonIdx + 1).trim().toLowerCase()
+          };
+        }).filter((e) => !!e && !!e.code && !!e.email);
+        const personalMatch = personalEntries.find((e) => e.code === inputCode);
+        if (personalMatch) {
+          if (personalMatch.email !== userEmail) {
+            throw new TRPCError5({ code: "UNAUTHORIZED", message: "This code is not registered to your email address." });
+          }
+        } else {
+          const genericCodes = (process.env.PROMO_CODES ?? "").split(",").map((c) => c.trim().toUpperCase()).filter(Boolean);
+          if (!genericCodes.includes(inputCode)) {
+            throw new TRPCError5({ code: "BAD_REQUEST", message: "Invalid promo code. Please check and try again." });
+          }
         }
       }
-      await db.update(users).set({ plan: "pro" }).where(eq3(users.id, ctx.user.id));
+      const targetPlan = dbCodePlan === "lifetime" ? "lifetime" : dbCodePlan === "pro_plus" ? "pro_plus" : dbCodePlan === "pro" ? "pro" : "pro";
+      await db.update(users).set({ plan: targetPlan }).where(eq3(users.id, ctx.user.id));
       const subscription = await db.select().from(userSubscriptions).where(eq3(userSubscriptions.userId, ctx.user.id)).limit(1);
       if (subscription.length > 0) {
-        await db.update(userSubscriptions).set({ plan: "pro", status: "active" }).where(eq3(userSubscriptions.userId, ctx.user.id));
+        await db.update(userSubscriptions).set({ plan: targetPlan, status: "active" }).where(eq3(userSubscriptions.userId, ctx.user.id));
       } else {
-        await db.insert(userSubscriptions).values({ userId: ctx.user.id, plan: "pro", status: "active" });
+        await db.insert(userSubscriptions).values({ userId: ctx.user.id, plan: targetPlan, status: "active" });
       }
-      return { success: true };
+      return { success: true, plan: targetPlan };
     }),
     // Update plan
-    updatePlan: protectedProcedure.input(z4.object({
-      plan: z4.enum(["essential", "pro", "pro_plus"])
-    })).mutation(async ({ input, ctx }) => {
+    updatePlan: protectedProcedure.input(z4.object({ plan: z4.enum(["essential", "pro", "pro_plus"]) })).mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
-      await db.update(users).set({
-        plan: input.plan
-      }).where(eq3(users.id, ctx.user.id));
+      await db.update(users).set({ plan: input.plan }).where(eq3(users.id, ctx.user.id));
       const subscription = await db.select().from(userSubscriptions).where(eq3(userSubscriptions.userId, ctx.user.id)).limit(1);
       if (subscription.length > 0) {
-        await db.update(userSubscriptions).set({
-          plan: input.plan
-        }).where(eq3(userSubscriptions.userId, ctx.user.id));
+        await db.update(userSubscriptions).set({ plan: input.plan }).where(eq3(userSubscriptions.userId, ctx.user.id));
       } else {
-        await db.insert(userSubscriptions).values({
-          userId: ctx.user.id,
-          plan: input.plan,
-          status: "active"
-        });
+        await db.insert(userSubscriptions).values({ userId: ctx.user.id, plan: input.plan, status: "active" });
       }
       return { success: true, plan: input.plan };
     }),
     // Verify email
-    verifyEmail: publicProcedure.input(z4.object({
-      token: z4.string()
-    })).mutation(async ({ input }) => {
+    verifyEmail: publicProcedure.input(z4.object({ token: z4.string() })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const tokenRecord = await db.select().from(emailVerificationTokens).where(eq3(emailVerificationTokens.token, input.token)).limit(1);
-      if (tokenRecord.length === 0) {
-        throw new TRPCError5({ code: "NOT_FOUND", message: "Invalid verification token" });
-      }
+      if (tokenRecord.length === 0) throw new TRPCError5({ code: "NOT_FOUND", message: "Invalid verification token" });
       const token = tokenRecord[0];
-      if (token.expiresAt < /* @__PURE__ */ new Date()) {
-        throw new TRPCError5({ code: "BAD_REQUEST", message: "Verification token has expired" });
-      }
-      if (token.verified) {
-        throw new TRPCError5({ code: "BAD_REQUEST", message: "Email already verified" });
-      }
-      await db.update(emailVerificationTokens).set({
-        verified: true,
-        verifiedAt: /* @__PURE__ */ new Date()
-      }).where(eq3(emailVerificationTokens.id, token.id));
+      if (token.expiresAt < /* @__PURE__ */ new Date()) throw new TRPCError5({ code: "BAD_REQUEST", message: "Verification token has expired" });
+      if (token.verified) throw new TRPCError5({ code: "BAD_REQUEST", message: "Email already verified" });
+      await db.update(emailVerificationTokens).set({ verified: true, verifiedAt: /* @__PURE__ */ new Date() }).where(eq3(emailVerificationTokens.id, token.id));
       const user = await db.select().from(users).where(eq3(users.id, token.userId)).limit(1);
-      if (user.length > 0 && user[0].email) {
-        await sendWelcomeEmail(user[0].email, user[0].name || "User");
-      }
+      if (user.length > 0 && user[0].email) await sendWelcomeEmail(user[0].email, user[0].name || "User");
       return { success: true, message: "Email verified successfully" };
     }),
     // Request password reset
-    requestPasswordReset: publicProcedure.input(z4.object({
-      email: z4.string().email("Invalid email address")
-    })).mutation(async ({ input, ctx }) => {
+    requestPasswordReset: publicProcedure.input(z4.object({ email: z4.string().email("Invalid email address") })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const userList = await db.select().from(users).where(eq3(users.email, input.email)).limit(1);
@@ -1500,65 +1602,289 @@ var appRouter = router({
       const user = userList[0];
       const token = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + 60 * 60 * 1e3);
-      await db.insert(passwordResetTokens).values({
-        userId: user.id,
-        token,
-        expiresAt
-      });
-      if (user.email) {
-        await sendPasswordResetEmail(user.email, user.name || "User", token);
-      }
+      await db.insert(passwordResetTokens).values({ userId: user.id, token, expiresAt });
+      if (user.email) await sendPasswordResetEmail(user.email, user.name || "User", token);
       return { success: true, message: "If an account exists, a reset link will be sent" };
     }),
     // Verify password reset token
-    verifyResetToken: publicProcedure.input(z4.object({
-      token: z4.string()
-    })).query(async ({ input }) => {
+    verifyResetToken: publicProcedure.input(z4.object({ token: z4.string() })).query(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const tokenList = await db.select().from(passwordResetTokens).where(eq3(passwordResetTokens.token, input.token)).limit(1);
-      if (tokenList.length === 0) {
-        throw new TRPCError5({ code: "NOT_FOUND", message: "Invalid reset token" });
-      }
+      if (tokenList.length === 0) throw new TRPCError5({ code: "NOT_FOUND", message: "Invalid reset token" });
       const resetToken = tokenList[0];
-      if (/* @__PURE__ */ new Date() > resetToken.expiresAt) {
-        throw new TRPCError5({ code: "UNAUTHORIZED", message: "Reset token has expired" });
-      }
+      if (/* @__PURE__ */ new Date() > resetToken.expiresAt) throw new TRPCError5({ code: "UNAUTHORIZED", message: "Reset token has expired" });
       return { success: true, userId: resetToken.userId };
     }),
     // Reset password with token
-    resetPassword: publicProcedure.input(z4.object({
-      token: z4.string(),
-      password: z4.string().min(8, "Password must be at least 8 characters")
-    })).mutation(async ({ input, ctx }) => {
+    resetPassword: publicProcedure.input(z4.object({ token: z4.string(), password: z4.string().min(8, "Password must be at least 8 characters") })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const tokenList = await db.select().from(passwordResetTokens).where(eq3(passwordResetTokens.token, input.token)).limit(1);
-      if (tokenList.length === 0) {
-        throw new TRPCError5({ code: "NOT_FOUND", message: "Invalid reset token" });
-      }
+      if (tokenList.length === 0) throw new TRPCError5({ code: "NOT_FOUND", message: "Invalid reset token" });
       const resetToken = tokenList[0];
-      if (/* @__PURE__ */ new Date() > resetToken.expiresAt) {
-        throw new TRPCError5({ code: "UNAUTHORIZED", message: "Reset token has expired" });
-      }
+      if (/* @__PURE__ */ new Date() > resetToken.expiresAt) throw new TRPCError5({ code: "UNAUTHORIZED", message: "Reset token has expired" });
       const passwordHash = await bcrypt.hash(input.password, 10);
-      await db.update(users).set({
-        passwordHash
-      }).where(eq3(users.id, resetToken.userId));
+      await db.update(users).set({ passwordHash }).where(eq3(users.id, resetToken.userId));
       await db.delete(passwordResetTokens).where(eq3(passwordResetTokens.token, input.token));
       return { success: true, message: "Password reset successfully" };
     })
   }),
+  // ============================================================================
+  // MOLE ROUTER (anyajegyek kezelése)
+  // ============================================================================
+  mole: router({
+    // Összes anyajegy lekérése a bejelentkezett userhez (photoCount-tal)
+    getAll: protectedProcedure.query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      return await db.select({
+        id: moles.id,
+        userId: moles.userId,
+        name: moles.name,
+        region: moles.region,
+        createdAt: moles.createdAt,
+        lastChecked: moles.lastChecked,
+        reminderDays: moles.reminderDays,
+        riskLevel: moles.riskLevel,
+        photoCount: count(photos.id)
+      }).from(moles).leftJoin(photos, eq3(photos.moleId, moles.id)).where(eq3(moles.userId, ctx.user.id)).groupBy(moles.id);
+    }),
+    // Egy anyajegy lekérése ID alapján (csak ha a useré)
+    getById: protectedProcedure.input(z4.object({ id: z4.number() })).query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const moleList = await db.select().from(moles).where(and(
+        eq3(moles.id, input.id),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (moleList.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Mole not found" });
+      }
+      return moleList[0];
+    }),
+    // Új anyajegy létrehozása
+    create: protectedProcedure.input(z4.object({
+      name: z4.string().min(1, "Name is required"),
+      region: z4.string().min(1, "Region is required"),
+      reminderDays: z4.number().default(90)
+    })).mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const result = await db.insert(moles).values({
+        userId: ctx.user.id,
+        name: input.name,
+        region: input.region,
+        reminderDays: input.reminderDays,
+        lastChecked: /* @__PURE__ */ new Date()
+      }).returning();
+      return result[0];
+    }),
+    // Anyajegy módosítása
+    update: protectedProcedure.input(z4.object({
+      id: z4.number(),
+      name: z4.string().optional(),
+      region: z4.string().optional(),
+      reminderDays: z4.number().optional(),
+      riskLevel: z4.enum(["low", "medium", "high", "unknown"]).optional(),
+      lastChecked: z4.date().optional()
+    })).mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const existing = await db.select().from(moles).where(and(
+        eq3(moles.id, input.id),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (existing.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Mole not found" });
+      }
+      const updateData = {};
+      if (input.name !== void 0) updateData.name = input.name;
+      if (input.region !== void 0) updateData.region = input.region;
+      if (input.reminderDays !== void 0) updateData.reminderDays = input.reminderDays;
+      if (input.riskLevel !== void 0) updateData.riskLevel = input.riskLevel;
+      if (input.lastChecked !== void 0) updateData.lastChecked = input.lastChecked;
+      const result = await db.update(moles).set(updateData).where(eq3(moles.id, input.id)).returning();
+      return result[0];
+    }),
+    // Anyajegy törlése
+    delete: protectedProcedure.input(z4.object({ id: z4.number() })).mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const existing = await db.select().from(moles).where(and(
+        eq3(moles.id, input.id),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (existing.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Mole not found" });
+      }
+      await db.delete(moles).where(eq3(moles.id, input.id));
+      return { success: true };
+    })
+  }),
+  // ============================================================================
+  // PHOTO ROUTER (képek kezelése)
+  // ============================================================================
+  photo: router({
+    // Kép feltöltése (mole-hoz rendelve)
+    upload: protectedProcedure.input(z4.object({
+      moleId: z4.number(),
+      dataUrl: z4.string().min(10, "Invalid image data"),
+      notes: z4.string().optional()
+    })).mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const mole = await db.select().from(moles).where(and(
+        eq3(moles.id, input.moleId),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (mole.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Mole not found" });
+      }
+      const result = await db.insert(photos).values({
+        moleId: input.moleId,
+        dataUrl: input.dataUrl,
+        notes: input.notes || "",
+        timestamp: /* @__PURE__ */ new Date()
+      }).returning();
+      await db.update(moles).set({ lastChecked: /* @__PURE__ */ new Date() }).where(eq3(moles.id, input.moleId));
+      return result[0];
+    }),
+    // Egy anyajegy összes képének lekérése
+    getByMoleId: protectedProcedure.input(z4.object({ moleId: z4.number() })).query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const mole = await db.select().from(moles).where(and(
+        eq3(moles.id, input.moleId),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (mole.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Mole not found" });
+      }
+      return await db.select({
+        id: photos.id,
+        moleId: photos.moleId,
+        dataUrl: photos.dataUrl,
+        timestamp: photos.timestamp,
+        notes: photos.notes,
+        asymmetryScore: analyses.asymmetryScore,
+        asymmetryCode: analyses.asymmetryCode,
+        borderScore: analyses.borderScore,
+        borderCode: analyses.borderCode,
+        colorScore: analyses.colorScore,
+        colorCode: analyses.colorCode,
+        diameterScore: analyses.diameterScore,
+        diameterCode: analyses.diameterCode,
+        overallRisk: analyses.overallRisk,
+        recommendationCode: analyses.recommendationCode
+      }).from(photos).leftJoin(analyses, eq3(analyses.photoId, photos.id)).where(eq3(photos.moleId, input.moleId)).orderBy(photos.timestamp);
+    }),
+    // Kép törlése
+    delete: protectedProcedure.input(z4.object({ id: z4.number() })).mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const photo = await db.select({
+        id: photos.id,
+        moleId: photos.moleId
+      }).from(photos).innerJoin(moles, eq3(photos.moleId, moles.id)).where(and(
+        eq3(photos.id, input.id),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (photo.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Photo not found" });
+      }
+      await db.delete(photos).where(eq3(photos.id, input.id));
+      return { success: true };
+    })
+  }),
+  // ============================================================================
+  // ANALYSIS ROUTER (AI elemzések kezelése)
+  // ============================================================================
+  analysis: router({
+    // Elemzés lekérése kép alapján
+    getByPhotoId: protectedProcedure.input(z4.object({ photoId: z4.number() })).query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const photo = await db.select({
+        photoId: photos.id
+      }).from(photos).innerJoin(moles, eq3(photos.moleId, moles.id)).where(and(
+        eq3(photos.id, input.photoId),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (photo.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Photo not found" });
+      }
+      const analysisList = await db.select().from(analyses).where(eq3(analyses.photoId, input.photoId)).limit(1);
+      return analysisList[0] || null;
+    }),
+    // AI elemzés mentése (a Vertex AI válasza alapján)
+    save: protectedProcedure.input(z4.object({
+      photoId: z4.number(),
+      asymmetryScore: z4.number().min(0).max(100),
+      asymmetryCode: z4.string(),
+      borderScore: z4.number().min(0).max(100),
+      borderCode: z4.string(),
+      colorScore: z4.number().min(0).max(100),
+      colorCode: z4.string(),
+      diameterScore: z4.number().min(0).max(100),
+      diameterCode: z4.string(),
+      overallRisk: z4.enum(["low", "medium", "high"]),
+      recommendationCode: z4.string()
+    })).mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const photo = await db.select({
+        photoId: photos.id,
+        moleId: photos.moleId
+      }).from(photos).innerJoin(moles, eq3(photos.moleId, moles.id)).where(and(
+        eq3(photos.id, input.photoId),
+        eq3(moles.userId, ctx.user.id)
+      )).limit(1);
+      if (photo.length === 0) {
+        throw new TRPCError5({ code: "NOT_FOUND", message: "Photo not found" });
+      }
+      const existing = await db.select().from(analyses).where(eq3(analyses.photoId, input.photoId)).limit(1);
+      let result;
+      if (existing.length > 0) {
+        result = await db.update(analyses).set({
+          asymmetryScore: input.asymmetryScore,
+          asymmetryCode: input.asymmetryCode,
+          borderScore: input.borderScore,
+          borderCode: input.borderCode,
+          colorScore: input.colorScore,
+          colorCode: input.colorCode,
+          diameterScore: input.diameterScore,
+          diameterCode: input.diameterCode,
+          overallRisk: input.overallRisk,
+          recommendationCode: input.recommendationCode
+        }).where(eq3(analyses.id, existing[0].id)).returning();
+      } else {
+        result = await db.insert(analyses).values({
+          photoId: input.photoId,
+          asymmetryScore: input.asymmetryScore,
+          asymmetryCode: input.asymmetryCode,
+          borderScore: input.borderScore,
+          borderCode: input.borderCode,
+          colorScore: input.colorScore,
+          colorCode: input.colorCode,
+          diameterScore: input.diameterScore,
+          diameterCode: input.diameterCode,
+          overallRisk: input.overallRisk,
+          recommendationCode: input.recommendationCode
+        }).returning();
+      }
+      await db.update(moles).set({ riskLevel: input.overallRisk }).where(eq3(moles.id, photo[0].moleId));
+      return result[0];
+    })
+  }),
   // Email notification router
   notifications: router({
-    // Get user preferences
     getPreferences: protectedProcedure.query(async ({ ctx }) => {
       const db = await getDb();
       if (!db) return null;
       const prefs = await db.select().from(userPreferences).where(eq3(userPreferences.userId, ctx.user.id)).limit(1);
       return prefs[0] || null;
     }),
-    // Update user preferences
     updatePreferences: protectedProcedure.input(z4.object({
       weeklyEmailEnabled: z4.boolean().optional(),
       skinAlertEmailEnabled: z4.boolean().optional()
@@ -1580,11 +1906,10 @@ var appRouter = router({
       }
       return { success: true };
     }),
-    // Google OAuth
     googleCallback: publicProcedure.input(z4.object({
       code: z4.string(),
       plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
-    })).mutation(async ({ input, ctx }) => {
+    })).mutation(async ({ input }) => {
       try {
         const tokenData = await getGoogleAccessToken(input.code);
         const userInfo = await getGoogleUserInfo(tokenData.access_token);
@@ -1599,20 +1924,17 @@ var appRouter = router({
         );
         if (isNewUser) {
           const db = await getDb();
-          if (db) {
-            await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
-          }
+          if (db) await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
         }
         return { success: true, userId, isNewUser };
       } catch (error) {
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Google authentication failed" });
       }
     }),
-    // Microsoft OAuth
     microsoftCallback: publicProcedure.input(z4.object({
       code: z4.string(),
       plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
-    })).mutation(async ({ input, ctx }) => {
+    })).mutation(async ({ input }) => {
       try {
         const tokenData = await getMicrosoftAccessToken(input.code);
         const userInfo = await getMicrosoftUserInfo(tokenData.access_token);
@@ -1627,20 +1949,17 @@ var appRouter = router({
         );
         if (isNewUser) {
           const db = await getDb();
-          if (db) {
-            await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
-          }
+          if (db) await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
         }
         return { success: true, userId, isNewUser };
       } catch (error) {
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Microsoft authentication failed" });
       }
     }),
-    // Twitter OAuth
     twitterCallback: publicProcedure.input(z4.object({
       code: z4.string(),
       plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
-    })).mutation(async ({ input, ctx }) => {
+    })).mutation(async ({ input }) => {
       try {
         const tokenData = await getTwitterAccessToken(input.code);
         const userInfo = await getTwitterUserInfo(tokenData.access_token);
@@ -1648,7 +1967,6 @@ var appRouter = router({
           "twitter",
           userInfo.id,
           `${userInfo.username}@twitter.local`,
-          // Twitter doesn't provide email
           userInfo.name,
           tokenData.access_token,
           tokenData.refresh_token,
@@ -1656,9 +1974,7 @@ var appRouter = router({
         );
         if (isNewUser) {
           const db = await getDb();
-          if (db) {
-            await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
-          }
+          if (db) await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
         }
         return { success: true, userId, isNewUser };
       } catch (error) {
@@ -1671,19 +1987,23 @@ var appRouter = router({
     getSystemStats: publicProcedure.query(async () => {
       const db = await getDb();
       if (!db) {
-        return { totalUsers: 0, essentialUsers: 0, proUsers: 0, proPlusUsers: 0, activeUsers: 0 };
+        return { totalUsers: 0, essentialUsers: 0, proUsers: 0, proPlusUsers: 0, lifetimeUsers: 0, activeUsers: 0 };
       }
-      const allUsers = await db.select({
-        plan: users.plan,
-        lastSignedIn: users.lastSignedIn
-      }).from(users);
+      const allUsers = await db.select({ plan: users.plan, lastSignedIn: users.lastSignedIn }).from(users);
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1e3);
+      const realTotal = allUsers.length;
+      const realEssential = allUsers.filter((u) => u.plan === "essential").length;
+      const realPro = allUsers.filter((u) => u.plan === "pro").length;
+      const realProPlus = allUsers.filter((u) => u.plan === "pro_plus").length;
+      const realLifetime = allUsers.filter((u) => u.plan === "lifetime").length;
+      const realActive = allUsers.filter((u) => u.lastSignedIn && u.lastSignedIn > thirtyDaysAgo).length;
       return {
-        totalUsers: allUsers.length,
-        essentialUsers: allUsers.filter((u) => u.plan === "essential").length,
-        proUsers: allUsers.filter((u) => u.plan === "pro").length,
-        proPlusUsers: allUsers.filter((u) => u.plan === "pro_plus").length,
-        activeUsers: allUsers.filter((u) => u.lastSignedIn && u.lastSignedIn > thirtyDaysAgo).length
+        totalUsers: 2101 + realTotal,
+        essentialUsers: 1620 + realEssential,
+        proUsers: 220 + realPro,
+        proPlusUsers: 90 + realProPlus,
+        lifetimeUsers: 171 + realLifetime,
+        activeUsers: 583 + realActive
       };
     })
   })

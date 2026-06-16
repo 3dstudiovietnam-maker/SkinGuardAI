@@ -24,11 +24,19 @@ import LogIn from "./pages/LogIn";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import UserDashboard from "./pages/UserDashboard";
+import About from "./pages/About";
+import TestPage from "./pages/TestPage";
+import TestCapture from "./pages/TestCapture";
+import TestKnowledge from "./pages/TestKnowledge";
+import TestDoctors from "./pages/TestDoctors";
+import Disclaimer from "./pages/Disclaimer";
 import Layout from "./components/Layout";
+import { ScrollToTop } from "./components/ScrollToTop";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Layout>
+      <ScrollToTop />
       <Switch>
         <Route path={"/"} component={Home} />
         <Route path={"/dashboard"} component={Dashboard} />
@@ -49,6 +57,12 @@ function Router() {
         <Route path={"/forgot-password"} component={ForgotPassword} />
         <Route path={"/reset-password"} component={ResetPassword} />
         <Route path={"/user-dashboard"} component={UserDashboard} />
+        <Route path={"/about"} component={About} />
+        <Route path={"/test"} component={TestPage} />
+        <Route path={"/test/capture"} component={TestCapture} />
+        <Route path={"/test/knowledge"} component={TestKnowledge} />
+        <Route path={"/test/doctors"} component={TestDoctors} />
+        <Route path={"/disclaimer"} component={Disclaimer} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
