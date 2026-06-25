@@ -54,6 +54,7 @@ export default function Layout({ children }: LayoutProps) {
   const navItems = [
     { href: "/", label: t('nav.home'), icon: Shield },
     { href: "/dashboard", label: t('nav.dashboard'), icon: LayoutDashboard },
+    { href: "/lab-analysis", label: t('lab.title'), icon: FlaskConical },
     { href: "/body-map", label: t('nav.bodyMap'), icon: MapPin },
     { href: "/capture", label: t('nav.capture'), icon: Camera },
     { href: "/health-report", label: t('nav.healthReport'), icon: FileText },

@@ -267,7 +267,58 @@ async function callGeminiWithRetry(
   throw lastError ?? new Error("Unknown error in Gemini call");
 }
 
+function buildLabReportPrompt(lang, mimeType, base64Data) {
+  return {
+    contents: [{
+      parts: [
+        { text: `You are a careful health-literacy assistant. The attached file is a medical LABORATORY REPORT (blood test or similar). Read it and explain it in PLAIN, reassuring language for a layperson.
+
+Return ONLY valid JSON:
+{
+  "analyzable": <true|false>,
+  "summary": "2-4 sentence plain-language overview in ${lang}",
+  "tests": [ { "name": "test name", "value": "as printed", "unit": "as printed", "referenceRange": "as printed or empty", "status": "<low|normal|high|unknown>", "explanation": "1 simple sentence in ${lang}" } ],
+  "flagged": ["names of tests that are out of range"],
+  "questionsForDoctor": ["2-4 useful questions to ask your doctor, in ${lang}"],
+  "disclaimer": "one-sentence reminder in ${lang} that this is educational, not a diagnosis"
+}
+
+RULES:
+- NEVER diagnose, never name diseases as conclusions, never suggest treatment. Describe what markers measure, not what condition the person has.
+- Be calm and non-alarming. For out-of-range values, say it "is outside the typical range and worth discussing with a doctor".
+- Only include tests you can actually read. Keep values/units exactly as printed.
+- If the file is NOT a readable lab report, set "analyzable" to false, leave "tests" empty, and put a short note in "summary" (in ${lang}) asking for a clearer photo or PDF.
+- All human-readable text MUST be in ${lang}.` },
+        { inlineData: { mimeType, data: base64Data } },
+      ],
+    }],
+    generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2048, temperature: 0.1 },
+  };
+}
+
 export const aiRouter = router({
+  publicAnalyzeLabReport: publicProcedure
+    .input(z.object({ fileBase64: z.string().min(1), mimeType: z.string().default("image/jpeg"), language: z.string().default("en") }))
+    .mutation(async ({ input, ctx }) => {
+      const isPremiumUser = ctx.user !== null && ["pro", "pro_plus", "lifetime"].includes(ctx.user.plan ?? "");
+      let remaining = 999;
+      if (!isPremiumUser) {
+        const ip = (ctx.req.headers["x-forwarded-for"]?.split(",")[0]?.trim()) || ctx.req.socket?.remoteAddress || "unknown";
+        remaining = checkIpLimit(ip, 3);
+      }
+      const data = input.fileBase64.replace(/^data:[^;]+;base64,/i, "");
+      const payload = buildLabReportPrompt(input.language, input.mimeType, data);
+      const apiKey = getApiKey();
+      const url = `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+      const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!response.ok) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Lab analysis failed" });
+      const dj = await response.json();
+      const parts = dj?.candidates?.[0]?.content?.parts ?? [];
+      const rawText = parts.find((p) => typeof p.text === "string")?.text ?? "{}";
+      const result = extractJson(rawText);
+      return { ...result, remainingToday: remaining };
+    }),
+
   analyzeImage: protectedProcedure
     .input(
       z.object({

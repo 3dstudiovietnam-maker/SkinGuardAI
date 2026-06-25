@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { SkinStoreProvider } from "./contexts/SkinStore";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Home from "./pages/Home";
+import LabAnalysis from "./pages/LabAnalysis";
 import Dashboard from "./pages/Dashboard";
 import BodyMap from "./pages/BodyMap";
 import Capture from "./pages/Capture";
@@ -40,6 +41,7 @@ function Router() {
       <Switch>
         <Route path={"/"} component={Home} />
         <Route path={"/dashboard"} component={Dashboard} />
+        <Route path={"/lab-analysis"} component={LabAnalysis} />
         <Route path={"/body-map"} component={BodyMap} />
         <Route path={"/capture"} component={Capture} />
         <Route path={"/capture/:region"} component={Capture} />
