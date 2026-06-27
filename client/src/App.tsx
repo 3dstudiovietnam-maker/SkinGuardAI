@@ -2,42 +2,56 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { SkinStoreProvider } from "./contexts/SkinStore";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Home from "./pages/Home";
-import LabAnalysis from "./pages/LabAnalysis";
-import Dashboard from "./pages/Dashboard";
-import BodyMap from "./pages/BodyMap";
-import Capture from "./pages/Capture";
-import MoleDetail from "./pages/MoleDetail";
-import Comparison from "./pages/Comparison";
-import Pricing from "./pages/Pricing";
-import HealthReport from "./pages/HealthReport";
-import TestMonitor from "./pages/TestMonitor";
-import Legal from "./pages/Legal";
-import Contact from "./pages/Contact";
-import Videos from "./pages/Videos";
-import FAQ from "./pages/FAQ";
-import SignUp from "./pages/SignUp";
-import LogIn from "./pages/LogIn";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import UserDashboard from "./pages/UserDashboard";
-import About from "./pages/About";
-import TestPage from "./pages/TestPage";
-import TestCapture from "./pages/TestCapture";
-import TestKnowledge from "./pages/TestKnowledge";
-import TestDoctors from "./pages/TestDoctors";
-import Disclaimer from "./pages/Disclaimer";
 import Layout from "./components/Layout";
 import { ScrollToTop } from "./components/ScrollToTop";
+
+// Lazy-loaded routes — split heavy pages (charts, PDF, camera, AI) out of the
+// initial bundle so the landing page loads fast. Loaded on demand per route.
+const LabAnalysis = lazy(() => import("./pages/LabAnalysis"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const BodyMap = lazy(() => import("./pages/BodyMap"));
+const Capture = lazy(() => import("./pages/Capture"));
+const MoleDetail = lazy(() => import("./pages/MoleDetail"));
+const Comparison = lazy(() => import("./pages/Comparison"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const HealthReport = lazy(() => import("./pages/HealthReport"));
+const TestMonitor = lazy(() => import("./pages/TestMonitor"));
+const Legal = lazy(() => import("./pages/Legal"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Videos = lazy(() => import("./pages/Videos"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const LogIn = lazy(() => import("./pages/LogIn"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const UserDashboard = lazy(() => import("./pages/UserDashboard"));
+const About = lazy(() => import("./pages/About"));
+const TestPage = lazy(() => import("./pages/TestPage"));
+const TestCapture = lazy(() => import("./pages/TestCapture"));
+const TestKnowledge = lazy(() => import("./pages/TestKnowledge"));
+const TestDoctors = lazy(() => import("./pages/TestDoctors"));
+const Disclaimer = lazy(() => import("./pages/Disclaimer"));
+
+function RouteFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Layout>
       <ScrollToTop />
+      <Suspense fallback={<RouteFallback />}>
       <Switch>
         <Route path={"/"} component={Home} />
         <Route path={"/dashboard"} component={Dashboard} />
@@ -68,6 +82,7 @@ function Router() {
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
+      </Suspense>
     </Layout>
   );
 }
