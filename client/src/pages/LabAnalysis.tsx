@@ -31,7 +31,7 @@ const STATUS_STYLE: Record<string, string> = {
   high:    "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300",
   low:     "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
   normal:  "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-  unknown: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300",
+  unknown: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:bg-slate-700 dark:text-slate-300",
 };
 
 export default function LabAnalysis() {
@@ -61,7 +61,7 @@ export default function LabAnalysis() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-50 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-teal-50 dark:to-slate-800 dark:from-slate-900 dark:to-slate-800">
       <div className="container max-w-2xl py-10">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-100 dark:bg-teal-900/30 mb-3">

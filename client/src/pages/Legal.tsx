@@ -5,24 +5,24 @@
 
 export default function Legal() {
   return (
-    <div className="min-h-screen bg-white py-16 px-4">
+    <div className="min-h-screen bg-white dark:bg-slate-900 py-16 px-4">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold text-slate-900 mb-8">Legal Notice & Terms of Service</h1>
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-8">Legal Notice & Terms of Service</h1>
 
         {/* Copyright & IP */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Intellectual Property Rights</h2>
-          <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 space-y-4">
-            <p className="text-slate-700">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Intellectual Property Rights</h2>
+          <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 space-y-4">
+            <p className="text-slate-700 dark:text-slate-300">
               <strong>Copyright &copy; {new Date().getFullYear()} SkinGuard AI</strong>
             </p>
-            <p className="text-slate-700">
+            <p className="text-slate-700 dark:text-slate-300">
               <strong>Intellectual Property Owner:</strong> Attila Koch / Visa Line Inc.
             </p>
-            <p className="text-slate-700">
+            <p className="text-slate-700 dark:text-slate-300">
               <strong>Address:</strong> 16192 Coastal Highway, Lewes, Delaware 19958, USA
             </p>
-            <p className="text-slate-700">
+            <p className="text-slate-700 dark:text-slate-300">
               All rights reserved. The SkinGuard AI application, including its design, code, algorithms, artificial intelligence models, user interface, and all associated intellectual property, is the exclusive property of Attila Koch and Visa Line Inc.
             </p>
           </div>
@@ -30,8 +30,8 @@ export default function Legal() {
 
         {/* Prohibited Activities */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Intellectual Property Protection</h2>
-          <div className="space-y-4 text-slate-700">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Intellectual Property Protection</h2>
+          <div className="space-y-4 text-slate-700 dark:text-slate-300">
             <p>
               You may not, without express written permission from Visa Line Inc.:
             </p>
@@ -49,22 +49,22 @@ export default function Legal() {
 
         {/* Medical Disclaimer */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Medical Disclaimer</h2>
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Medical Disclaimer</h2>
           <div className="bg-red-50 p-6 rounded-lg border border-red-200 space-y-4">
             <p className="text-red-900 font-semibold">
               ⚠️ IMPORTANT: SkinGuard AI is NOT a medical diagnostic tool and should NOT be used as a substitute for professional medical advice, diagnosis, or treatment.
             </p>
-            <p className="text-slate-700">
+            <p className="text-slate-700 dark:text-slate-300">
               SkinGuard AI is designed as a personal skin health monitoring and tracking tool only. The AI analysis provided by this application:
             </p>
-            <ul className="list-disc list-inside space-y-2 ml-4 text-slate-700">
+            <ul className="list-disc list-inside space-y-2 ml-4 text-slate-700 dark:text-slate-300">
               <li>Is based on machine learning models trained on dermatological data</li>
               <li>Should NOT be relied upon for medical diagnosis or treatment decisions</li>
               <li>Is NOT a replacement for professional dermatological evaluation</li>
               <li>May contain inaccuracies or errors</li>
               <li>Is intended only to help you track changes and remind you to consult a healthcare professional</li>
             </ul>
-            <p className="text-slate-700 font-semibold mt-4">
+            <p className="text-slate-700 dark:text-slate-300 font-semibold mt-4">
               Always consult a qualified dermatologist or healthcare professional for any skin concerns, suspicious changes, or medical advice. If you suspect skin cancer or any serious skin condition, seek immediate professional medical attention.
             </p>
           </div>
@@ -72,8 +72,8 @@ export default function Legal() {
 
         {/* Data Privacy */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Data Privacy & Security</h2>
-          <div className="space-y-4 text-slate-700">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Data Privacy & Security</h2>
+          <div className="space-y-4 text-slate-700 dark:text-slate-300">
             <p>
               SkinGuard AI respects your privacy. Your skin photos and personal health data are:
             </p>
@@ -91,8 +91,8 @@ export default function Legal() {
 
         {/* Limitation of Liability */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Limitation of Liability</h2>
-          <div className="space-y-4 text-slate-700">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Limitation of Liability</h2>
+          <div className="space-y-4 text-slate-700 dark:text-slate-300">
             <p>
               To the maximum extent permitted by law, Visa Line Inc. and Attila Koch shall not be liable for:
             </p>
@@ -111,8 +111,8 @@ export default function Legal() {
 
         {/* Acceptable Use */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Acceptable Use Policy</h2>
-          <div className="space-y-4 text-slate-700">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Acceptable Use Policy</h2>
+          <div className="space-y-4 text-slate-700 dark:text-slate-300">
             <p>
               You agree not to use SkinGuard AI for:
             </p>
@@ -129,24 +129,24 @@ export default function Legal() {
 
         {/* Contact */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Contact Information</h2>
-          <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 space-y-2">
-            <p className="text-slate-700">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Contact Information</h2>
+          <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2">
+            <p className="text-slate-700 dark:text-slate-300">
               <strong>For legal inquiries, IP protection concerns, or other matters:</strong>
             </p>
-            <p className="text-slate-700">
+            <p className="text-slate-700 dark:text-slate-300">
               Visa Line Inc.<br />
               16192 Coastal Highway<br />
               Lewes, Delaware 19958, USA
             </p>
-            <p className="text-slate-700">
+            <p className="text-slate-700 dark:text-slate-300">
               Contact: Attila Koch
             </p>
           </div>
         </section>
 
         {/* Last Updated */}
-        <div className="text-center text-sm text-slate-500 pt-8 border-t border-slate-200">
+        <div className="text-center text-sm text-slate-500 dark:text-slate-400 pt-8 border-t border-slate-200 dark:border-slate-700">
           <p>Last Updated: {new Date().toLocaleDateString()}</p>
           <p>These terms are subject to change without notice.</p>
         </div>

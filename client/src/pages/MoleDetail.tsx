@@ -131,7 +131,7 @@ export default function MoleDetail() {
               variant="outline"
               onClick={handleShare}
               title={isPremium ? t('moleDetail.copyLink') : t('moleDetail.shareUpgrade')}
-              className={!isPremium ? "text-slate-300 border-slate-200 cursor-not-allowed" : ""}
+              className={!isPremium ? "text-slate-300 border-slate-200 dark:border-slate-700 cursor-not-allowed" : ""}
               disabled={!isPremium}
             >
               {isPremium ? <Share2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
@@ -240,7 +240,7 @@ export default function MoleDetail() {
           )}
 
           {/* Biyovis Promo Card - permanent */}
-          <div className="mt-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4">
+          <div className="mt-3 bg-gradient-to-r from-blue-50 dark:from-slate-900 to-cyan-50 dark:to-slate-800 border border-blue-200 rounded-xl p-4">
             <a href="https://www.biyovis.hu/HU-eng" target="_blank" rel="noopener noreferrer" className="block hover:opacity-90 transition-opacity">
               <img
                 src="/Biyovislogo.jpg"

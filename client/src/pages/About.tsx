@@ -8,9 +8,9 @@ export default function About() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-900 to-slate-50 dark:to-slate-800">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary/10 via-cyan-50 to-white py-20 px-4">
+      <div className="bg-gradient-to-br from-primary/10 via-cyan-50 dark:via-slate-900 to-white dark:to-slate-900 py-20 px-4">
         <div className="container max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -21,7 +21,7 @@ export default function About() {
               <Shield className="w-4 h-4" />
               SkinGuard AI
             </div>
-            <h1 className="font-heading text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            <h1 className="font-heading text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">
               {t('about.title')}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -46,7 +46,7 @@ export default function About() {
             </div>
             <h2 className="font-heading text-2xl font-bold">{t('about.missionTitle')}</h2>
           </div>
-          <p className="text-slate-600 leading-relaxed text-lg">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
             {t('about.missionText')}
           </p>
         </motion.section>
@@ -64,7 +64,7 @@ export default function About() {
             </div>
             <h2 className="font-heading text-2xl font-bold">{t('about.howItWorksTitle')}</h2>
           </div>
-          <p className="text-slate-600 leading-relaxed text-lg">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
             {t('about.howItWorksText')}
           </p>
         </motion.section>
@@ -90,7 +90,7 @@ export default function About() {
             ].map((stat, i) => (
               <div key={i} className={`rounded-2xl border p-5 ${stat.color}`}>
                 <stat.icon className={`w-6 h-6 mb-3 ${stat.iconColor}`} />
-                <p className="text-sm text-slate-700 leading-relaxed">{stat.text}</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{stat.text}</p>
               </div>
             ))}
           </div>
@@ -102,15 +102,15 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-slate-50 border border-slate-200 rounded-2xl p-8"
+          className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-slate-600" />
+              <Shield className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </div>
-            <h2 className="font-heading text-xl font-bold text-slate-700">{t('about.disclaimerTitle')}</h2>
+            <h2 className="font-heading text-xl font-bold text-slate-700 dark:text-slate-300">{t('about.disclaimerTitle')}</h2>
           </div>
-          <p className="text-slate-600 leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
             {t('about.disclaimerText')}
           </p>
         </motion.section>
@@ -128,7 +128,7 @@ export default function About() {
             </div>
             <h2 className="font-heading text-2xl font-bold">{t('about.teamTitle')}</h2>
           </div>
-          <p className="text-slate-600 leading-relaxed text-lg">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
             {t('about.teamText')}
           </p>
         </motion.section>
@@ -139,7 +139,7 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center bg-gradient-to-br from-primary/10 to-cyan-50 rounded-3xl p-12"
+          className="text-center bg-gradient-to-br from-primary/10 to-cyan-50 dark:to-slate-800 rounded-3xl p-12"
         >
           <h2 className="font-heading text-3xl font-bold mb-3">{t('about.ctaTitle')}</h2>
           <p className="text-muted-foreground mb-8 text-lg max-w-xl mx-auto">

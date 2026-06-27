@@ -42,9 +42,9 @@ export default function TestDoctors() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 dark:from-slate-900 to-white dark:to-slate-900">
       {/* Sub-nav */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 flex gap-1 overflow-x-auto">
           {[
             { href: "/test", label: t("test.navTest") },
@@ -52,7 +52,7 @@ export default function TestDoctors() {
             { href: "/test/doctors", label: t("test.navDoctors") },
           ].map((item) => (
             <Link key={item.href} href={item.href}>
-              <span className="inline-block px-4 py-3 text-sm font-medium text-slate-600 hover:text-cyan-600 whitespace-nowrap border-b-2 border-transparent hover:border-cyan-500 transition-colors cursor-pointer">
+              <span className="inline-block px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-cyan-600 whitespace-nowrap border-b-2 border-transparent hover:border-cyan-500 transition-colors cursor-pointer">
                 {item.label}
               </span>
             </Link>
@@ -62,7 +62,7 @@ export default function TestDoctors() {
 
       <div className="max-w-2xl mx-auto px-4 py-8">
         <Link href="/test">
-          <span className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-cyan-600 cursor-pointer mb-6">
+          <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-cyan-600 cursor-pointer mb-6">
             <ChevronLeft className="w-4 h-4" />
             {t("test.backToTest")}
           </span>
@@ -70,10 +70,10 @@ export default function TestDoctors() {
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="text-4xl text-center mb-3">🩺</div>
-          <h1 className="font-heading text-3xl font-bold text-slate-900 text-center mb-2">
+          <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-slate-100 text-center mb-2">
             {t("test.doctorsNearby")}
           </h1>
-          <p className="text-center text-slate-500 text-sm mb-8">
+          <p className="text-center text-slate-500 dark:text-slate-400 text-sm mb-8">
             {t("test.doctorsSubtitle")}
           </p>
         </motion.div>
@@ -113,9 +113,9 @@ export default function TestDoctors() {
 
           {/* OR divider */}
           <div className="relative flex items-center">
-            <div className="flex-1 border-t border-slate-200" />
+            <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
             <span className="px-3 text-xs text-slate-400 uppercase">{t("test.orText")}</span>
-            <div className="flex-1 border-t border-slate-200" />
+            <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
           </div>
 
           {/* Text search → Google Maps */}
@@ -165,7 +165,7 @@ export default function TestDoctors() {
           transition={{ delay: 0.3 }}
           className="space-y-2 mb-10"
         >
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
             {t("test.searchTips")}
           </p>
           {[
@@ -173,7 +173,7 @@ export default function TestDoctors() {
             t("test.tip2"),
             t("test.tip3"),
           ].map((tip, i) => (
-            <div key={i} className="flex items-start gap-2 text-xs text-slate-500">
+            <div key={i} className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400">
               <span className="text-emerald-500 font-bold mt-0.5">✓</span>
               {tip}
             </div>
@@ -181,8 +181,8 @@ export default function TestDoctors() {
         </motion.div>
 
         {/* CTA */}
-        <div className="text-center pt-6 border-t border-slate-200">
-          <p className="text-slate-500 text-sm mb-3">{t("test.tryApp")}</p>
+        <div className="text-center pt-6 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">{t("test.tryApp")}</p>
           <Link href="/signup">
             <span className="inline-block px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-xl cursor-pointer transition-colors">
               {t("test.registerNow")} →

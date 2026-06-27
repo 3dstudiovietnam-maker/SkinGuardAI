@@ -76,7 +76,7 @@ export default function Layout({ children }: LayoutProps) {
               alt="SkinGuard AI"
               className="w-10 h-10 object-contain"
             />
-            <span className="font-heading font-bold text-lg text-slate-900 hidden sm:inline">SkinGuard AI</span>
+            <span className="font-heading font-bold text-lg text-slate-900 dark:text-slate-100 hidden sm:inline">SkinGuard AI</span>
           </Link>
 
           {/* Desktop nav moved down into the animated-logo banner row (split
@@ -90,12 +90,12 @@ export default function Layout({ children }: LayoutProps) {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="w-4 h-4 text-primary" />
                 </div>
-                <span className="text-sm font-medium text-slate-700">{user.name}</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{user.name}</span>
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={handleLogout}
-                  className="text-slate-600 hover:text-slate-900"
+                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
                   <LogOut className="w-4 h-4" />
                 </Button>
@@ -103,7 +103,7 @@ export default function Layout({ children }: LayoutProps) {
             ) : (
               <div className="hidden 2xl:flex items-center gap-2">
                 <Link href="/login" className="no-underline">
-                  <Button size="sm" variant="ghost" className="text-slate-600 hover:text-slate-900">
+                  <Button size="sm" variant="ghost" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                     <LogIn className="w-4 h-4 mr-2" />
                     {t('nav.login')}
                   </Button>
@@ -123,12 +123,12 @@ export default function Layout({ children }: LayoutProps) {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="2xl:hidden p-2 rounded-lg hover:bg-slate-100"
+              className="2xl:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               {mobileOpen ? (
-                <X className="w-5 h-5 text-slate-600" />
+                <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               ) : (
-                <Menu className="w-5 h-5 text-slate-600" />
+                <Menu className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               )}
             </button>
           </div>
@@ -143,26 +143,26 @@ export default function Layout({ children }: LayoutProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="2xl:hidden border-b border-border/60 bg-slate-50"
+            className="2xl:hidden border-b border-border/60 bg-slate-50 dark:bg-slate-800"
           >
             <nav className="container py-4 flex flex-col gap-2">
               
               {/* MOBILE AUTH BUTTONS */}
-              <div className="mb-4 pb-4 border-b border-slate-200">
+              <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
                 {isAuthenticated && user ? (
                   <div className="flex items-center justify-between px-3 py-2">
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-cyan-600" />
-                      <span className="text-sm font-medium text-slate-700">{user.name}</span>
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{user.name}</span>
                     </div>
-                    <Button size="sm" variant="ghost" onClick={handleLogout} className="text-slate-600">
+                    <Button size="sm" variant="ghost" onClick={handleLogout} className="text-slate-600 dark:text-slate-400">
                       <LogOut className="w-4 h-4 mr-1" /> {t('nav.logout')}
                     </Button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
                     <Link href="/login" className="no-underline" onClick={() => setMobileOpen(false)}>
-                      <button className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors border border-slate-200">
+                      <button className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700">
                         <LogIn className="w-5 h-5" /> {t('nav.login')}
                       </button>
                     </Link>
@@ -185,7 +185,7 @@ export default function Layout({ children }: LayoutProps) {
                       className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         isActive
                           ? "text-cyan-600 bg-cyan-50"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                       }`}
                       onClick={() => setMobileOpen(false)}
                     >
@@ -197,7 +197,7 @@ export default function Layout({ children }: LayoutProps) {
               })}
               <Link href="/legal" className="no-underline">
                 <button
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   onClick={() => setMobileOpen(false)}
                 >
                   <FileText className="w-4 h-4" />
@@ -211,7 +211,7 @@ export default function Layout({ children }: LayoutProps) {
       </AnimatePresence>
 
       {/* Animated Logo Banner — desktop nav split left/right around the eye logo */}
-      <div className="w-full border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-slate-50">
+      <div className="w-full border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 via-white dark:via-slate-900 to-slate-50 dark:to-slate-800">
         {/* xl+: nav items flank the centered eye logo, using the full width */}
         <div className="hidden 2xl:flex items-center gap-2 px-3 py-1.5">
           <nav className="flex flex-1 items-center justify-end gap-0.5">
@@ -220,7 +220,7 @@ export default function Layout({ children }: LayoutProps) {
               const isActive = location === item.href;
               return (
                 <Link key={item.href} href={item.href} className="no-underline">
-                  <button className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${isActive ? "text-cyan-600 bg-cyan-50" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"}`}>
+                  <button className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${isActive ? "text-cyan-600 bg-cyan-50" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     <Icon className="w-4 h-4 shrink-0" />
                     {item.label}
                   </button>
@@ -235,7 +235,7 @@ export default function Layout({ children }: LayoutProps) {
               const isActive = location === item.href;
               return (
                 <Link key={item.href} href={item.href} className="no-underline">
-                  <button className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${isActive ? "text-cyan-600 bg-cyan-50" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"}`}>
+                  <button className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${isActive ? "text-cyan-600 bg-cyan-50" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     <Icon className="w-4 h-4 shrink-0" />
                     {item.label}
                   </button>
@@ -341,7 +341,7 @@ export default function Layout({ children }: LayoutProps) {
                 {newsletterStatus === "error" && (
                   <p className="text-sm text-red-400">{t('footer.newsletter.error')}</p>
                 )}
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {t('footer.newsletter.privacy')}
                 </p>
               </form>
@@ -406,10 +406,10 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Copyright */}
           <div className="text-center">
-            <p className="text-slate-500 text-xs">
+            <p className="text-slate-500 dark:text-slate-400 text-xs">
               {t('footer.copyright').replace('{year}', new Date().getFullYear().toString())}
             </p>
-            <p className="text-slate-600 text-xs mt-2 flex items-center justify-center gap-1">
+            <p className="text-slate-600 dark:text-slate-400 text-xs mt-2 flex items-center justify-center gap-1">
               {t('footer.madeWith')} <Heart className="w-3 h-3 text-red-500" /> {t('footer.from')}
             </p>
           </div>

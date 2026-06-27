@@ -52,50 +52,50 @@ export default function Contact() {
       <div className="container max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+          <h1 className="font-heading text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">
             {t('contact.getInTouch')}
           </h1>
-          <p className="text-lg text-slate-600">
+          <p className="text-lg text-slate-600 dark:text-slate-400">
             {t('contact.subtitle')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Contact Info Cards */}
-          <div className="bg-white rounded-xl p-6 border border-slate-200 text-center">
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 text-center">
             <div className="w-12 h-12 rounded-full bg-cyan-100 flex items-center justify-center mx-auto mb-4">
               <Mail className="w-6 h-6 text-cyan-600" />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">{t('contact.generalInquiries')}</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('contact.generalInquiries')}</h3>
             <a href="mailto:info@skinguardai.app" className="text-cyan-600 hover:text-cyan-700 text-sm">
               info@skinguardai.app
             </a>
           </div>
 
-          <div className="bg-white rounded-xl p-6 border border-slate-200 text-center">
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 text-center">
             <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mx-auto mb-4">
               <Mail className="w-6 h-6 text-teal-600" />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">{t('contact.partnerships')}</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('contact.partnerships')}</h3>
             <a href="mailto:partners@skinguardai.app" className="text-teal-600 hover:text-teal-700 text-sm">
               partners@skinguardai.app
             </a>
           </div>
 
-          <div className="bg-white rounded-xl p-6 border border-slate-200 text-center">
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 text-center">
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
               <MapPin className="w-6 h-6 text-blue-600" />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">{t('contact.location')}</h3>
-            <p className="text-slate-600 text-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('contact.location')}</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
               {t('contact.global')}
             </p>
           </div>
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white rounded-xl p-8 border border-slate-200">
-          <h2 className="font-heading text-2xl font-bold text-slate-900 mb-6">{t('contact.sendMessage')}</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-8 border border-slate-200 dark:border-slate-700">
+          <h2 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">{t('contact.sendMessage')}</h2>
 
           {submitted && (
             <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700">
@@ -106,7 +106,7 @@ export default function Contact() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-900 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-slate-900 dark:text-slate-100 mb-2">
                 {t('contact.nameLabel')}
               </label>
               <input
@@ -117,13 +117,13 @@ export default function Contact() {
                 onChange={handleChange}
                 required
                 placeholder="John Doe"
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900"
+                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-slate-100"
               />
             </div>
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-900 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-900 dark:text-slate-100 mb-2">
                 {t('contact.emailLabel')}
               </label>
               <input
@@ -134,13 +134,13 @@ export default function Contact() {
                 onChange={handleChange}
                 required
                 placeholder="john@example.com"
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900"
+                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-slate-100"
               />
             </div>
 
             {/* Message Field */}
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-slate-900 mb-2">
+              <label htmlFor="message" className="block text-sm font-medium text-slate-900 dark:text-slate-100 mb-2">
                 {t('contact.messageLabel')}
               </label>
               <textarea
@@ -151,7 +151,7 @@ export default function Contact() {
                 required
                 placeholder={t('contact.messagePlaceholder')}
                 rows={6}
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 resize-none"
+                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-slate-100 resize-none"
               />
             </div>
 
@@ -165,7 +165,7 @@ export default function Contact() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
             {t('contact.responseTime')}
           </p>
         </div>
@@ -173,14 +173,14 @@ export default function Contact() {
         {/* FAQ Section */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h3 className="font-semibold text-slate-900 mb-2">{t('contact.quickResponse')}</h3>
-            <p className="text-slate-600 text-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('contact.quickResponse')}</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
               {t('contact.quickResponseDesc')}
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900 mb-2">{t('contact.partnershipOpp')}</h3>
-            <p className="text-slate-600 text-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('contact.partnershipOpp')}</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
               {t('contact.partnershipDesc')}
             </p>
           </div>

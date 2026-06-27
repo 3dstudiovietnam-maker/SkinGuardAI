@@ -16,10 +16,10 @@ export default function UserDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-12 h-12 border-4 border-cyan-200 border-t-cyan-600 rounded-full mx-auto mb-4"></div>
-          <p className="text-slate-600">{t('userDashboard.loading')}</p>
+          <p className="text-slate-600 dark:text-slate-400">{t('userDashboard.loading')}</p>
         </div>
       </div>
     );
@@ -27,7 +27,7 @@ export default function UserDashboard() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>{t('userDashboard.accessDenied')}</CardTitle>
@@ -122,13 +122,13 @@ export default function UserDashboard() {
   const currentPlan = planFeatures[user.plan as keyof typeof planFeatures] || planFeatures.essential;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">{t('userDashboard.welcomeBack')} {user.name}!</h1>
-            <p className="text-slate-600 mt-1">{t('userDashboard.subtitle')}</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{t('userDashboard.welcomeBack')} {user.name}!</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">{t('userDashboard.subtitle')}</p>
           </div>
           <Button
             onClick={handleLogout}
@@ -163,7 +163,7 @@ export default function UserDashboard() {
               {currentPlan.featureKeys.map((key, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-cyan-600 flex-shrink-0" />
-                  <span className="text-sm text-slate-700">{t(key)}</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{t(key)}</span>
                 </div>
               ))}
             </div>
@@ -176,7 +176,7 @@ export default function UserDashboard() {
             )}
             {(user.plan === "pro" || user.plan === "pro_plus") && (
               <Link href="/pricing">
-                <Button variant="outline" className="border-slate-300 text-slate-600 hover:bg-slate-50">
+                <Button variant="outline" className="border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
                   {t('userDashboard.viewAllPlans')}
                 </Button>
               </Link>
@@ -197,7 +197,7 @@ export default function UserDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 {t('userDashboard.newScanDesc')}
               </p>
               <Link href="/capture">
@@ -219,7 +219,7 @@ export default function UserDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 {t('userDashboard.healthReportDesc')}
               </p>
               <Link href="/health-report">
@@ -241,7 +241,7 @@ export default function UserDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 {t('userDashboard.analyticsDesc')}
               </p>
               <Button variant="outline" className="w-full border-slate-300" disabled>
@@ -263,28 +263,28 @@ export default function UserDashboard() {
             <div className="space-y-4">
               {/* User Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 rounded-lg">
-                  <p className="text-xs text-slate-500 font-medium mb-1">{t('userDashboard.labelName')}</p>
-                  <p className="text-slate-900 font-medium">{user.name}</p>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{t('userDashboard.labelName')}</p>
+                  <p className="text-slate-900 dark:text-slate-100 font-medium">{user.name}</p>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-lg">
-                  <p className="text-xs text-slate-500 font-medium mb-1">{t('userDashboard.labelEmail')}</p>
-                  <p className="text-slate-900 font-medium">{user.email}</p>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{t('userDashboard.labelEmail')}</p>
+                  <p className="text-slate-900 dark:text-slate-100 font-medium">{user.email}</p>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-lg">
-                  <p className="text-xs text-slate-500 font-medium mb-1">{t('userDashboard.labelPlan')}</p>
-                  <p className="text-slate-900 font-medium capitalize">{user.plan}</p>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{t('userDashboard.labelPlan')}</p>
+                  <p className="text-slate-900 dark:text-slate-100 font-medium capitalize">{user.plan}</p>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-lg">
-                  <p className="text-xs text-slate-500 font-medium mb-1">{t('userDashboard.labelMemberSince')}</p>
-                  <p className="text-slate-900 font-medium">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{t('userDashboard.labelMemberSince')}</p>
+                  <p className="text-slate-900 dark:text-slate-100 font-medium">
                     {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
                   </p>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-slate-200">
+              <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <Button variant="outline" className="border-slate-300" disabled>
                   {t('userDashboard.editProfile')}
                 </Button>
@@ -301,8 +301,8 @@ export default function UserDashboard() {
           <div className="flex items-start gap-4">
             <Clock className="w-6 h-6 text-cyan-600 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-slate-900 mb-2">{t('userDashboard.needHelp')}</h3>
-              <p className="text-sm text-slate-600 mb-3">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('userDashboard.needHelp')}</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
                 {t('userDashboard.needHelpDesc')}
               </p>
               <div className="flex gap-3">

@@ -22,13 +22,19 @@ export function ThemeProvider({
   switchable = false,
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (switchable) {
+    if (switchable && typeof window !== "undefined") {
       const stored = localStorage.getItem("theme");
-      return (stored as Theme) || defaultTheme;
+      if (stored === "light" || stored === "dark") return stored;
+      // No explicit choice yet — honor the device/OS setting (prefers-color-scheme).
+      if (typeof window.matchMedia === "function" &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
     }
     return defaultTheme;
   });
 
+  // Apply the theme to the document (class + native color-scheme hint).
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
@@ -36,15 +42,29 @@ export function ThemeProvider({
     } else {
       root.classList.remove("dark");
     }
+    root.style.colorScheme = theme;
+  }, [theme]);
 
-    if (switchable) {
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme, switchable]);
+  // Until the user makes an explicit choice, follow live OS theme changes.
+  useEffect(() => {
+    if (!switchable || typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    if (localStorage.getItem("theme")) return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem("theme")) setTheme(e.matches ? "dark" : "light");
+    };
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, [switchable]);
 
   const toggleTheme = switchable
     ? () => {
-        setTheme(prev => (prev === "light" ? "dark" : "light"));
+        setTheme(prev => {
+          const next = prev === "light" ? "dark" : "light";
+          // Persist only on an explicit user choice (overrides OS default thereafter).
+          try { localStorage.setItem("theme", next); } catch {}
+          return next;
+        });
       }
     : undefined;
 

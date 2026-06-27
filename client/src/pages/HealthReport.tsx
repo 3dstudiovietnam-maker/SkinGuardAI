@@ -261,10 +261,10 @@ export default function HealthReport() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-10"
       >
-        <h1 className="font-heading text-4xl md:text-5xl font-bold mb-3 text-slate-900">
+        <h1 className="font-heading text-4xl md:text-5xl font-bold mb-3 text-slate-900 dark:text-slate-100">
           {t('healthReport.title')}
         </h1>
-        <p className="text-slate-500 text-lg max-w-xl mx-auto">
+        <p className="text-slate-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
           {t('healthReport.subtitle')}
         </p>
       </motion.div>
@@ -276,7 +276,7 @@ export default function HealthReport() {
           className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
             activeTab === "personal"
               ? "bg-cyan-600 text-white shadow-lg scale-[1.02]"
-              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
           <User className="w-4 h-4" />
@@ -287,7 +287,7 @@ export default function HealthReport() {
           className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
             activeTab === "system"
               ? "bg-slate-800 text-white shadow-lg scale-[1.02]"
-              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
           <Users className="w-4 h-4" />
@@ -307,16 +307,16 @@ export default function HealthReport() {
             transition={{ duration: 0.25 }}
           >
             {isAuthenticated && user && (
-              <div className="max-w-4xl mx-auto mb-4 flex items-center gap-2 text-slate-500 text-sm">
+              <div className="max-w-4xl mx-auto mb-4 flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
                 <User className="w-4 h-4 text-cyan-500" />
-                <span>{t('healthReport.loggedInAs')} <strong className="text-slate-700">{user.name}</strong></span>
+                <span>{t('healthReport.loggedInAs')} <strong className="text-slate-700 dark:text-slate-300">{user.name}</strong></span>
               </div>
             )}
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-6 max-w-4xl mx-auto shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 mb-6 max-w-4xl mx-auto shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="w-6 h-6 text-cyan-600" />
-                <h2 className="font-heading text-2xl font-bold text-slate-900">{t('healthReport.myDataTitle')}</h2>
+                <h2 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100">{t('healthReport.myDataTitle')}</h2>
                 <span className="ml-auto text-xs text-slate-400">{t('healthReport.myDataSource')}</span>
               </div>
 
@@ -330,41 +330,41 @@ export default function HealthReport() {
                 <>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
                     <div className="bg-cyan-50 rounded-xl p-4 border border-cyan-200/60">
-                      <p className="text-xs text-slate-500 mb-1">{t('healthReport.totalMoles')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('healthReport.totalMoles')}</p>
                       <p className="font-heading text-3xl font-bold text-cyan-600">{moles.length}</p>
                     </div>
                     <div className="bg-orange-50 rounded-xl p-4 border border-orange-200/60">
-                      <p className="text-xs text-slate-500 mb-1">{t('healthReport.highRisk')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('healthReport.highRisk')}</p>
                       <p className="font-heading text-3xl font-bold text-orange-600">{highRisk}</p>
                     </div>
                     <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200/60">
-                      <p className="text-xs text-slate-500 mb-1">{t('healthReport.mediumRisk')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('healthReport.mediumRisk')}</p>
                       <p className="font-heading text-3xl font-bold text-yellow-600">{mediumRisk}</p>
                     </div>
                     <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60">
-                      <p className="text-xs text-slate-500 mb-1">{t('healthReport.lowRisk')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('healthReport.lowRisk')}</p>
                       <p className="font-heading text-3xl font-bold text-emerald-600">{lowRisk}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 mb-8">
-                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 text-center">
-                      <p className="text-xs text-slate-500">{t('healthReport.monitoredRegions')}</p>
-                      <p className="font-bold text-xl text-slate-800 mt-1">{uniqueRegions}</p>
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700 text-center">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t('healthReport.monitoredRegions')}</p>
+                      <p className="font-bold text-xl text-slate-800 dark:text-slate-200 mt-1">{uniqueRegions}</p>
                     </div>
-                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 text-center">
-                      <p className="text-xs text-slate-500">{t('healthReport.totalPhotos')}</p>
-                      <p className="font-bold text-xl text-slate-800 mt-1">{totalPhotos}</p>
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700 text-center">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t('healthReport.totalPhotos')}</p>
+                      <p className="font-bold text-xl text-slate-800 dark:text-slate-200 mt-1">{totalPhotos}</p>
                     </div>
-                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 text-center">
-                      <p className="text-xs text-slate-500">{t('healthReport.lastScan')}</p>
-                      <p className="font-bold text-base text-slate-800 mt-1">{lastScanDate}</p>
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700 text-center">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t('healthReport.lastScan')}</p>
+                      <p className="font-bold text-base text-slate-800 dark:text-slate-200 mt-1">{lastScanDate}</p>
                     </div>
                   </div>
 
                   {/* Risk bar */}
                   <div className="mb-8">
-                    <p className="text-sm font-medium text-slate-600 mb-2">{t('healthReport.riskDistribution')}</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">{t('healthReport.riskDistribution')}</p>
                     <div className="flex rounded-full overflow-hidden h-4">
                       {highRisk > 0 && (
                         <div style={{ width: `${(highRisk / moles.length) * 100}%` }} className="bg-orange-500" />
@@ -379,7 +379,7 @@ export default function HealthReport() {
                         <div style={{ width: `${(unknown / moles.length) * 100}%` }} className="bg-slate-300" />
                       )}
                     </div>
-                    <div className="flex gap-4 mt-2 text-xs text-slate-500">
+                    <div className="flex gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
                       <span><span className="inline-block w-2 h-2 rounded-full bg-orange-500 mr-1" />{t('healthReport.high')}</span>
                       <span><span className="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-1" />{t('healthReport.medium')}</span>
                       <span><span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1" />{t('healthReport.low')}</span>
@@ -389,7 +389,7 @@ export default function HealthReport() {
 
                   {/* Moles List — click to select, per-row Share button */}
                   <div className="mt-6">
-                    <p className="text-sm font-semibold text-slate-600 mb-3">
+                    <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">
                       {t('healthReport.totalMoles')} ({moles.length})
                     </p>
                     <div className="space-y-2">
@@ -397,11 +397,11 @@ export default function HealthReport() {
                         <div
                           key={mole.id}
                           onClick={() => navigate(`/mole/${mole.id}`)}
-                          className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border bg-slate-50 border-slate-200 hover:bg-cyan-50 hover:border-cyan-300"
+                          className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-cyan-50 hover:border-cyan-300"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-slate-800 truncate">{mole.name}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="font-medium text-sm text-slate-800 dark:text-slate-200 truncate">{mole.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {mole.region} · {mole.photos.length} {t('healthReport.totalPhotos').toLowerCase()}
                             </p>
                           </div>
@@ -409,7 +409,7 @@ export default function HealthReport() {
                             mole.riskLevel === "high"   ? "bg-orange-100 text-orange-700" :
                             mole.riskLevel === "medium" ? "bg-yellow-100 text-yellow-700" :
                             mole.riskLevel === "low"    ? "bg-emerald-100 text-emerald-700" :
-                            "bg-slate-100 text-slate-500"
+                            "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                           }`}>
                             {(mole.riskLevel ?? "unknown").toUpperCase()}
                           </span>
@@ -456,10 +456,10 @@ export default function HealthReport() {
               )}
 
               {/* Recommendations */}
-              <div className="border-t border-slate-100 pt-6">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
                 <div className="flex items-center gap-2 mb-4">
                   <AlertCircle className="w-5 h-5 text-cyan-600" />
-                  <h3 className="font-semibold text-slate-800">{t('healthReport.recommendations')}</h3>
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-200">{t('healthReport.recommendations')}</h3>
                 </div>
                 <ul className="space-y-3">
                   {personalRecommendations.map((rec, i) => (
@@ -467,13 +467,13 @@ export default function HealthReport() {
                       <span className="w-5 h-5 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center shrink-0 text-xs font-bold">
                         {i + 1}
                       </span>
-                      <span className="text-slate-700">{rec}</span>
+                      <span className="text-slate-700 dark:text-slate-300">{rec}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs text-slate-400">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{t('healthReport.generatedOn')} {generatedDate}</span>
               </div>
@@ -496,7 +496,7 @@ export default function HealthReport() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className={`h-12 text-base ${isPremium ? "border-slate-300" : "border-slate-200 text-slate-400 cursor-not-allowed"}`}
+                  className={`h-12 text-base ${isPremium ? "border-slate-300" : "border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed"}`}
                   onClick={handleShareReport}
                   disabled={!isPremium}
                 >
@@ -509,7 +509,7 @@ export default function HealthReport() {
               </div>
               {!isPremium && (
                 <div className="text-center space-y-1">
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     🔒 PDF export and sharing are available on <a href="/pricing" className="text-cyan-600 hover:underline font-medium">Pro and Pro+ plans</a>. Upgrade to unlock full reports.
                   </p>
                   {isAuthenticated && (
@@ -535,10 +535,10 @@ export default function HealthReport() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.25 }}
           >
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-6 max-w-4xl mx-auto shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 mb-6 max-w-4xl mx-auto shadow-sm">
               <div className="flex items-center gap-3 mb-6">
-                <BarChart2 className="w-6 h-6 text-slate-700" />
-                <h2 className="font-heading text-2xl font-bold text-slate-900">{t('healthReport.systemTitle')}</h2>
+                <BarChart2 className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+                <h2 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100">{t('healthReport.systemTitle')}</h2>
                 <span className="ml-auto text-xs text-slate-400">{t('healthReport.dbSource')}</span>
               </div>
 
@@ -555,26 +555,26 @@ export default function HealthReport() {
                       <p className="font-heading text-3xl font-bold">{systemStats?.totalUsers ?? 0}</p>
                     </div>
                     <div className="bg-cyan-50 rounded-xl p-4 border border-cyan-200/60">
-                      <p className="text-xs text-slate-500 mb-1">{t('healthReport.activeUsers')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('healthReport.activeUsers')}</p>
                       <p className="font-heading text-3xl font-bold text-cyan-700">{systemStats?.activeUsers ?? 0}</p>
                     </div>
                     <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60">
-                      <p className="text-xs text-slate-500 mb-1">{t('healthReport.proSubscribers')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('healthReport.proSubscribers')}</p>
                       <p className="font-heading text-3xl font-bold text-blue-600">{systemStats?.proUsers ?? 0}</p>
                     </div>
                     <div className="bg-purple-50 rounded-xl p-4 border border-purple-200/60">
-                      <p className="text-xs text-slate-500 mb-1">{t('healthReport.proPlusSubscribers')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('healthReport.proPlusSubscribers')}</p>
                       <p className="font-heading text-3xl font-bold text-purple-600">{systemStats?.proPlusUsers ?? 0}</p>
                     </div>
                     <div className="bg-amber-50 rounded-xl p-4 border border-amber-300/60">
-                      <p className="text-xs text-slate-500 mb-1">⚡ Lifetime</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">⚡ Lifetime</p>
                       <p className="font-heading text-3xl font-bold text-amber-600">{systemStats?.lifetimeUsers ?? 0}</p>
                     </div>
                   </div>
 
                   {(systemStats?.totalUsers ?? 0) > 0 && (
                     <div className="mb-8">
-                      <p className="text-sm font-medium text-slate-600 mb-2">{t('healthReport.subscriptionDist')}</p>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">{t('healthReport.subscriptionDist')}</p>
                       <div className="flex rounded-full overflow-hidden h-5">
                         {(systemStats?.essentialUsers ?? 0) > 0 && (
                           <div
@@ -601,7 +601,7 @@ export default function HealthReport() {
                           />
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-500">
+                      <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
                         <span><span className="inline-block w-2 h-2 rounded-full bg-slate-400 mr-1" />Essential ({systemStats?.essentialUsers ?? 0})</span>
                         <span><span className="inline-block w-2 h-2 rounded-full bg-cyan-500 mr-1" />Pro ({systemStats?.proUsers ?? 0})</span>
                         <span><span className="inline-block w-2 h-2 rounded-full bg-purple-600 mr-1" />Pro+ ({systemStats?.proPlusUsers ?? 0})</span>
@@ -611,27 +611,27 @@ export default function HealthReport() {
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-5 border border-cyan-200/60">
+                    <div className="bg-gradient-to-br from-cyan-50 dark:from-slate-900 to-blue-50 dark:to-slate-800 rounded-xl p-5 border border-cyan-200/60">
                       <div className="flex items-center gap-2 mb-2">
                         <Shield className="w-5 h-5 text-cyan-600" />
-                        <h4 className="font-semibold text-slate-800">{t('healthReport.aiAccuracy')}</h4>
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-200">{t('healthReport.aiAccuracy')}</h4>
                       </div>
                       <p className="text-3xl font-bold text-cyan-600 mb-1">ABCDE</p>
-                      <p className="text-xs text-slate-500">{t('healthReport.abcdeAnalysis')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t('healthReport.abcdeAnalysis')}</p>
                     </div>
-                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200/60">
+                    <div className="bg-gradient-to-br from-emerald-50 dark:from-slate-900 to-teal-50 dark:to-slate-800 rounded-xl p-5 border border-emerald-200/60">
                       <div className="flex items-center gap-2 mb-2">
                         <Activity className="w-5 h-5 text-emerald-600" />
-                        <h4 className="font-semibold text-slate-800">{t('healthReport.platformStatus')}</h4>
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-200">{t('healthReport.platformStatus')}</h4>
                       </div>
                       <p className="text-3xl font-bold text-emerald-600 mb-1">{t('healthReport.active')}</p>
-                      <p className="text-xs text-slate-500">{t('healthReport.allSystemsOk')}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t('healthReport.allSystemsOk')}</p>
                     </div>
                   </div>
                 </>
               )}
 
-              <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs text-slate-400">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{t('healthReport.dataFetchedOn')} {generatedDate}</span>
               </div>
@@ -659,11 +659,11 @@ export default function HealthReport() {
           onClick={() => setShowPromoModal(false)}
         >
           <div
-            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl"
+            className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-sm w-full shadow-xl"
             onClick={e => e.stopPropagation()}
           >
             <h3 className="font-heading text-lg font-bold mb-1">🎟 Promo Code</h3>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
               Enter your promo code to unlock Pro access.
             </p>
             <input

@@ -238,19 +238,19 @@ export default function Capture() {
           <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-6">
             <Lock className="w-10 h-10 text-amber-500" />
           </div>
-          <h1 className="font-heading text-3xl font-bold mb-3 text-slate-900">Free Scan Limit Reached</h1>
-          <p className="text-slate-600 mb-2 text-lg">
+          <h1 className="font-heading text-3xl font-bold mb-3 text-slate-900 dark:text-slate-100">Free Scan Limit Reached</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-2 text-lg">
             You've used all <span className="font-bold text-amber-600">10 free AI scans</span>.
           </p>
-          <p className="text-slate-500 mb-8">
+          <p className="text-slate-500 dark:text-slate-400 mb-8">
             Upgrade to Pro or Pro+ to unlock unlimited AI analyses, detailed reports, and cloud backup.
           </p>
 
           {/* Usage bar */}
-          <div className="bg-slate-100 rounded-full h-3 mb-2 mx-auto max-w-xs">
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 mx-auto max-w-xs">
             <div className="bg-amber-500 h-3 rounded-full w-full" />
           </div>
-          <p className="text-xs text-slate-500 mb-8">{totalCaptures} / {FREE_LIMIT} scans used</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-8">{totalCaptures} / {FREE_LIMIT} scans used</p>
 
           {/* Upgrade cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -258,14 +258,14 @@ export default function Capture() {
               <div className="p-5 rounded-2xl border-2 border-cyan-500 bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
                 <p className="font-heading font-bold text-cyan-700 text-lg">Pro</p>
                 <p className="text-cyan-600 font-semibold">$6.99 / month</p>
-                <p className="text-xs text-slate-500 mt-1">Unlimited scans + cloud backup</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Unlimited scans + cloud backup</p>
               </div>
             </Link>
             <Link href="/pricing">
               <div className="p-5 rounded-2xl border-2 border-violet-500 bg-violet-50 hover:bg-violet-100 transition-colors cursor-pointer">
                 <p className="font-heading font-bold text-violet-700 text-lg">Pro Plus</p>
                 <p className="text-violet-600 font-semibold">$49 / year</p>
-                <p className="text-xs text-slate-500 mt-1">Best value · $4.08/month</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Best value · $4.08/month</p>
               </div>
             </Link>
           </div>
@@ -292,8 +292,8 @@ export default function Capture() {
 
       {/* Free tier scan counter — visible when not premium */}
       {!isPremium && (
-        <div className={`mb-6 px-4 py-3 rounded-xl flex items-center justify-between text-sm ${FREE_LIMIT - totalCaptures <= 3 ? 'bg-amber-50 border border-amber-300' : 'bg-slate-50 border border-slate-200'}`}>
-          <span className={FREE_LIMIT - totalCaptures <= 3 ? 'text-amber-700 font-medium' : 'text-slate-500'}>
+        <div className={`mb-6 px-4 py-3 rounded-xl flex items-center justify-between text-sm ${FREE_LIMIT - totalCaptures <= 3 ? 'bg-amber-50 border border-amber-300' : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}>
+          <span className={FREE_LIMIT - totalCaptures <= 3 ? 'text-amber-700 font-medium' : 'text-slate-500 dark:text-slate-400'}>
             {FREE_LIMIT - totalCaptures <= 3 ? '⚠️ ' : ''}
             <span className="font-bold">{Math.max(0, FREE_LIMIT - totalCaptures)}</span> free scan{FREE_LIMIT - totalCaptures !== 1 ? 's' : ''} remaining
           </span>
@@ -307,28 +307,28 @@ export default function Capture() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12 bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/60 rounded-2xl p-8"
+          className="mb-12 bg-gradient-to-br from-cyan-50 dark:from-slate-900 to-blue-50 dark:to-slate-800 border border-cyan-200/60 rounded-2xl p-8"
         >
-          <h3 className="font-heading text-2xl font-bold text-slate-900 mb-6">{t('capture.howToTitle')}</h3>
+          <h3 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">{t('capture.howToTitle')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl p-4 border border-cyan-200/40">
+            <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-good-lighting-VBaTFkQqNDHKVDFqjTzbGr.webp" alt={t('capture.goodLighting')} className="w-full h-40 object-cover rounded-lg mb-4" />
-              <h4 className="font-semibold text-slate-900 mb-2">{t('capture.goodLighting')}</h4>
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.goodLighting')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.goodLightingDesc')}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-cyan-200/40">
+            <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-straight-angle-im4RHzdeCEp3YkGe7e5fbw.webp" alt={t('capture.straightAngle')} className="w-full h-40 object-cover rounded-lg mb-4" />
-              <h4 className="font-semibold text-slate-900 mb-2">{t('capture.straightAngle')}</h4>
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.straightAngle')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.straightAngleDesc')}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-cyan-200/40">
+            <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-close-clear-ax4jkAFvPvwifxMphXMUqa.webp" alt={t('capture.closeAndClear')} className="w-full h-40 object-cover rounded-lg mb-4" />
-              <h4 className="font-semibold text-slate-900 mb-2">{t('capture.closeAndClear')}</h4>
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.closeAndClear')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.closeAndClearDesc')}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-cyan-200/40">
+            <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-clean-skin-XvV2TF98reSNwkDmyJYyxF.webp" alt={t('capture.cleanSkin')} className="w-full h-40 object-cover rounded-lg mb-4" />
-              <h4 className="font-semibold text-slate-900 mb-2">{t('capture.cleanSkin')}</h4>
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.cleanSkin')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.cleanSkinDesc')}</p>
             </div>
           </div>
@@ -341,8 +341,8 @@ export default function Capture() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h3 className="font-heading text-2xl font-bold text-slate-900 mb-6">{t('capture.tipsTitle')}</h3>
-          <div className="bg-white rounded-2xl border border-cyan-200/40 p-6 overflow-x-auto">
+          <h3 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">{t('capture.tipsTitle')}</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-cyan-200/40 p-6 overflow-x-auto">
             <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photography-guide_35cf840e.png" alt="Photography Guide" className="w-full h-auto rounded-lg" />
           </div>
         </motion.div>

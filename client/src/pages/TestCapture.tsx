@@ -149,15 +149,15 @@ export default function TestCapture() {
         <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
           <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
         </div>
-        <span className="text-xs text-slate-500 w-7 text-right">{score}</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400 w-7 text-right">{score}</span>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 dark:from-slate-900 to-white dark:to-slate-900">
       {/* Sub-nav */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 flex gap-1 overflow-x-auto">
           {[
             { href: "/test", label: t("test.navTest") },
@@ -165,7 +165,7 @@ export default function TestCapture() {
             { href: "/test/doctors", label: t("test.navDoctors") },
           ].map((item) => (
             <Link key={item.href} href={item.href}>
-              <span className="inline-block px-4 py-3 text-sm font-medium text-slate-600 hover:text-cyan-600 whitespace-nowrap border-b-2 border-transparent hover:border-cyan-500 transition-colors cursor-pointer">
+              <span className="inline-block px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-cyan-600 whitespace-nowrap border-b-2 border-transparent hover:border-cyan-500 transition-colors cursor-pointer">
                 {item.label}
               </span>
             </Link>
@@ -176,14 +176,14 @@ export default function TestCapture() {
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* Back link */}
         <Link href="/test">
-          <span className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-cyan-600 cursor-pointer mb-6">
+          <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-cyan-600 cursor-pointer mb-6">
             <ChevronLeft className="w-4 h-4" />
             {t("test.backToTest")}
           </span>
         </Link>
 
-        <h1 className="font-heading text-2xl font-bold text-slate-900 mb-1">{t("test.tryOwnPhoto")}</h1>
-        <p className="text-slate-500 text-sm mb-6">{t("test.disclaimer")}</p>
+        <h1 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{t("test.tryOwnPhoto")}</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">{t("test.disclaimer")}</p>
 
         {/* Error banner */}
         <AnimatePresence>
@@ -228,7 +228,7 @@ export default function TestCapture() {
                   </Button>
                   <button
                     onClick={takePhoto}
-                    className="w-14 h-14 rounded-full bg-white border-4 border-cyan-500 hover:bg-cyan-50 transition-colors"
+                    className="w-14 h-14 rounded-full bg-white dark:bg-slate-900 border-4 border-cyan-500 hover:bg-cyan-50 transition-colors"
                   />
                 </div>
               </div>
@@ -259,10 +259,10 @@ export default function TestCapture() {
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center gap-3 py-8 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex flex-col items-center gap-3 py-8 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <Upload className="w-8 h-8 text-slate-500" />
-                  <span className="text-sm font-semibold text-slate-600">{t("test.uploadPhoto")}</span>
+                  <Upload className="w-8 h-8 text-slate-500 dark:text-slate-400" />
+                  <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{t("test.uploadPhoto")}</span>
                 </button>
               </div>
             )}
@@ -298,7 +298,7 @@ export default function TestCapture() {
               <img src={capturedImage} alt="Analyzing" className="w-40 h-40 object-cover rounded-2xl shadow" />
             )}
             <Loader2 className="w-10 h-10 animate-spin text-cyan-500 mt-4" />
-            <p className="text-slate-600 font-medium">{t("test.analyzing")}</p>
+            <p className="text-slate-600 dark:text-slate-400 font-medium">{t("test.analyzing")}</p>
           </motion.div>
         )}
 
@@ -316,8 +316,8 @@ export default function TestCapture() {
             </div>
 
             {/* ABCDE scores */}
-            <div className="p-4 bg-white border border-slate-200 rounded-2xl space-y-3">
-              <h3 className="font-semibold text-slate-800 text-sm mb-3">{t("test.result")}</h3>
+            <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-3">
+              <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm mb-3">{t("test.result")}</h3>
               {[
                 { key: "asymmetry", label: "A – Asymmetry" },
                 { key: "border", label: "B – Border" },
@@ -327,7 +327,7 @@ export default function TestCapture() {
                 const item = result[key as keyof AnalysisResult] as ABCDEItem;
                 return (
                   <div key={key}>
-                    <div className="flex justify-between text-xs text-slate-600 mb-1">
+                    <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1">
                       <span className="font-medium">{label}</span>
                     </div>
                     {scoreBar(item.score)}

@@ -30,7 +30,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
           <Link href="/login">
@@ -55,10 +55,10 @@ export default function ForgotPassword() {
                   <Mail className="w-8 h-8 text-cyan-600" />
                 </div>
               </div>
-              <p className="text-center text-sm text-slate-600">
+              <p className="text-center text-sm text-slate-600 dark:text-slate-400">
                 We've sent a password reset link to <strong>{email}</strong>
               </p>
-              <p className="text-center text-xs text-slate-500">
+              <p className="text-center text-xs text-slate-500 dark:text-slate-400">
                 The link will expire in 1 hour. If you don't see it, check your spam folder.
               </p>
               <Link href="/login">
@@ -70,7 +70,7 @@ export default function ForgotPassword() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Email Address
                 </label>
                 <Input
@@ -99,7 +99,7 @@ export default function ForgotPassword() {
               </Button>
 
               <div className="text-center text-sm">
-                <span className="text-slate-600">Don't have an account? </span>
+                <span className="text-slate-600 dark:text-slate-400">Don't have an account? </span>
                 <Link href="/signup">
                   <a className="text-cyan-600 hover:text-cyan-700 font-medium">Sign up</a>
                 </Link>

@@ -36,9 +36,9 @@ export default function TestKnowledge() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 dark:from-slate-900 to-white dark:to-slate-900">
       {/* Sub-nav */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 flex gap-1 overflow-x-auto">
           {[
             { href: "/test", label: t("test.navTest") },
@@ -46,7 +46,7 @@ export default function TestKnowledge() {
             { href: "/test/doctors", label: t("test.navDoctors") },
           ].map((item) => (
             <Link key={item.href} href={item.href}>
-              <span className="inline-block px-4 py-3 text-sm font-medium text-slate-600 hover:text-cyan-600 whitespace-nowrap border-b-2 border-transparent hover:border-cyan-500 transition-colors cursor-pointer">
+              <span className="inline-block px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-cyan-600 whitespace-nowrap border-b-2 border-transparent hover:border-cyan-500 transition-colors cursor-pointer">
                 {item.label}
               </span>
             </Link>
@@ -56,7 +56,7 @@ export default function TestKnowledge() {
 
       <div className="max-w-2xl mx-auto px-4 py-8">
         <Link href="/test">
-          <span className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-cyan-600 cursor-pointer mb-6">
+          <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-cyan-600 cursor-pointer mb-6">
             <ChevronLeft className="w-4 h-4" />
             {t("test.backToTest")}
           </span>
@@ -64,7 +64,7 @@ export default function TestKnowledge() {
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="text-4xl text-center mb-3">📚</div>
-          <h1 className="font-heading text-3xl font-bold text-slate-900 text-center mb-2">
+          <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-slate-100 text-center mb-2">
             {t("test.knowledgeBase")}
           </h1>
         </motion.div>
@@ -76,10 +76,10 @@ export default function TestKnowledge() {
           transition={{ delay: 0.1 }}
           className="mt-8 mb-8"
         >
-          <h2 className="font-heading text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <h2 className="font-heading text-xl font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
             <span className="text-2xl">🔵</span> {t("test.moleWhat")}
           </h2>
-          <p className="text-slate-600 leading-relaxed text-sm">{t("test.moleDesc")}</p>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">{t("test.moleDesc")}</p>
         </motion.section>
 
         {/* ABCDE */}
@@ -89,10 +89,10 @@ export default function TestKnowledge() {
           transition={{ delay: 0.15 }}
           className="mb-8"
         >
-          <h2 className="font-heading text-xl font-bold text-slate-800 mb-1 flex items-center gap-2">
+          <h2 className="font-heading text-xl font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-2">
             <span className="text-2xl">🔬</span> {t("test.abcdTitle")}
           </h2>
-          <p className="text-slate-500 text-sm mb-4">{t("test.abcdSubtitle")}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">{t("test.abcdSubtitle")}</p>
 
           <div className="space-y-3">
             {ABCDE_ITEMS.map((item, i) => (
@@ -122,14 +122,14 @@ export default function TestKnowledge() {
           transition={{ delay: 0.3 }}
           className="mb-8"
         >
-          <h2 className="font-heading text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <h2 className="font-heading text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
             <span className="text-2xl">⚠️</span> {t("test.riskFactors")}
           </h2>
-          <div className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800">
             {RISK_ITEMS.map((item) => (
               <div key={item.textKey} className="flex items-start gap-3 p-4">
                 <span className="text-xl">{item.iconKey}</span>
-                <p className="text-sm text-slate-600">{t(item.textKey)}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{t(item.textKey)}</p>
               </div>
             ))}
           </div>
@@ -142,14 +142,14 @@ export default function TestKnowledge() {
           transition={{ delay: 0.35 }}
           className="mb-8"
         >
-          <h2 className="font-heading text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <h2 className="font-heading text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
             <span className="text-2xl">🛡️</span> {t("test.prevention")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {PREVENTION_ITEMS.map((item) => (
               <div key={item.textKey} className="flex items-start gap-3 p-4 bg-cyan-50 border border-cyan-100 rounded-xl">
                 <span className="text-cyan-600 shrink-0 mt-0.5">{item.icon}</span>
-                <p className="text-sm text-slate-700">{t(item.textKey)}</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300">{t(item.textKey)}</p>
               </div>
             ))}
           </div>
@@ -162,7 +162,7 @@ export default function TestKnowledge() {
           transition={{ delay: 0.4 }}
           className="mb-8"
         >
-          <h2 className="font-heading text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <h2 className="font-heading text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
             <TrendingUp className="w-6 h-6 text-cyan-600" /> {t("test.statistics")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -179,12 +179,12 @@ export default function TestKnowledge() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center py-6 border-t border-slate-200"
+          className="text-center py-6 border-t border-slate-200 dark:border-slate-700"
         >
-          <p className="text-slate-500 text-sm mb-4">{t("test.tryApp")}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">{t("test.tryApp")}</p>
           <div className="flex justify-center gap-3 flex-wrap">
             <Link href="/test">
-              <span className="inline-block px-5 py-2.5 border border-slate-300 text-slate-600 hover:bg-slate-50 rounded-xl text-sm cursor-pointer transition-colors">
+              <span className="inline-block px-5 py-2.5 border border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-sm cursor-pointer transition-colors">
                 {t("test.backToTest")}
               </span>
             </Link>

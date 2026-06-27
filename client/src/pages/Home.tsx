@@ -26,7 +26,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white">
+      <section className="relative overflow-hidden bg-white dark:bg-slate-900">
         <div className="container py-16 md:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -38,14 +38,14 @@ export default function Home() {
                 <Shield className="w-3.5 h-3.5" />
                 {t('hero.badge')}
               </div>
-              <h1 className="font-heading text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-tight text-slate-900 mb-5">
+              <h1 className="font-heading text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-tight text-slate-900 dark:text-slate-100 mb-5">
                 {t('hero.title')}
               </h1>
               <div className="mb-5">
                 <p className="text-2xl md:text-3xl text-cyan-600 font-semibold">{t('hero.accuracy')}</p>
                 <p className="text-lg text-emerald-600 font-semibold mt-2">{t('hero.healthMonitor')}</p>
               </div>
-              <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-lg">
+              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8 max-w-lg">
                 {t('hero.description')}
               </p>
               <div className="flex flex-wrap gap-3">
@@ -60,7 +60,7 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
-              <div className="flex items-center gap-6 mt-8 text-sm text-slate-600">
+              <div className="flex items-center gap-6 mt-8 text-sm text-slate-600 dark:text-slate-400">
                 <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-cyan-500" /> {t('hero.freeToStart')}</span>
                 <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-cyan-500" /> {t('hero.noAccountNeeded')}</span>
                 <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-cyan-500" /> {t('hero.privateSecure')}</span>
@@ -73,24 +73,24 @@ export default function Home() {
               className="relative"
             >
               <img src={HERO_IMG} alt="SkinGuard AI App" className="w-full h-auto" />
-              <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl p-4 shadow-lg border border-slate-200">
+              <div className="absolute -bottom-4 -left-4 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-lg border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
                     <span className="text-cyan-600 font-bold text-sm">✓</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900 text-sm">{t('hero.aiAccuracy')}</p>
-                    <p className="text-xs text-slate-500">{t('hero.aiAccuracyDesc')}</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{t('hero.aiAccuracy')}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('hero.aiAccuracyDesc')}</p>
                   </div>
                 </div>
               </div>
-              <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl p-4 shadow-lg border border-slate-200">
+              <div className="absolute -bottom-4 -right-4 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-lg border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{t('home.healthyStatus')}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('home.healthyStatus')}</p>
                   </div>
                 </div>
               </div>
@@ -100,7 +100,7 @@ export default function Home() {
       </section>
 
       {/* Facebook Group CTA Section */}
-      <section className="bg-white py-12 md:py-16">
+      <section className="bg-white dark:bg-slate-900 py-12 md:py-16">
         <div className="container">
           <div className="flex justify-center">
             <a
@@ -117,7 +117,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-slate-50 py-16 md:py-20">
+      <section className="bg-slate-50 dark:bg-slate-800 py-16 md:py-20">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -125,10 +125,10 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-slate-100">
               {t('features.title')}
             </h2>
-            <p className="text-slate-600 max-w-lg mx-auto">
+            <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
               {t('features.subtitle')}
             </p>
           </motion.div>
@@ -147,13 +147,13 @@ export default function Home() {
                   initial="hidden"
                   whileInView="visible"
                   variants={fadeUp}
-                  className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow"
                 >
                   <div className="w-12 h-12 rounded-lg bg-cyan-100 flex items-center justify-center mb-4">
                     <Icon className="w-6 h-6 text-cyan-600" />
                   </div>
-                  <h3 className="font-semibold text-slate-900 mb-2">{t(feature.titleKey)}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{t(feature.descKey)}</p>
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t(feature.titleKey)}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{t(feature.descKey)}</p>
                 </motion.div>
               );
             })}
@@ -169,10 +169,10 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-slate-100">
             {t('abcde.title')}
           </h2>
-          <p className="text-slate-600 max-w-lg mx-auto">
+          <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
             {t('abcde.subtitle')}
           </p>
         </motion.div>
@@ -257,21 +257,21 @@ export default function Home() {
               initial="hidden"
               whileInView="visible"
               variants={fadeUp}
-              className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-5 border border-cyan-200/60 text-center"
+              className="bg-gradient-to-br from-cyan-50 dark:from-slate-900 to-blue-50 dark:to-slate-800 rounded-xl p-5 border border-cyan-200/60 text-center"
             >
               <div className="mb-3 px-2">{item.illustration}</div>
               <div className="w-10 h-10 rounded-full bg-cyan-500 text-white font-bold text-lg flex items-center justify-center mx-auto mb-2">
                 {item.letter}
               </div>
-              <h3 className="font-semibold text-slate-900 mb-1 text-sm">{t(item.titleKey)}</h3>
-              <p className="text-xs text-slate-600">{t(item.descKey)}</p>
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1 text-sm">{t(item.titleKey)}</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t(item.descKey)}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="bg-slate-50 py-16 md:py-20">
+      <section className="bg-slate-50 dark:bg-slate-800 py-16 md:py-20">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -279,10 +279,10 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-slate-100">
               {t('social.title')}
             </h2>
-            <p className="text-slate-600 max-w-lg mx-auto">
+            <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
               {t('social.subtitle')}
             </p>
           </motion.div>
@@ -294,21 +294,21 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
             >
               <div className="flex items-center gap-1 text-amber-400">
                 {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
               </div>
-              <p className="text-slate-700 text-sm leading-relaxed italic">
+              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
                 "Okay so — full transparency — I downloaded SkinGuard AI on a whim after seeing it mentioned in a health forum. I almost didn't bother. I've had this spot on my cheek basically forever and figured it was just... there. You know how it is.<br/><br/>The app flagged it as HIGH risk. Asymmetric borders, mixed pigmentation. I honestly didn't want to believe it. But I booked a dermatologist appointment anyway — just to be sure, I told myself.<br/><br/>She was really thorough and really clear: this needs watching. Monthly monitoring, no direct sun, come back regularly. She wasn't alarmist about it, but she was serious.<br/><br/>I've been using the app every four weeks since then to track any changes. It keeps me accountable in a way I wouldn't be otherwise. Like, I'd probably forget to check without it.<br/><br/>I'm not saying it saved my life — I genuinely don't know. But I'm really glad I didn't scroll past it."
               </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-cyan-100 text-cyan-700" aria-hidden="true">
                   SM
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-slate-800">Sarah M., 41</p>
-                  <p className="text-xs text-slate-500">🇨🇦 Toronto, Canada</p>
+                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Sarah M., 41</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">🇨🇦 Toronto, Canada</p>
                 </div>
               </div>
             </motion.div>
@@ -318,21 +318,21 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
             >
               <div className="flex items-center gap-1 text-amber-400">
                 {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
               </div>
-              <p className="text-slate-700 text-sm leading-relaxed italic">
+              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
                 "Look, I'm not realy a 'go to the doctor' kind of bloke. My girlfreind basically forced me to try SkinGuard AI. Got a HIGH risk result on a spot I'd had for ages. We have the highest melanoma rates in the world, us Aussies. This app forced me to act. Mate, just downlod it."
               </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-teal-100 text-teal-700" aria-hidden="true">
                   JW
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-slate-800">James W., 38</p>
-                  <p className="text-xs text-slate-500">🇦🇺 Sydney, Australia</p>
+                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">James W., 38</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">🇦🇺 Sydney, Australia</p>
                 </div>
               </div>
             </motion.div>
@@ -342,24 +342,24 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-cyan-200 flex flex-col gap-4 relative"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-cyan-200 flex flex-col gap-4 relative"
             >
               <span className="absolute top-4 right-4 text-xs bg-cyan-100 text-cyan-700 font-semibold px-2 py-0.5 rounded-full">Founder</span>
               <div className="flex items-center gap-1 text-amber-400">
                 {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
               </div>
-              <p className="text-slate-700 text-sm leading-relaxed italic">
+              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
                 "I am the founder of SkinGuard AI. I say this not to promote, but because the context matters.<br/><br/>I built this platform because I believed that AI could do what most people cannot — look at a mole objectively, without dismissing it, without hoping it is nothing. I believed in the concept. I did not expect to become one of its cases.<br/><br/>I live in Southeast Asia. The sun here is not something you step into — it surrounds you. I tested the app on myself, as I had done many times. This time the result was different. HIGH risk. My own face.<br/><br/>My dermatologist confirmed what the AI flagged. The borders were irregular. Pigmentation inconsistent. She was direct: monthly monitoring, no sun exposure, return immediately if anything changes. In Asia. Where the UV index is extreme every single day.<br/><br/>I follow every instruction. Wide hat, SPF 50, shade when possible. I scan it every four weeks. I watch every millimetre.<br/><br/>I built this for you. It turned out I also built it for myself.<br/><br/>We have a saying: Better safe than sorry.... Jobb félni mint megijedni...."
               </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                 <img
                   src="/attila.jpg"
                   alt="Attila K."
                   className="w-10 h-10 rounded-full object-cover border-2 border-cyan-300"
                 />
                 <div>
-                  <p className="font-semibold text-sm text-slate-800">Attila Koch, 52</p>
-                  <p className="text-xs text-slate-500">🇭🇺 Founder, HealthGuardAI</p>
+                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Attila Koch, 52</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">🇭🇺 Founder, HealthGuardAI</p>
                 </div>
               </div>
             </motion.div>
@@ -372,21 +372,21 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
             >
               <div className="flex items-center gap-1 text-amber-400">
                 {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
               </div>
-              <p className="text-slate-700 text-sm leading-relaxed italic">
+              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
                 "I am not someone who writs reviews for apps. But this one is diferent. HIGH risk detected on my neck. My doktor agreed. Monthly monitoring since. It works. That is all I will say."
               </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-sky-100 text-sky-700" aria-hidden="true">
                   EH
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-slate-800">Erik H., 50</p>
-                  <p className="text-xs text-slate-500">🇳🇴 Oslo, Norway</p>
+                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Erik H., 50</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">🇳🇴 Oslo, Norway</p>
                 </div>
               </div>
             </motion.div>
@@ -396,21 +396,21 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
             >
               <div className="flex items-center gap-1 text-amber-400">
                 {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
               </div>
-              <p className="text-slate-700 text-sm leading-relaxed italic">
+              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
                 "I want to start by saying — I am 65 years old and I have lived in Arizona my whole life. Sun capital of America, honey. I thought I knew everything about taking care of my skin.<br/><br/>My granddaughter put SkinGuard AI on my phone during Christmas. I humored her. I scanned a spot I'd had on my forearm for years.<br/><br/>HIGH risk. My doctor — who I've been going to for twenty years — said the same thing. Monthly monitoring. No more sitting by the pool without full sun protection. At 65, in Phoenix.<br/><br/>I'll tell you what though — I'd rather be sitting in the shade and here, than the alternative. I scan every month. I follow the rules.<br/><br/>Thank you to whoever built this. And thank you to my granddaughter for making me try it."
               </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-indigo-100 text-indigo-700" aria-hidden="true">
                   ML
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-slate-800">Margaret L., 65</p>
-                  <p className="text-xs text-slate-500">🇺🇸 Phoenix, Arizona</p>
+                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Margaret L., 65</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">🇺🇸 Phoenix, Arizona</p>
                 </div>
               </div>
             </motion.div>
@@ -424,7 +424,7 @@ export default function Home() {
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-6">{t('cta.title')}</h2>
           <p className="text-cyan-50 max-w-lg mx-auto mb-8 text-lg">{t('cta.subtitle')}</p>
           <Link href={isAuthenticated ? "/dashboard" : "/signup"}>
-            <Button size="lg" className="bg-white text-cyan-600 hover:bg-cyan-50 h-12 px-8 text-base font-semibold">
+            <Button size="lg" className="bg-white dark:bg-slate-900 text-cyan-600 hover:bg-cyan-50 h-12 px-8 text-base font-semibold">
               {t('cta.button')} <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>

@@ -7,12 +7,12 @@ export default function Disclaimer() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-red-50 dark:from-slate-900 to-white dark:to-slate-900 py-12 px-4">
       <div className="max-w-3xl mx-auto">
 
         {/* Back link */}
         <Link href="/">
-          <span className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-red-600 cursor-pointer mb-8 transition-colors">
+          <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 cursor-pointer mb-8 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             {t('disclaimer.backToAnalysis')}
           </span>
@@ -32,10 +32,10 @@ export default function Disclaimer() {
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-red-600 bg-red-100 px-4 py-1.5 rounded-full mb-4">
             {t('disclaimer.badge')}
           </span>
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-slate-900 mb-3">
+          <h1 className="font-heading text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-3">
             {t('disclaimer.title')}
           </h1>
-          <p className="text-slate-500 text-lg max-w-xl mx-auto">
+          <p className="text-slate-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
             {t('disclaimer.subtitle')}
           </p>
         </motion.div>
@@ -53,8 +53,8 @@ export default function Disclaimer() {
               {t('disclaimer.warning')}
             </p>
           </div>
-          <p className="text-slate-700 text-sm mb-4">{t('disclaimer.intro')}</p>
-          <ul className="space-y-2.5 text-sm text-slate-700">
+          <p className="text-slate-700 dark:text-slate-300 text-sm mb-4">{t('disclaimer.intro')}</p>
+          <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
             {[
               t('disclaimer.bullet1'),
               t('disclaimer.bullet2'),
@@ -71,7 +71,7 @@ export default function Disclaimer() {
             ))}
           </ul>
           <div className="mt-5 pt-5 border-t border-red-200">
-            <p className="text-slate-800 font-semibold text-sm leading-relaxed">
+            <p className="text-slate-800 dark:text-slate-200 font-semibold text-sm leading-relaxed">
               {t('disclaimer.alwaysConsult')}
             </p>
           </div>
@@ -82,13 +82,13 @@ export default function Disclaimer() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm"
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 mb-6 shadow-sm"
         >
-          <h2 className="font-heading text-xl font-bold text-slate-900 mb-4">
+          <h2 className="font-heading text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
             {t('disclaimer.section2Title')}
           </h2>
-          <p className="text-sm text-slate-600 mb-3">{t('disclaimer.section2Intro')}</p>
-          <ul className="space-y-2 text-sm text-slate-700 mb-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{t('disclaimer.section2Intro')}</p>
+          <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300 mb-4">
             {[
               t('disclaimer.section2b1'),
               t('disclaimer.section2b2'),
@@ -101,7 +101,7 @@ export default function Disclaimer() {
               </li>
             ))}
           </ul>
-          <p className="text-sm text-slate-600 italic">{t('disclaimer.section2footer')}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400 italic">{t('disclaimer.section2footer')}</p>
         </motion.div>
 
         {/* Seek Medical Attention */}
@@ -140,7 +140,7 @@ export default function Disclaimer() {
           transition={{ delay: 0.4 }}
           className="text-center mb-10"
         >
-          <p className="text-slate-600 mb-4">{t('disclaimer.ctaTitle')}</p>
+          <p className="text-slate-600 dark:text-slate-400 mb-4">{t('disclaimer.ctaTitle')}</p>
           <Link href="/test/doctors">
             <span className="inline-block px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl cursor-pointer transition-colors">
               {t('disclaimer.ctaBtn')}
@@ -149,7 +149,7 @@ export default function Disclaimer() {
         </motion.div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-slate-400 pt-6 border-t border-slate-200">
+        <div className="text-center text-xs text-slate-400 pt-6 border-t border-slate-200 dark:border-slate-700">
           <p>{t('disclaimer.lastUpdated')}: {new Date().toLocaleDateString()}</p>
         </div>
       </div>

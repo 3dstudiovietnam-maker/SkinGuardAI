@@ -140,12 +140,12 @@ export default function Comparison() {
         </div>
         {/* Slider line */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg z-10"
+          className="absolute top-0 bottom-0 w-0.5 bg-white dark:bg-slate-900 shadow-lg z-10"
           style={{ left: `${sliderPos}%` }}
         >
-          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
-            <ChevronLeft className="w-3 h-3 text-gray-600" />
-            <ChevronRight className="w-3 h-3 text-gray-600" />
+          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white dark:bg-slate-900 shadow-lg flex items-center justify-center">
+            <ChevronLeft className="w-3 h-3 text-gray-600 dark:text-slate-400" />
+            <ChevronRight className="w-3 h-3 text-gray-600 dark:text-slate-400" />
           </div>
         </div>
         {/* Labels */}

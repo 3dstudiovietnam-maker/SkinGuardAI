@@ -71,11 +71,11 @@ export default function ResetPassword() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-8 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-cyan-200 border-t-cyan-600 rounded-full mx-auto mb-4"></div>
-            <p className="text-slate-600">Verifying reset link...</p>
+            <p className="text-slate-600 dark:text-slate-400">Verifying reset link...</p>
           </CardContent>
         </Card>
       </div>
@@ -84,7 +84,7 @@ export default function ResetPassword() {
 
   if (error && !success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl">Reset Link Invalid</CardTitle>
@@ -105,7 +105,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
           <Link href="/login">
@@ -130,7 +130,7 @@ export default function ResetPassword() {
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
               </div>
-              <p className="text-center text-sm text-slate-600">
+              <p className="text-center text-sm text-slate-600 dark:text-slate-400">
                 Your password has been reset successfully. You can now log in with your new password.
               </p>
               <Link href="/login">
@@ -142,7 +142,7 @@ export default function ResetPassword() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   <Lock className="w-4 h-4 inline mr-2" />
                   New Password
                 </label>
@@ -158,7 +158,7 @@ export default function ResetPassword() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   <Lock className="w-4 h-4 inline mr-2" />
                   Confirm Password
                 </label>

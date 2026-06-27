@@ -294,7 +294,7 @@ export default function TestMonitor() {
                       <Calendar className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-900">{metric.date}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{metric.date}</p>
                       {metric.notes && <p className="text-sm text-muted-foreground">{metric.notes}</p>}
                     </div>
                   </div>
@@ -344,7 +344,7 @@ export default function TestMonitor() {
           transition={{ delay: 0.4 }}
           className="max-w-5xl mx-auto mt-12 mb-12"
         >
-          <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200/60 rounded-2xl p-8">
+          <div className="bg-gradient-to-br from-orange-50 dark:from-slate-900 to-amber-50 dark:to-slate-800 border border-orange-200/60 rounded-2xl p-8">
             <h2 className="font-heading text-3xl font-bold text-orange-600 mb-3">{t('monitor.fitnessTipsTitle')}</h2>
             <p className="text-muted-foreground mb-8">
               {t('monitor.fitnessTipsSubtitle')}
@@ -356,7 +356,7 @@ export default function TestMonitor() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * (idx + 1) }}
-                  className="bg-white rounded-xl border border-orange-200/60 overflow-hidden hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-slate-900 rounded-xl border border-orange-200/60 overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <img
                     src={rec.image}
@@ -364,11 +364,11 @@ export default function TestMonitor() {
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-4">
-                    <h3 className="font-heading text-lg font-bold mb-2 text-slate-900">{t(rec.titleKey)}</h3>
+                    <h3 className="font-heading text-lg font-bold mb-2 text-slate-900 dark:text-slate-100">{t(rec.titleKey)}</h3>
                     <p className="text-sm text-muted-foreground mb-3">{t(rec.descKey)}</p>
                     <p className="text-xs font-semibold text-orange-600 mb-3">⏱️ {t(rec.durationKey)}</p>
                     <div className="bg-orange-50 rounded-lg p-3">
-                      <p className="font-semibold text-xs text-slate-900 mb-2">{t('monitor.howToDoIt')}</p>
+                      <p className="font-semibold text-xs text-slate-900 dark:text-slate-100 mb-2">{t('monitor.howToDoIt')}</p>
                       <ol className="space-y-1 text-xs text-muted-foreground list-decimal list-inside">
                         {rec.stepKeys.map((stepKey, stepIdx) => (
                           <li key={stepIdx}>{t(stepKey)}</li>
@@ -379,7 +379,7 @@ export default function TestMonitor() {
                 </motion.div>
               ))}
             </div>
-            <div className="mt-6 bg-white border border-emerald-200/60 rounded-xl p-4">
+            <div className="mt-6 bg-white dark:bg-slate-900 border border-emerald-200/60 rounded-xl p-4">
               <p className="text-sm text-emerald-900">
                 {t('monitor.consistencyTip')}
               </p>

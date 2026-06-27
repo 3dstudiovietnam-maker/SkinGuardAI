@@ -13,7 +13,7 @@ import { trpc } from "@/lib/trpc";
 const PLAN_INFO: Record<string, { labelKey: string; color: string; featureKeys: string[] }> = {
   essential: {
     labelKey: "userDashboard.planEssential",
-    color: "border-slate-200 bg-slate-50",
+    color: "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800",
     featureKeys: ["pricing.feat_2", "pricing.feat_3", "pricing.feat_4", "pricing.feat_5"],
   },
   pro: {
@@ -167,7 +167,7 @@ export default function Dashboard() {
                     value={promoCode}
                     onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); }}
                     placeholder={t("auth.promoCodePlaceholder") || "e.g. SKIN-LT-0550"}
-                    className="flex-1 px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white"
+                    className="flex-1 px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white dark:bg-slate-900"
                     disabled={promoLoading}
                     onKeyDown={e => e.key === "Enter" && handlePromoRedeem()}
                   />
@@ -187,7 +187,7 @@ export default function Dashboard() {
         
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
           {planInfo.featureKeys.map((k, i) => (
-            <div key={i} className="flex items-center gap-1.5 text-xs text-slate-700">
+            <div key={i} className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300">
               <CheckCircle className="w-3.5 h-3.5 text-primary shrink-0" />
               {t(k)}
             </div>

@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import ThemeToggle from "./components/ThemeToggle";
 import { SkinStoreProvider } from "./contexts/SkinStore";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Home from "./pages/Home";
@@ -90,12 +91,13 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
+      <ThemeProvider defaultTheme="light" switchable={true}>
         <LanguageProvider>
           <SkinStoreProvider>
             <TooltipProvider>
               <Toaster />
               <Router />
+              <ThemeToggle />
             </TooltipProvider>
           </SkinStoreProvider>
         </LanguageProvider>

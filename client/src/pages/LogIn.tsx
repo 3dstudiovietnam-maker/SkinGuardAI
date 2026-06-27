@@ -200,7 +200,7 @@ export default function LogIn() {
     ];
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -208,10 +208,10 @@ export default function LogIn() {
         >
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="font-heading text-3xl font-bold text-slate-900 mb-2">
+            <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               {t("auth.choosePlan")}
             </h1>
-            <p className="text-slate-600">
+            <p className="text-slate-600 dark:text-slate-400">
               {t("auth.choosePlanSubtitle")}
             </p>
           </div>
@@ -223,16 +223,16 @@ export default function LogIn() {
               whileHover={{ scale: 1.04, y: -8 }}
               transition={spring}
               onClick={() => handleCardAction("essential")}
-              className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col cursor-pointer hover:border-cyan-300 transition-all"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col cursor-pointer hover:border-cyan-300 transition-all"
             >
               <div className="flex items-center gap-2 mb-2">
-                <Shield className="w-4 h-4 text-slate-500" />
+                <Shield className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 <h3 className="font-heading text-xl font-bold">Essential</h3>
               </div>
               <div className="flex items-end gap-1 mt-2 mb-1">
                 <span className="font-heading text-3xl font-bold">$0</span>
               </div>
-              <p className="text-sm text-slate-500 mb-3">{t("pricing.freeForever")}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{t("pricing.freeForever")}</p>
               <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mb-4">
                 <span className="text-xs font-semibold text-amber-700">⚡ {planCards[0].special}</span>
               </div>
@@ -240,7 +240,7 @@ export default function LogIn() {
                 {planCards[0].featureKeys.map((key, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-cyan-600 shrink-0" />
-                    <span className="text-slate-700">{t(key)}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{t(key)}</span>
                   </div>
                 ))}
               </div>
@@ -251,7 +251,7 @@ export default function LogIn() {
               whileHover={{ scale: 1.04, y: -8 }}
               transition={spring}
               onClick={() => handleCardAction("pro")}
-              className="bg-white rounded-2xl border-2 border-cyan-600 p-6 flex flex-col relative cursor-pointer hover:border-cyan-700 transition-all"
+              className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-cyan-600 p-6 flex flex-col relative cursor-pointer hover:border-cyan-700 transition-all"
             >
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-cyan-600 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
                 <Star className="w-3 h-3" /> {t("pricing.mostPopular")}
@@ -259,9 +259,9 @@ export default function LogIn() {
               <h3 className="font-heading text-xl font-bold mt-4">Pro</h3>
               <div className="flex items-end gap-1 mt-2 mb-1">
                 <span className="font-heading text-3xl font-bold">$6.99</span>
-                <span className="text-slate-500 text-sm pb-1">{t("pricing.perMonth")}</span>
+                <span className="text-slate-500 dark:text-slate-400 text-sm pb-1">{t("pricing.perMonth")}</span>
               </div>
-              <p className="text-sm text-slate-500 mb-4">{t("pricing.advancedAI")}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{t("pricing.advancedAI")}</p>
               <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5 mb-4">
                 <span className="text-xs font-semibold text-green-700">∞ {planCards[1].special}</span>
               </div>
@@ -269,7 +269,7 @@ export default function LogIn() {
                 {planCards[1].featureKeys.map((key, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-cyan-600 shrink-0" />
-                    <span className="text-slate-700">{t(key)}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{t(key)}</span>
                   </div>
                 ))}
               </div>
@@ -280,12 +280,12 @@ export default function LogIn() {
               whileHover={{ scale: 1.04, y: -8 }}
               transition={spring}
               onClick={() => handleCardAction("pro_plus")}
-              className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col cursor-pointer hover:border-cyan-300 transition-all"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col cursor-pointer hover:border-cyan-300 transition-all"
             >
               <h3 className="font-heading text-xl font-bold mb-2">Pro Plus</h3>
               <div className="flex items-end gap-1.5 mt-2 flex-wrap">
                 <span className="font-heading text-3xl font-bold">$49</span>
-                <span className="text-slate-500 text-sm pb-1">{t("pricing.perYear")}</span>
+                <span className="text-slate-500 dark:text-slate-400 text-sm pb-1">{t("pricing.perYear")}</span>
                 <span className="text-slate-400 text-xs pb-1">($4.08/hó)</span>
               </div>
               <div className="mt-2 mb-4">
@@ -300,7 +300,7 @@ export default function LogIn() {
                 {planCards[2].featureKeys.map((key, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-cyan-600 shrink-0" />
-                    <span className="text-slate-700">{t(key)}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{t(key)}</span>
                   </div>
                 ))}
               </div>
@@ -311,7 +311,7 @@ export default function LogIn() {
               whileHover={{ scale: 1.04, y: -8 }}
               transition={spring}
               onClick={() => handleCardAction("lifetime")}
-              className="bg-gradient-to-b from-amber-50 to-white rounded-2xl border-2 border-amber-400 p-6 flex flex-col relative cursor-pointer hover:border-amber-500 transition-all"
+              className="bg-gradient-to-b from-amber-50 dark:from-slate-900 to-white dark:to-slate-900 rounded-2xl border-2 border-amber-400 p-6 flex flex-col relative cursor-pointer hover:border-amber-500 transition-all"
             >
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
                 <Zap className="w-3 h-3" /> {t("pricing.bestDeal")}
@@ -319,7 +319,7 @@ export default function LogIn() {
               <h3 className="font-heading text-xl font-bold mt-4">Lifetime</h3>
               <div className="flex items-end gap-1 mt-2 mb-1">
                 <span className="font-heading text-3xl font-bold">$69</span>
-                <span className="text-slate-500 text-sm pb-1">{t("pricing.oneTime")}</span>
+                <span className="text-slate-500 dark:text-slate-400 text-sm pb-1">{t("pricing.oneTime")}</span>
               </div>
               <p className="text-sm text-amber-600 mb-4">{t("pricing.payOnce")}</p>
               <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5 mb-4">
@@ -329,7 +329,7 @@ export default function LogIn() {
                 {planCards[3].featureKeys.map((key, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span className="text-slate-700">{t(key)}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{t(key)}</span>
                   </div>
                 ))}
               </div>
@@ -361,7 +361,7 @@ export default function LogIn() {
                       value={planPromoCode}
                       onChange={e => { setPlanPromoCode(e.target.value.toUpperCase()); setPlanPromoError(""); }}
                       placeholder={t("auth.promoCodePlaceholder") || "e.g. SKIN-LT-0550"}
-                      className="flex-1 px-4 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white"
+                      className="flex-1 px-4 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white dark:bg-slate-900"
                       disabled={planPromoLoading}
                       onKeyDown={e => e.key === "Enter" && handlePlanPromoRedeem()}
                     />
@@ -385,7 +385,7 @@ export default function LogIn() {
 
   // ── Login Form ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -398,19 +398,19 @@ export default function LogIn() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="font-heading text-3xl font-bold text-slate-900 mb-2">
+          <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
             {t("auth.welcomeBack")}
           </h1>
-          <p className="text-slate-600">
+          <p className="text-slate-600 dark:text-slate-400">
             {t("auth.signInSubtitle")}
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
           {/* Social Login Buttons */}
           <div className="mb-6 space-y-3">
-            <p className="text-xs text-slate-500 text-center font-medium">{t("auth.signInWith")}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 text-center font-medium">{t("auth.signInWith")}</p>
             <button
               type="button"
               onClick={() => {
@@ -425,7 +425,7 @@ export default function LogIn() {
                 const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&state=${state}`;
                 window.location.href = authUrl;
               }}
-              className="w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
               title="Sign in with Google"
             >
               <Chrome className="w-4 h-4" />
@@ -436,7 +436,7 @@ export default function LogIn() {
                 <div className="w-full border-t border-slate-300"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="px-2 bg-white text-slate-500">{t("auth.orEmail")}</span>
+                <span className="px-2 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400">{t("auth.orEmail")}</span>
               </div>
             </div>
           </div>
@@ -468,7 +468,7 @@ export default function LogIn() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   {t("auth.emailLabel")}
@@ -487,7 +487,7 @@ export default function LogIn() {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 <div className="flex items-center gap-2">
                   <Lock className="w-4 h-4" />
                   {t("auth.passwordLabel")}
@@ -522,8 +522,8 @@ export default function LogIn() {
           </form>
 
           {/* "Nincs még fiókja? Regisztráljon itt" - közvetlenül a submit után */}
-          <div className="text-center mt-6 pt-4 border-t border-slate-200">
-            <p className="text-slate-600">
+          <div className="text-center mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-slate-600 dark:text-slate-400">
               {t("auth.noAccount")}{" "}
               <Link href="/signup" className="text-cyan-600 hover:underline font-medium">
                 {t("auth.createHere")}
