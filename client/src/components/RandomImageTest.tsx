@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThumbsUp, ThumbsDown, RefreshCw, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { ThumbsUp, ThumbsDown, RefreshCw, Loader2, CheckCircle, XCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -221,6 +221,11 @@ export default function RandomImageTest() {
                   </div>
                 ) : null;
               })}
+              {/* Inline medical disclaimer */}
+              <div className="flex items-start gap-1.5 pt-2 mt-1 border-t border-slate-200 text-[11px] leading-snug text-amber-700">
+                <Info className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+                <span className="italic">{t("aiDescriptions.AI_DISCLAIMER")}</span>
+              </div>
             </div>
           )}
 
