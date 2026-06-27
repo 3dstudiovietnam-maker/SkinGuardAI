@@ -50,8 +50,8 @@ export default function Legal() {
         {/* Medical Disclaimer */}
         <section className="mb-12">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Medical Disclaimer</h2>
-          <div className="bg-red-50 p-6 rounded-lg border border-red-200 space-y-4">
-            <p className="text-red-900 font-semibold">
+          <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800/50 space-y-4">
+            <p className="text-red-900 dark:text-red-300 font-semibold">
               ⚠️ IMPORTANT: SkinGuard AI is NOT a medical diagnostic tool and should NOT be used as a substitute for professional medical advice, diagnosis, or treatment.
             </p>
             <p className="text-slate-700 dark:text-slate-300">

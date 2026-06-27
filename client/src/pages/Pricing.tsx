@@ -210,7 +210,7 @@ export default function Pricing() {
             <motion.div
               whileHover={{ scale: 1.04, y: -8 }}
               transition={spring}
-              className="bg-gradient-to-b from-amber-50 dark:from-slate-900 to-card dark:from-amber-950/20 rounded-2xl border-2 border-amber-400 p-7 flex flex-col relative cursor-pointer"
+              className="bg-gradient-to-b from-amber-50 dark:from-amber-950/20 to-card rounded-2xl border-2 border-amber-400 p-7 flex flex-col relative cursor-pointer"
             >
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
                 <Zap className="w-3 h-3" /> {t('pricing.bestDeal')}
@@ -283,7 +283,7 @@ export default function Pricing() {
               <motion.div
                 whileHover={{ scale: 1.04, y: -8 }}
                 transition={spring}
-                className="bg-gradient-to-b from-amber-50 dark:from-slate-900 to-card dark:from-amber-950/20 rounded-2xl border-2 border-amber-400 p-8 flex flex-col relative cursor-pointer"
+                className="bg-gradient-to-b from-amber-50 dark:from-amber-950/20 to-card rounded-2xl border-2 border-amber-400 p-8 flex flex-col relative cursor-pointer"
               >
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
                   <Zap className="w-3 h-3" /> {t('pricing.payOnceOwn')}
