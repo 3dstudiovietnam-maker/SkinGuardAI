@@ -25,10 +25,11 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script
-      defer
-      src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    <!-- Umami analytics removed: the %VITE_ANALYTICS_ENDPOINT%/umami src was never
+         configured (env vars unset at build time), so it loaded the SPA HTML and threw
+         "Unexpected token '<'". Re-add with a real umami endpoint + website id (set
+         VITE_ANALYTICS_ENDPOINT and VITE_ANALYTICS_WEBSITE_ID in the LOCAL build env,
+         since SkinGuard deploys from local builds). -->
     <!-- Google Translate Widget -->
     <script type="text/javascript">
       function googleTranslateElementInit() {
