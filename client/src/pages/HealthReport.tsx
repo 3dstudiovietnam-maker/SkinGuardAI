@@ -616,7 +616,7 @@ export default function HealthReport() {
                         <Shield className="w-5 h-5 text-cyan-600" />
                         <h4 className="font-semibold text-slate-800">{t('healthReport.aiAccuracy')}</h4>
                       </div>
-                      <p className="text-3xl font-bold text-cyan-600 mb-1">94%</p>
+                      <p className="text-3xl font-bold text-cyan-600 mb-1">ABCDE</p>
                       <p className="text-xs text-slate-500">{t('healthReport.abcdeAnalysis')}</p>
                     </div>
                     <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200/60">
