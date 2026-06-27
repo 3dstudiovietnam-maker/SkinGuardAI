@@ -79,33 +79,14 @@ export default function Layout({ children }: LayoutProps) {
             <span className="font-heading font-bold text-lg text-slate-900 hidden sm:inline">SkinGuard AI</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location === item.href;
-              return (
-                <Link key={item.href} href={item.href} className="no-underline">
-                  <button
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? "text-cyan-600 bg-cyan-50"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </button>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Desktop nav moved down into the animated-logo banner row (split
+              left/right around the centered eye logo) — see below. */}
 
           {/* Auth + Mobile Toggle */}
           <div className="flex items-center gap-2">
 
             {isAuthenticated && user ? (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden 2xl:flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="w-4 h-4 text-primary" />
                 </div>
@@ -120,7 +101,7 @@ export default function Layout({ children }: LayoutProps) {
                 </Button>
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden 2xl:flex items-center gap-2">
                 <Link href="/login" className="no-underline">
                   <Button size="sm" variant="ghost" className="text-slate-600 hover:text-slate-900">
                     <LogIn className="w-4 h-4 mr-2" />
@@ -142,7 +123,7 @@ export default function Layout({ children }: LayoutProps) {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-slate-100"
+              className="2xl:hidden p-2 rounded-lg hover:bg-slate-100"
             >
               {mobileOpen ? (
                 <X className="w-5 h-5 text-slate-600" />
@@ -162,7 +143,7 @@ export default function Layout({ children }: LayoutProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-b border-border/60 bg-slate-50"
+            className="2xl:hidden border-b border-border/60 bg-slate-50"
           >
             <nav className="container py-4 flex flex-col gap-2">
               
@@ -229,16 +210,44 @@ export default function Layout({ children }: LayoutProps) {
         )}
       </AnimatePresence>
 
-      {/* Animated Logo Banner */}
-      <div className="w-full flex justify-center items-center py-2 bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-100">
-        <video
-          src="/sglogoanim.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="h-16 md:h-20 w-auto object-contain pointer-events-none select-none"
-        />
+      {/* Animated Logo Banner — desktop nav split left/right around the eye logo */}
+      <div className="w-full border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-slate-50">
+        {/* xl+: nav items flank the centered eye logo, using the full width */}
+        <div className="hidden 2xl:flex items-center gap-2 px-3 py-1.5">
+          <nav className="flex flex-1 items-center justify-end gap-0.5">
+            {navItems.slice(0, 6).map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.href;
+              return (
+                <Link key={item.href} href={item.href} className="no-underline">
+                  <button className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${isActive ? "text-cyan-600 bg-cyan-50" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"}`}>
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {item.label}
+                  </button>
+                </Link>
+              );
+            })}
+          </nav>
+          <video src="/sglogoanim.mp4" autoPlay loop muted playsInline className="h-14 w-auto object-contain pointer-events-none select-none shrink-0" />
+          <nav className="flex flex-1 items-center justify-start gap-0.5">
+            {navItems.slice(6).map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.href;
+              return (
+                <Link key={item.href} href={item.href} className="no-underline">
+                  <button className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${isActive ? "text-cyan-600 bg-cyan-50" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"}`}>
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {item.label}
+                  </button>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        {/* below xl: just the centered logo (nav lives in the hamburger menu) */}
+        <div className="flex 2xl:hidden justify-center items-center py-2">
+          <video src="/sglogoanim.mp4" autoPlay loop muted playsInline className="h-16 md:h-20 w-auto object-contain pointer-events-none select-none" />
+        </div>
       </div>
 
       {/* Main Content */}
