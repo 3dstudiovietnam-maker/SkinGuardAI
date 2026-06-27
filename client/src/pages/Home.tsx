@@ -303,11 +303,9 @@ export default function Home() {
                 "Okay so — full transparency — I downloaded SkinGuard AI on a whim after seeing it mentioned in a health forum. I almost didn't bother. I've had this spot on my cheek basically forever and figured it was just... there. You know how it is.<br/><br/>The app flagged it as HIGH risk. Asymmetric borders, mixed pigmentation. I honestly didn't want to believe it. But I booked a dermatologist appointment anyway — just to be sure, I told myself.<br/><br/>She was really thorough and really clear: this needs watching. Monthly monitoring, no direct sun, come back regularly. She wasn't alarmist about it, but she was serious.<br/><br/>I've been using the app every four weeks since then to track any changes. It keeps me accountable in a way I wouldn't be otherwise. Like, I'd probably forget to check without it.<br/><br/>I'm not saying it saved my life — I genuinely don't know. But I'm really glad I didn't scroll past it."
               </p>
               <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
-                <img
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face"
-                  alt="Sarah M."
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-cyan-100 text-cyan-700" aria-hidden="true">
+                  SM
+                </div>
                 <div>
                   <p className="font-semibold text-sm text-slate-800">Sarah M., 41</p>
                   <p className="text-xs text-slate-500">🇨🇦 Toronto, Canada</p>
@@ -329,11 +327,9 @@ export default function Home() {
                 "Look, I'm not realy a 'go to the doctor' kind of bloke. My girlfreind basically forced me to try SkinGuard AI. Got a HIGH risk result on a spot I'd had for ages. We have the highest melanoma rates in the world, us Aussies. This app forced me to act. Mate, just downlod it."
               </p>
               <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
-                <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face"
-                  alt="James W."
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-teal-100 text-teal-700" aria-hidden="true">
+                  JW
+                </div>
                 <div>
                   <p className="font-semibold text-sm text-slate-800">James W., 38</p>
                   <p className="text-xs text-slate-500">🇦🇺 Sydney, Australia</p>
@@ -385,11 +381,9 @@ export default function Home() {
                 "I am not someone who writs reviews for apps. But this one is diferent. HIGH risk detected on my neck. My doktor agreed. Monthly monitoring since. It works. That is all I will say."
               </p>
               <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
-                <img
-                  src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=80&h=80&fit=crop&crop=face"
-                  alt="Erik H."
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-sky-100 text-sky-700" aria-hidden="true">
+                  EH
+                </div>
                 <div>
                   <p className="font-semibold text-sm text-slate-800">Erik H., 50</p>
                   <p className="text-xs text-slate-500">🇳🇴 Oslo, Norway</p>
@@ -411,11 +405,9 @@ export default function Home() {
                 "I want to start by saying — I am 65 years old and I have lived in Arizona my whole life. Sun capital of America, honey. I thought I knew everything about taking care of my skin.<br/><br/>My granddaughter put SkinGuard AI on my phone during Christmas. I humored her. I scanned a spot I'd had on my forearm for years.<br/><br/>HIGH risk. My doctor — who I've been going to for twenty years — said the same thing. Monthly monitoring. No more sitting by the pool without full sun protection. At 65, in Phoenix.<br/><br/>I'll tell you what though — I'd rather be sitting in the shade and here, than the alternative. I scan every month. I follow the rules.<br/><br/>Thank you to whoever built this. And thank you to my granddaughter for making me try it."
               </p>
               <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
-                <img
-                  src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=80&h=80&fit=crop&crop=face"
-                  alt="Margaret L."
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-indigo-100 text-indigo-700" aria-hidden="true">
+                  ML
+                </div>
                 <div>
                   <p className="font-semibold text-sm text-slate-800">Margaret L., 65</p>
                   <p className="text-xs text-slate-500">🇺🇸 Phoenix, Arizona</p>
