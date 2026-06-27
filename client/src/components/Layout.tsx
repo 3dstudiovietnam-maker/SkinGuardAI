@@ -2,6 +2,7 @@
  * Bright teal navigation, clean white background, professional typography
  */
 import { Link, useLocation, useRoute } from "wouter";
+import LogoVideo from "@/components/LogoVideo";
 import { Shield, LayoutDashboard, User, Camera, MapPin, CreditCard, Menu, X, LogIn, LogOut, FileText, TrendingUp, Facebook, Mail, UserPlus, Video, HelpCircle, Phone, Github, Twitter, Instagram, Linkedin, Youtube, Send, Heart, Info, FlaskConical, BookOpen, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useSkinStore } from "@/contexts/SkinStore";
@@ -228,7 +229,7 @@ export default function Layout({ children }: LayoutProps) {
               );
             })}
           </nav>
-          <video src="/sglogoanim.mp4" autoPlay loop muted playsInline className="h-14 w-auto object-contain pointer-events-none select-none shrink-0" />
+          <LogoVideo src="/sglogoanim.mp4" className="h-14 w-auto object-contain pointer-events-none select-none shrink-0" />
           <nav className="flex flex-1 items-center justify-start gap-0.5">
             {navItems.slice(6).map((item) => {
               const Icon = item.icon;
@@ -246,7 +247,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
         {/* below xl: just the centered logo (nav lives in the hamburger menu) */}
         <div className="flex 2xl:hidden justify-center items-center py-2">
-          <video src="/sglogoanim.mp4" autoPlay loop muted playsInline className="h-16 md:h-20 w-auto object-contain pointer-events-none select-none" />
+          <LogoVideo src="/sglogoanim.mp4" className="h-16 md:h-20 w-auto object-contain pointer-events-none select-none" />
         </div>
       </div>
 
