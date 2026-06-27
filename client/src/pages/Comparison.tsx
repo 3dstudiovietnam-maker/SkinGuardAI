@@ -1,12 +1,14 @@
 /* DermIQ Comparison - Before/After Slider View */
 import { useParams, Link } from "wouter";
 import { useSkinStore } from "@/contexts/SkinStore";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 
 export default function Comparison() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const { getMole } = useSkinStore();
   const mole = getMole(id || "");
@@ -37,8 +39,8 @@ export default function Comparison() {
   if (!mole) {
     return (
       <div className="container py-20 text-center">
-        <h1 className="font-heading text-2xl font-bold mb-3">Mole Not Found</h1>
-        <Link href="/dashboard"><Button className="bg-primary">Back to Dashboard</Button></Link>
+        <h1 className="font-heading text-2xl font-bold mb-3">{t('cmp.notFoundTitle')}</h1>
+        <Link href="/dashboard"><Button className="bg-primary">{t('cmp.backToDashboard')}</Button></Link>
       </div>
     );
   }
@@ -47,10 +49,10 @@ export default function Comparison() {
     return (
       <div className="container py-20 text-center">
         <div className="max-w-md mx-auto">
-          <h1 className="font-heading text-2xl font-bold mb-3">Need More Photos</h1>
-          <p className="text-muted-foreground mb-6">You need at least 2 photos to compare changes. Take another photo of "{mole.name}" to use the comparison tool.</p>
+          <h1 className="font-heading text-2xl font-bold mb-3">{t('cmp.needMoreTitle')}</h1>
+          <p className="text-muted-foreground mb-6">{t('cmp.needMoreDescPrefix')}"{mole.name}"{t('cmp.needMoreDescSuffix')}</p>
           <Link href={`/capture/${encodeURIComponent(mole.region)}`}>
-            <Button className="bg-primary">Take Another Photo</Button>
+            <Button className="bg-primary">{t('cmp.takeAnotherPhoto')}</Button>
           </Link>
         </div>
       </div>
@@ -69,7 +71,7 @@ export default function Comparison() {
           </button>
         </Link>
         <div>
-          <h1 className="font-heading text-2xl font-bold">Compare Photos</h1>
+          <h1 className="font-heading text-2xl font-bold">{t('cmp.comparePhotos')}</h1>
           <p className="text-sm text-muted-foreground">{mole.name} &middot; {mole.region}</p>
         </div>
       </div>
@@ -77,7 +79,7 @@ export default function Comparison() {
       {/* Photo Selectors */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Before (Older)</label>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('cmp.beforeOlder')}</label>
           <select
             value={leftIdx}
             onChange={e => setLeftIdx(Number(e.target.value))}
@@ -85,13 +87,13 @@ export default function Comparison() {
           >
             {mole.photos.map((p, i) => (
               <option key={p.id} value={i}>
-                {new Date(p.timestamp).toLocaleDateString()} {i === 0 ? "(First)" : ""}
+                {new Date(p.timestamp).toLocaleDateString()} {i === 0 ? t('cmp.first') : ""}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">After (Newer)</label>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('cmp.afterNewer')}</label>
           <select
             value={rightIdx}
             onChange={e => setRightIdx(Number(e.target.value))}
@@ -99,7 +101,7 @@ export default function Comparison() {
           >
             {mole.photos.map((p, i) => (
               <option key={p.id} value={i}>
-                {new Date(p.timestamp).toLocaleDateString()} {i === mole.photos.length - 1 ? "(Latest)" : ""}
+                {new Date(p.timestamp).toLocaleDateString()} {i === mole.photos.length - 1 ? t('cmp.latest') : ""}
               </option>
             ))}
           </select>
@@ -123,7 +125,7 @@ export default function Comparison() {
         {/* Right (After) image - full background */}
         <img
           src={rightPhoto.dataUrl}
-          alt="After"
+          alt={t('cmp.after')}
           className="absolute inset-0 w-full h-full object-cover"
         />
         {/* Left (Before) image - clipped */}
@@ -133,7 +135,7 @@ export default function Comparison() {
         >
           <img
             src={leftPhoto.dataUrl}
-            alt="Before"
+            alt={t('cmp.before')}
             className="absolute inset-0 w-full h-full object-cover"
             style={{ width: `${containerRef.current?.offsetWidth || 600}px` }}
           />
@@ -150,34 +152,34 @@ export default function Comparison() {
         </div>
         {/* Labels */}
         <div className="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-          Before
+          {t('cmp.before')}
         </div>
         <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-          After
+          {t('cmp.after')}
         </div>
       </motion.div>
 
       {/* Date Info */}
       <div className="grid grid-cols-2 gap-4 mt-4">
         <div className="bg-card rounded-xl border border-border/60 p-3 text-center">
-          <p className="text-xs text-muted-foreground">Before</p>
+          <p className="text-xs text-muted-foreground">{t('cmp.before')}</p>
           <p className="text-sm font-semibold">{new Date(leftPhoto.timestamp).toLocaleDateString()}</p>
         </div>
         <div className="bg-card rounded-xl border border-border/60 p-3 text-center">
-          <p className="text-xs text-muted-foreground">After</p>
+          <p className="text-xs text-muted-foreground">{t('cmp.after')}</p>
           <p className="text-sm font-semibold">{new Date(rightPhoto.timestamp).toLocaleDateString()}</p>
         </div>
       </div>
 
       {/* Side by Side */}
       <div className="mt-6">
-        <h3 className="font-heading font-semibold mb-3">Side by Side</h3>
+        <h3 className="font-heading font-semibold mb-3">{t('cmp.sideBySide')}</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl overflow-hidden bg-muted aspect-square">
-            <img src={leftPhoto.dataUrl} alt="Before" className="w-full h-full object-cover" />
+            <img src={leftPhoto.dataUrl} alt={t('cmp.before')} className="w-full h-full object-cover" />
           </div>
           <div className="rounded-xl overflow-hidden bg-muted aspect-square">
-            <img src={rightPhoto.dataUrl} alt="After" className="w-full h-full object-cover" />
+            <img src={rightPhoto.dataUrl} alt={t('cmp.after')} className="w-full h-full object-cover" />
           </div>
         </div>
       </div>
