@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Mail, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ForgotPassword() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +25,7 @@ export default function ForgotPassword() {
       await requestReset.mutateAsync({ email });
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.message || "Failed to request password reset");
+      setError(err.message || t('fp.failedMsg'));
     } finally {
       setLoading(false);
     }
@@ -36,14 +38,14 @@ export default function ForgotPassword() {
           <Link href="/login">
             <Button variant="ghost" size="sm" className="mb-4 -ml-2">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Login
+              {t('fp.back')}
             </Button>
           </Link>
-          <CardTitle className="text-2xl">Forgot Password?</CardTitle>
+          <CardTitle className="text-2xl">{t('fp.title')}</CardTitle>
           <CardDescription>
             {submitted
-              ? "Check your email for reset instructions"
-              : "Enter your email address and we'll send you a link to reset your password"}
+              ? t('fp.successDesc')
+              : t('fp.desc')}
           </CardDescription>
         </CardHeader>
 
@@ -56,14 +58,14 @@ export default function ForgotPassword() {
                 </div>
               </div>
               <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-                We've sent a password reset link to <strong>{email}</strong>
+                {t('fp.sentTo')} <strong>{email}</strong>
               </p>
               <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-                The link will expire in 1 hour. If you don't see it, check your spam folder.
+                {t('fp.expiry')}
               </p>
               <Link href="/login">
                 <Button className="w-full bg-cyan-500 hover:bg-cyan-600">
-                  Return to Login
+                  {t('fp.returnLogin')}
                 </Button>
               </Link>
             </div>
@@ -71,7 +73,7 @@ export default function ForgotPassword() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Email Address
+                  {t('fp.emailLabel')}
                 </label>
                 <Input
                   type="email"
@@ -95,13 +97,13 @@ export default function ForgotPassword() {
                 disabled={loading || !email}
                 className="w-full bg-cyan-500 hover:bg-cyan-600"
               >
-                {loading ? "Sending..." : "Send Reset Link"}
+                {loading ? t('fp.sending') : t('fp.sendBtn')}
               </Button>
 
               <div className="text-center text-sm">
-                <span className="text-slate-600 dark:text-slate-400">Don't have an account? </span>
+                <span className="text-slate-600 dark:text-slate-400">{t('fp.noAccount')}</span>
                 <Link href="/signup">
-                  <a className="text-cyan-600 hover:text-cyan-700 font-medium">Sign up</a>
+                  <a className="text-cyan-600 hover:text-cyan-700 font-medium">{t('fp.signUp')}</a>
                 </Link>
               </div>
             </form>

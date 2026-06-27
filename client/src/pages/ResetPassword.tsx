@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Lock, CheckCircle, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ResetPassword() {
+  const { t } = useLanguage();
   const [location] = useLocation();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,7 +29,7 @@ export default function ResetPassword() {
       setToken(resetToken);
       verifyToken.refetch();
     } else {
-      setError("No reset token provided");
+      setError(t('rp.noToken'));
       setVerifying(false);
     }
   }, []);
@@ -36,7 +38,7 @@ export default function ResetPassword() {
     if (verifyToken.isLoading) {
       setVerifying(true);
     } else if (verifyToken.isError) {
-      setError("Invalid or expired reset link");
+      setError(t('rp.invalidLink'));
       setVerifying(false);
     } else if (verifyToken.data) {
       setVerifying(false);
@@ -48,12 +50,12 @@ export default function ResetPassword() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t('auth.passwordsNoMatch'));
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setError(t('auth.passwordTooShort'));
       return;
     }
 
@@ -63,7 +65,7 @@ export default function ResetPassword() {
       await resetPassword.mutateAsync({ token, password });
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || "Failed to reset password");
+      setError(err.message || t('rp.failed'));
     } finally {
       setLoading(false);
     }
@@ -75,7 +77,7 @@ export default function ResetPassword() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-8 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-cyan-200 border-t-cyan-600 rounded-full mx-auto mb-4"></div>
-            <p className="text-slate-600 dark:text-slate-400">Verifying reset link...</p>
+            <p className="text-slate-600 dark:text-slate-400">{t('rp.verifying')}</p>
           </CardContent>
         </Card>
       </div>
@@ -87,7 +89,7 @@ export default function ResetPassword() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl">Reset Link Invalid</CardTitle>
+            <CardTitle className="text-2xl">{t('rp.invalidTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -95,7 +97,7 @@ export default function ResetPassword() {
             </div>
             <Link href="/forgot-password">
               <Button className="w-full bg-cyan-500 hover:bg-cyan-600">
-                Request New Reset Link
+                {t('rp.requestNew')}
               </Button>
             </Link>
           </CardContent>
@@ -111,14 +113,14 @@ export default function ResetPassword() {
           <Link href="/login">
             <Button variant="ghost" size="sm" className="mb-4 -ml-2">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Login
+              {t('rp.back')}
             </Button>
           </Link>
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardTitle className="text-2xl">{t('rp.title')}</CardTitle>
           <CardDescription>
             {success
-              ? "Your password has been reset successfully"
-              : "Enter your new password below"}
+              ? t('rp.successDesc')
+              : t('rp.desc')}
           </CardDescription>
         </CardHeader>
 
@@ -131,11 +133,11 @@ export default function ResetPassword() {
                 </div>
               </div>
               <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-                Your password has been reset successfully. You can now log in with your new password.
+                {t('rp.successBody')}
               </p>
               <Link href="/login">
                 <Button className="w-full bg-cyan-500 hover:bg-cyan-600">
-                  Go to Login
+                  {t('rp.goToLogin')}
                 </Button>
               </Link>
             </div>
@@ -144,7 +146,7 @@ export default function ResetPassword() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   <Lock className="w-4 h-4 inline mr-2" />
-                  New Password
+                  {t('rp.newPass')}
                 </label>
                 <Input
                   type="password"
@@ -160,7 +162,7 @@ export default function ResetPassword() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   <Lock className="w-4 h-4 inline mr-2" />
-                  Confirm Password
+                  {t('rp.confirmPass')}
                 </label>
                 <Input
                   type="password"
@@ -184,7 +186,7 @@ export default function ResetPassword() {
                 disabled={loading || !password || !confirmPassword}
                 className="w-full bg-cyan-500 hover:bg-cyan-600"
               >
-                {loading ? "Resetting..." : "Reset Password"}
+                {loading ? t('rp.resetting') : t('rp.resetBtn')}
               </Button>
             </form>
           )}
