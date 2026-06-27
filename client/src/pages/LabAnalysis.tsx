@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Upload, FlaskConical, ShieldAlert, FileText, Stethoscope, Loader2 } from "lucide-react";
+import { Upload, FlaskConical, ShieldAlert, FileText, Stethoscope, Loader2, Lock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 
@@ -97,6 +97,12 @@ export default function LabAnalysis() {
             </span>
           )}
         </button>
+
+        {/* GDPR / data-handling notice for health-data upload */}
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 leading-relaxed flex items-start gap-1.5">
+          <Lock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <span>{t('lab.privacyNotice')}</span>
+        </p>
 
         {error && <p className="text-sm text-rose-600 mt-3 text-center">{error}</p>}
         {analyze.isError && <p className="text-sm text-rose-600 mt-3 text-center">{t('lab.errorAnalyze')}</p>}
