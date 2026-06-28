@@ -292,7 +292,7 @@ RULES:
         { inlineData: { mimeType, data: base64Data } },
       ],
     }],
-    generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2048, temperature: 0.1 },
+    generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2048, temperature: 0.1, thinkingConfig: { thinkingBudget: 0 } },
   };
 }
 
