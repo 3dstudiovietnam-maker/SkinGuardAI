@@ -150,7 +150,12 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+// Manus dev-host plugins (vitePluginManusRuntime + vitePluginManusDebugCollector) were
+// removed from the build: they injected an inline manus-runtime bridge + a
+// /__manus__/debug-collector.js telemetry script (hooks console/fetch/all user input,
+// POSTs to /__manus__/logs) into the SHIPPED HTML — a privacy + console-noise problem on
+// a health app. SkinGuard deploys from a local prod build, so they are not needed.
+const plugins = [react(), tailwindcss(), jsxLocPlugin()];
 
 export default defineConfig({
   plugins,
