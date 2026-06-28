@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /user-dashboard
+Disallow: /progress
+Disallow: /achievements
+Disallow: /measurements
+Disallow: /health-profile
+Disallow: /meal-log
+Disallow: /shopping
+Disallow: /reset-password
+Disallow: /verify-email
+
+Sitemap: https://skinguard.healthguardai.app/sitemap.xml
