@@ -121,11 +121,13 @@ export default function Layout({ children }: LayoutProps) {
             {/* Language Selector */}
             <LanguageSelector />
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle — only on small screens now (nav is visible md+) */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="2xl:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="md:hidden flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              aria-label="Menu"
             >
+              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Menu</span>
               {mobileOpen ? (
                 <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               ) : (
@@ -144,7 +146,7 @@ export default function Layout({ children }: LayoutProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="2xl:hidden border-b border-border/60 bg-slate-50 dark:bg-slate-800"
+            className="md:hidden border-b border-border/60 bg-slate-50 dark:bg-slate-800"
           >
             <nav className="container py-4 flex flex-col gap-2">
               
@@ -245,9 +247,28 @@ export default function Layout({ children }: LayoutProps) {
             })}
           </nav>
         </div>
-        {/* below xl: just the centered logo (nav lives in the hamburger menu) */}
-        <div className="flex 2xl:hidden justify-center items-center py-2">
-          <LogoVideo src="/sglogoanim.mp4" className="h-16 md:h-20 w-auto object-contain pointer-events-none select-none" />
+        {/* md → 2xl: the eye logo + the FULL nav as a centered wrapping row (overflow
+            wraps to a second line) — so the menu is always visible, never hidden. */}
+        <div className="hidden md:flex 2xl:hidden flex-col items-center gap-1.5 py-2">
+          <LogoVideo src="/sglogoanim.mp4" className="h-12 lg:h-14 w-auto object-contain pointer-events-none select-none" />
+          <nav className="flex flex-wrap items-center justify-center gap-1 px-3 max-w-5xl">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.href;
+              return (
+                <Link key={item.href} href={item.href} className="no-underline">
+                  <button className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${isActive ? "text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {item.label}
+                  </button>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        {/* below md (mobile): just the centered logo (nav in the "Menu" button) */}
+        <div className="flex md:hidden justify-center items-center py-2">
+          <LogoVideo src="/sglogoanim.mp4" className="h-16 w-auto object-contain pointer-events-none select-none" />
         </div>
       </div>
 
