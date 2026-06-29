@@ -1020,6 +1020,8 @@ function checkIpLimit(ip, maxPerDay = 3) {
 }
 var GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 var GEMINI_MODEL = "gemini-2.5-flash";
+var LAB_MODEL = "gemini-2.5-flash";
+var LAB_LITE = true;
 var ABCDE_PROMPT = `You are a dermatology screening AI assistant. Analyze this skin mole/lesion image using the ABCDE dermoscopy criteria.
 
 Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) with this EXACT structure:
@@ -1217,54 +1219,173 @@ async function callGeminiWithRetry(base64Data, mimeType, maxRetries = 3) {
   }
   throw lastError ?? new Error("Unknown error in Gemini call");
 }
-function buildLabReportPrompt(lang, mimeType, base64Data) {
+async function callGemini(payload, maxRetries = 3, model = GEMINI_MODEL) {
+  const apiKey = getApiKey();
+  const url = `${GEMINI_API_BASE}/models/${model}:generateContent`;
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error(`[GeminiError] model=${model} status=${response.status} body=${errText.slice(0, 700)}`);
+        throw new Error(`HTTP ${response.status}: ${errText}`);
+      }
+      const data = await response.json();
+      const parts = data.candidates?.[0]?.content?.parts ?? [];
+      const rawText = parts.filter((p) => !p.thought && typeof p.text === "string").map((p) => p.text).join("") || parts[0]?.text;
+      if (!rawText) {
+        const fr = data.candidates?.[0]?.finishReason;
+        console.error(`[GeminiEmpty] model=${model} finishReason=${fr}`);
+        throw new Error(`Empty response from Gemini (finishReason=${fr}).`);
+      }
+      try {
+        return extractJson(rawText);
+      } catch {
+        const fr = data.candidates?.[0]?.finishReason;
+        console.error(`[GeminiBadJSON] model=${model} len=${rawText.length} finishReason=${fr} partsCount=${parts.length}`);
+        lastError = new Error(`Invalid JSON from Gemini on attempt ${attempt}.`);
+        if (attempt === maxRetries) {
+          throw new TRPCError4({ code: "INTERNAL_SERVER_ERROR", message: "Gemini returned invalid JSON after retries." });
+        }
+        await new Promise((r) => setTimeout(r, attempt * 1e3));
+        continue;
+      }
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt === maxRetries) {
+        console.error(`[GeminiFail] model=${model} attempts=${attempt} msg=${lastError.message.slice(0, 700)}`);
+        throw new TRPCError4({ code: "INTERNAL_SERVER_ERROR", message: `Gemini failed: ${lastError.message}` });
+      }
+      await new Promise((r) => setTimeout(r, attempt * 1200));
+    }
+  }
+  throw lastError ?? new Error("Unknown error");
+}
+var LAB_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    analyzable: { type: "BOOLEAN" },
+    reportInfo: { type: "OBJECT", properties: {
+      patient: { type: "STRING" },
+      reason: { type: "STRING" },
+      sampleDate: { type: "STRING" },
+      doctor: { type: "STRING" },
+      facility: { type: "STRING" },
+      panels: { type: "STRING" }
+    } },
+    overview: { type: "STRING" },
+    tests: { type: "ARRAY", items: { type: "OBJECT", properties: {
+      category: { type: "STRING" },
+      name: { type: "STRING" },
+      value: { type: "STRING" },
+      unit: { type: "STRING" },
+      referenceRange: { type: "STRING" },
+      status: { type: "STRING", enum: ["low", "normal", "high", "unknown"] }
+    } } },
+    referenceNotes: { type: "ARRAY", items: { type: "STRING" } },
+    findings: { type: "ARRAY", items: { type: "OBJECT", properties: {
+      title: { type: "STRING" },
+      badge: { type: "STRING" },
+      severity: { type: "STRING", enum: ["info", "mild", "moderate", "high"] },
+      explanation: { type: "STRING" }
+    } } },
+    reassuring: { type: "ARRAY", items: { type: "STRING" } },
+    urgency: { type: "OBJECT", properties: { level: { type: "STRING" }, text: { type: "STRING" } } },
+    emergencyRedFlags: { type: "ARRAY", items: { type: "STRING" } },
+    questionsForDoctor: { type: "ARRAY", items: { type: "STRING" } },
+    furtherTests: { type: "ARRAY", items: { type: "STRING" } },
+    homeActions: { type: "OBJECT", properties: {
+      dos: { type: "ARRAY", items: { type: "STRING" } },
+      donts: { type: "ARRAY", items: { type: "STRING" } }
+    } },
+    disclaimer: { type: "STRING" }
+  }
+};
+function buildLabReportPrompt(lang, files) {
+  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
   return {
     contents: [{
       parts: [
-        { text: `You are a careful health-literacy assistant. The attached file is a medical LABORATORY REPORT (blood test or similar). Read it and explain it in PLAIN, reassuring language for a layperson.
+        { text: `You are a meticulous medical health-literacy expert writing a PROFESSIONAL, patient-friendly summary of a LABORATORY REPORT for a layperson and their family. The attached file(s) are medical lab report(s) (may be several pages or panels). Today's date is ${today} (for reference only \u2014 do NOT deliberate about ages or years). Read EVERYTHING: patient/header details, every test row on every page, units, reference ranges, and dates.
 
-Return ONLY valid JSON:
-{
-  "analyzable": <true|false>,
-  "summary": "2-4 sentence plain-language overview in ${lang}",
-  "tests": [ { "name": "test name", "value": "as printed", "unit": "as printed", "referenceRange": "as printed or empty", "status": "<low|normal|high|unknown>", "explanation": "1 simple sentence in ${lang}" } ],
-  "flagged": ["names of tests that are out of range"],
-  "questionsForDoctor": ["2-4 useful questions to ask your doctor, in ${lang}"],
-  "disclaimer": "one-sentence reminder in ${lang} that this is educational, not a diagnosis"
-}
+Write like a caring, careful doctor explaining results to a family: clear, reassuring, honest, and genuinely useful. CONNECT the findings into one coherent picture instead of listing them in isolation. Always account for the patient's AGE and SEX when interpreting reference ranges (e.g. ideal young-adult targets are not realistic for an elderly patient; note sex-specific ranges).
 
-RULES:
-- NEVER diagnose, never name diseases as conclusions, never suggest treatment. Describe what markers measure, not what condition the person has.
-- Be calm and non-alarming. For out-of-range values, say it "is outside the typical range and worth discussing with a doctor".
-- Only include tests you can actually read. Keep values/units exactly as printed.
-- If the file is NOT a readable lab report, set "analyzable" to false, leave "tests" empty, and put a short note in "summary" (in ${lang}) asking for a clearer photo or PDF.
-- All human-readable text MUST be in ${lang}.` },
-        { inlineData: { mimeType, data: base64Data } }
+Fill the given JSON schema (it defines the exact structure \u2014 you do not need to restate it). Field guide:
+- reportInfo: COPY the patient's name/sex/age/DOB, reason/diagnosis, sample date, doctor, facility and panel names EXACTLY as printed. Do not compute or deliberate.
+- tests: EVERY row from every page; value, unit and referenceRange EXACTLY as printed; status = low|normal|high|unknown; "category" = the test's panel name.
+- overview: 2-3 sentences on how the findings connect. findings: only the important abnormal results (short title, severity info|mild|moderate|high, a SHORT plain explanation, never a diagnosis). reassuring = normal/good news. urgency = {short level, 1-2 sentences}. emergencyRedFlags / questionsForDoctor / furtherTests = short lists. homeActions = {dos, donts}. disclaimer = one sentence.
+
+CRITICAL RULES:
+- NEVER state a diagnosis or name a disease as a conclusion. Describe what markers measure and what they MAY indicate, always deferring to the doctor. Use careful, hedged language.
+- Be calm and non-alarming, but do not hide important findings. For out-of-range values, explain plainly and say they are worth discussing with a doctor.
+- Read and include EVERY test row from EVERY page. Keep values, units and reference ranges EXACTLY as printed. Group each test by its panel in "category".
+- Tailor interpretation to the patient's age and sex when shown; if a flagged value is expected/benign for that age, say so in referenceNotes or the finding.
+- "findings" covers the abnormal or clinically meaningful results (not every normal one). "reassuring" covers the normal / good news.
+- emergencyRedFlags must be genuinely urgent symptoms relevant to the abnormal findings.
+- If the file is NOT a readable lab report, set "analyzable" false, leave arrays empty, and put a short note in "overview" (in ${lang}) asking for a clearer photo or the original PDF.
+- Keep the overview and every explanation FOCUSED and CONCISE \u2014 a few clear sentences each. This is a fast, readable summary, not a long essay.
+- Output ONLY the final JSON values. NEVER write your reasoning, calculations, working notes, or any repeated/looping text inside a field \u2014 each field holds exactly ONE concise final value. Do not deliberate; just state the result.
+- ALL human-readable text MUST be in ${lang}.${LAB_LITE ? "\n- BRIEF MODE (this is CRITICAL \u2014 respond quickly and compactly): each finding explanation = 1 short sentence; overview = 2 sentences. Include only the most important items \u2014 at most 4 findings, 3 questions, 3 further tests, 3 reassuring points, 3 emergency red flags, 2 dos and 2 donts. STILL include EVERY test row in the table (these are compact)." : ""}` },
+        ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.base64Data } }))
       ]
     }],
-    generationConfig: { responseMimeType: "application/json", maxOutputTokens: 8192, temperature: 0.1, thinkingConfig: { thinkingBudget: 0 } }
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: LAB_SCHEMA,
+      maxOutputTokens: LAB_LITE ? 5120 : 12288,
+      temperature: 0.5,
+      thinkingConfig: { thinkingBudget: LAB_LITE ? 0 : 1024 }
+    },
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+    ]
   };
 }
 var aiRouter = router({
-  publicAnalyzeLabReport: publicProcedure.input(z3.object({ fileBase64: z3.string().min(1), mimeType: z3.string().default("image/jpeg"), language: z3.string().default("en") })).mutation(async ({ input, ctx }) => {
+  // Authenticated lab analysis — logged-in users get the full reader, no IP cap.
+  analyzeLabReport: protectedProcedure.input(z3.object({
+    files: z3.array(z3.object({
+      fileBase64: z3.string().min(1),
+      mimeType: z3.string().default("image/jpeg")
+    })).min(1).max(5),
+    language: z3.string().default("en")
+  })).mutation(async ({ input }) => {
+    const files = input.files.map((f) => {
+      const m = f.fileBase64.match(/^data:([^;]+);base64,/i);
+      return { mimeType: m?.[1] || f.mimeType, base64Data: f.fileBase64.replace(/^data:[^;]+;base64,/i, "") };
+    });
+    const payload = buildLabReportPrompt(input.language, files);
+    const result = await callGemini(payload, LAB_LITE ? 1 : 2, LAB_MODEL);
+    return { ...result, remainingToday: 999 };
+  }),
+  // Public IP-rate-limited demo (works without login).
+  publicAnalyzeLabReport: publicProcedure.input(z3.object({
+    files: z3.array(z3.object({
+      fileBase64: z3.string().min(1),
+      mimeType: z3.string().default("image/jpeg")
+    })).min(1).max(5),
+    language: z3.string().default("en")
+  })).mutation(async ({ input, ctx }) => {
     const isPremiumUser = ctx.user !== null && ["pro", "pro_plus", "lifetime"].includes(ctx.user.plan ?? "");
     let remaining = 999;
     if (!isPremiumUser) {
       const ip = ctx.req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || ctx.req.socket?.remoteAddress || "unknown";
       remaining = checkIpLimit(ip, 3);
     }
-    const mimeMatch = input.fileBase64.match(/^data:([^;]+);base64,/i);
-    const realMime = mimeMatch?.[1] || input.mimeType;
-    const data = input.fileBase64.replace(/^data:[^;]+;base64,/i, "");
-    const payload = buildLabReportPrompt(input.language, realMime, data);
-    const apiKey = getApiKey();
-    const url = `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
-    const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    if (!response.ok) throw new TRPCError4({ code: "INTERNAL_SERVER_ERROR", message: "Lab analysis failed" });
-    const dj = await response.json();
-    const parts = dj?.candidates?.[0]?.content?.parts ?? [];
-    const rawText = parts.find((p) => typeof p.text === "string")?.text ?? "{}";
-    const result = extractJson(rawText);
+    const files = input.files.map((f) => {
+      const m = f.fileBase64.match(/^data:([^;]+);base64,/i);
+      return { mimeType: m?.[1] || f.mimeType, base64Data: f.fileBase64.replace(/^data:[^;]+;base64,/i, "") };
+    });
+    const payload = buildLabReportPrompt(input.language, files);
+    const result = await callGemini(payload, LAB_LITE ? 1 : 2, LAB_MODEL);
     return { ...result, remainingToday: remaining };
   }),
   analyzeImage: protectedProcedure.input(
