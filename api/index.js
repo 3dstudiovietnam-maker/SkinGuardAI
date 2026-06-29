@@ -1308,10 +1308,12 @@ var LAB_SCHEMA = {
 };
 function buildLabReportPrompt(lang, files) {
   const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const LAB_LANG_NAMES = { en: "English", hu: "Hungarian", de: "German", es: "Spanish", pt: "Portuguese", ru: "Russian", zh: "Chinese (Simplified)", vi: "Vietnamese", hi: "Hindi", th: "Thai", ro: "Romanian" };
+  const langName = LAB_LANG_NAMES[lang] || lang;
   return {
     contents: [{
       parts: [
-        { text: `You are a meticulous medical health-literacy expert writing a PROFESSIONAL, patient-friendly summary of a LABORATORY REPORT for a layperson and their family. The attached file(s) are medical lab report(s) (may be several pages or panels). Today's date is ${today} (for reference only \u2014 do NOT deliberate about ages or years). Read EVERYTHING: patient/header details, every test row on every page, units, reference ranges, and dates.
+        { text: `You are a meticulous medical health-literacy expert writing a PROFESSIONAL, patient-friendly summary of a LABORATORY REPORT for a layperson and their family. CRITICAL OUTPUT LANGUAGE: write your ENTIRE response - every field value, finding, explanation, question and note - in ${langName}. These instructions are in English, but your output must be written 100% in ${langName}, NOT in English. The attached file(s) are medical lab report(s) (may be several pages or panels). Today's date is ${today} (for reference only \u2014 do NOT deliberate about ages or years). Read EVERYTHING: patient/header details, every test row on every page, units, reference ranges, and dates.
 
 Write like a caring, careful doctor explaining results to a family: clear, reassuring, honest, and genuinely useful. CONNECT the findings into one coherent picture instead of listing them in isolation. Always account for the patient's AGE and SEX when interpreting reference ranges (e.g. ideal young-adult targets are not realistic for an elderly patient; note sex-specific ranges).
 
@@ -1327,10 +1329,10 @@ CRITICAL RULES:
 - Tailor interpretation to the patient's age and sex when shown; if a flagged value is expected/benign for that age, say so in referenceNotes or the finding.
 - "findings" covers the abnormal or clinically meaningful results (not every normal one). "reassuring" covers the normal / good news.
 - emergencyRedFlags must be genuinely urgent symptoms relevant to the abnormal findings.
-- If the file is NOT a readable lab report, set "analyzable" false, leave arrays empty, and put a short note in "overview" (in ${lang}) asking for a clearer photo or the original PDF.
+- If the file is NOT a readable lab report, set "analyzable" false, leave arrays empty, and put a short note in "overview" (in ${langName}) asking for a clearer photo or the original PDF.
 - Keep the overview and every explanation FOCUSED and CONCISE \u2014 a few clear sentences each. This is a fast, readable summary, not a long essay.
 - Output ONLY the final JSON values. NEVER write your reasoning, calculations, working notes, or any repeated/looping text inside a field \u2014 each field holds exactly ONE concise final value. Do not deliberate; just state the result.
-- ALL human-readable text MUST be in ${lang}.${LAB_LITE ? "\n- BRIEF MODE (this is CRITICAL \u2014 respond quickly and compactly): each finding explanation = 1 short sentence; overview = 2 sentences. Include only the most important items \u2014 at most 4 findings, 3 questions, 3 further tests, 3 reassuring points, 3 emergency red flags, 2 dos and 2 donts. STILL include EVERY test row in the table (these are compact)." : ""}` },
+- ALL human-readable text MUST be in ${langName}.${LAB_LITE ? "\n- BRIEF MODE (this is CRITICAL \u2014 respond quickly and compactly): each finding explanation = 1 short sentence; overview = 2 sentences. Include only the most important items \u2014 at most 4 findings, 3 questions, 3 further tests, 3 reassuring points, 3 emergency red flags, 2 dos and 2 donts. STILL include EVERY test row in the table (these are compact)." : ""}` },
         ...files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.base64Data } }))
       ]
     }],
