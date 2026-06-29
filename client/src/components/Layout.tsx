@@ -284,7 +284,7 @@ export default function Layout({ children }: LayoutProps) {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/YTSzalag_06e5e3e1.png"
+                  src="/cdn/YTSzalag_06e5e3e1.png"
                   alt="NOX UNIVERSE"
                   className="h-10"
                 />

@@ -312,22 +312,22 @@ export default function Capture() {
           <h3 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">{t('capture.howToTitle')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-good-lighting-VBaTFkQqNDHKVDFqjTzbGr.webp" alt={t('capture.goodLighting')} className="w-full h-40 object-cover rounded-lg mb-4" />
+              <img src="/cdn/photo-guide-good-lighting-VBaTFkQqNDHKVDFqjTzbGr.webp" alt={t('capture.goodLighting')} className="w-full h-40 object-cover rounded-lg mb-4" />
               <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.goodLighting')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.goodLightingDesc')}</p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-straight-angle-im4RHzdeCEp3YkGe7e5fbw.webp" alt={t('capture.straightAngle')} className="w-full h-40 object-cover rounded-lg mb-4" />
+              <img src="/cdn/photo-guide-straight-angle-im4RHzdeCEp3YkGe7e5fbw.webp" alt={t('capture.straightAngle')} className="w-full h-40 object-cover rounded-lg mb-4" />
               <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.straightAngle')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.straightAngleDesc')}</p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-close-clear-ax4jkAFvPvwifxMphXMUqa.webp" alt={t('capture.closeAndClear')} className="w-full h-40 object-cover rounded-lg mb-4" />
+              <img src="/cdn/photo-guide-close-clear-ax4jkAFvPvwifxMphXMUqa.webp" alt={t('capture.closeAndClear')} className="w-full h-40 object-cover rounded-lg mb-4" />
               <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.closeAndClear')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.closeAndClearDesc')}</p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-cyan-200/40">
-              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photo-guide-clean-skin-XvV2TF98reSNwkDmyJYyxF.webp" alt={t('capture.cleanSkin')} className="w-full h-40 object-cover rounded-lg mb-4" />
+              <img src="/cdn/photo-guide-clean-skin-XvV2TF98reSNwkDmyJYyxF.webp" alt={t('capture.cleanSkin')} className="w-full h-40 object-cover rounded-lg mb-4" />
               <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('capture.cleanSkin')}</h4>
               <p className="text-sm text-muted-foreground">{t('capture.cleanSkinDesc')}</p>
             </div>
@@ -343,7 +343,7 @@ export default function Capture() {
         >
           <h3 className="font-heading text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">{t('capture.tipsTitle')}</h3>
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-cyan-200/40 p-6 overflow-x-auto">
-            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/photography-guide_35cf840e.png" alt="Photography Guide" className="w-full h-auto rounded-lg" />
+            <img src="/cdn/photography-guide_35cf840e.png" alt="Photography Guide" className="w-full h-auto rounded-lg" />
           </div>
         </motion.div>
       )}

@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/skinguard-hero-3d-dxG4qYePkYE5GXRkK2HRWb.webp";
+const HERO_IMG = "/cdn/skinguard-hero-3d-dxG4qYePkYE5GXRkK2HRWb.webp";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },

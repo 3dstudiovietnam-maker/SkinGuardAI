@@ -98,7 +98,7 @@ export default function TestMonitor() {
     {
       titleKey: "monitor.morningStretchingTitle",
       descKey: "monitor.morningStretchingDesc",
-      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/fitness-stretching-3d-446nSrgs3vTdwHVUGiNhQG.webp",
+      image: "/cdn/fitness-stretching-3d-446nSrgs3vTdwHVUGiNhQG.webp",
       durationKey: "monitor.morningStretchingDuration",
       stepKeys: [
         "monitor.morningStretchingStep1",
@@ -111,7 +111,7 @@ export default function TestMonitor() {
     {
       titleKey: "monitor.lightWalkingTitle",
       descKey: "monitor.lightWalkingDesc",
-      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/fitness-walking-3d-N88k3mKzgtyU3xrZyntqbA.webp",
+      image: "/cdn/fitness-walking-3d-N88k3mKzgtyU3xrZyntqbA.webp",
       durationKey: "monitor.lightWalkingDuration",
       stepKeys: [
         "monitor.lightWalkingStep1",
@@ -124,7 +124,7 @@ export default function TestMonitor() {
     {
       titleKey: "monitor.yogaBalanceTitle",
       descKey: "monitor.yogaBalanceDesc",
-      image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/fitness-yoga-3d-eN9aPjrJCUJA4nj8VPPN7S.webp",
+      image: "/cdn/fitness-yoga-3d-eN9aPjrJCUJA4nj8VPPN7S.webp",
       durationKey: "monitor.yogaBalanceDuration",
       stepKeys: [
         "monitor.yogaBalanceStep1",
