@@ -246,8 +246,9 @@ async function callGeminiWithRetry(
       try {
         return extractJson(rawText);
       } catch {
-        lastError = new Error(`Invalid JSON on attempt ${attempt}/${maxRetries}: ${rawText.slice(0, 120)}`);
-        console.warn(`Gemini JSON parse failed on attempt ${attempt}:`, lastError.message);
+        // PRIVACY: don't embed model output (rawText) in the error/log.
+        lastError = new Error(`Invalid JSON from Gemini on attempt ${attempt}/${maxRetries}.`);
+        console.warn(`Gemini JSON parse failed on attempt ${attempt}.`);
         if (attempt === maxRetries) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
