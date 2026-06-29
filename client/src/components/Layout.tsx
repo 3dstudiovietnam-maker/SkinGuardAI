@@ -313,9 +313,9 @@ export default function Layout({ children }: LayoutProps) {
             <div>
               <h4 className="font-semibold text-white mb-4">{t('footer.legal.title')}</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/legal#privacy" className="text-slate-400 hover:text-white no-underline transition-colors">{t('footer.legal.privacy')}</Link></li>
-                <li><Link href="/legal#terms" className="text-slate-400 hover:text-white no-underline transition-colors">{t('footer.legal.terms')}</Link></li>
-                <li><Link href="/legal#notice" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.legalNotice')}</Link></li>
+                <li><Link href="/privacy" className="text-slate-400 hover:text-white no-underline transition-colors">{t('footer.legal.privacy')}</Link></li>
+                <li><Link href="/terms" className="text-slate-400 hover:text-white no-underline transition-colors">{t('footer.legal.terms')}</Link></li>
+                <li><Link href="/legal" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.legalNotice')}</Link></li>
                 <li><Link href="/disclaimer" className="text-slate-400 hover:text-red-400 no-underline transition-colors flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {t('disclaimer.title')}</Link></li>
               </ul>
             </div>

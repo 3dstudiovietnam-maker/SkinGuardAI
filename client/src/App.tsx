@@ -24,6 +24,8 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const HealthReport = lazy(() => import("./pages/HealthReport"));
 const TestMonitor = lazy(() => import("./pages/TestMonitor"));
 const Legal = lazy(() => import("./pages/Legal"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Videos = lazy(() => import("./pages/Videos"));
 const FAQ = lazy(() => import("./pages/FAQ"));
@@ -66,6 +68,8 @@ function Router() {
         <Route path={"/health-report"} component={HealthReport} />
         <Route path={"/test-monitor"} component={TestMonitor} />
         <Route path={"/legal"} component={Legal} />
+        <Route path={"/privacy"} component={Privacy} />
+        <Route path={"/terms"} component={Terms} />
         <Route path={"/contact"} component={Contact} />
         <Route path={"/videos"} component={Videos} />
         <Route path={"/faq"} component={FAQ} />
