@@ -73,7 +73,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-3 no-underline">
             <img
-              src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663394168688/jYIrjqasovImfira.png"
+              src="/logo.png"
               alt="SkinGuard AI"
               className="w-10 h-10 object-contain"
             />
