@@ -3,10 +3,26 @@
  * IP Protection, Copyright, Medical Disclaimer
  */
 
+import { useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Legal() {
   const { t } = useLanguage();
+
+  // Footer links point at #privacy / #terms / #notice — scroll to the right
+  // section on load and when the hash changes (e.g. clicking Terms while already
+  // on /legal), so each legal link lands on its relevant content.
+  useEffect(() => {
+    const scrollToHash = () => {
+      const id = decodeURIComponent(window.location.hash.replace("#", ""));
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, []);
 
   const prohibited = [
     t('leg.prohibited1'), t('leg.prohibited2'), t('leg.prohibited3'), t('leg.prohibited4'),
@@ -23,7 +39,7 @@ export default function Legal() {
         <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-8">{t('leg.title')}</h1>
 
         {/* Copyright & IP */}
-        <section className="mb-12">
+        <section id="notice" className="mb-12 scroll-mt-24">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.ipTitle')}</h2>
           <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 space-y-4">
             <p className="text-slate-700 dark:text-slate-300">
@@ -74,7 +90,7 @@ export default function Legal() {
         </section>
 
         {/* Data Privacy */}
-        <section className="mb-12">
+        <section id="privacy" className="mb-12 scroll-mt-24">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.dataTitle')}</h2>
           <div className="space-y-4 text-slate-700 dark:text-slate-300">
             <p>
@@ -105,8 +121,8 @@ export default function Legal() {
           </div>
         </section>
 
-        {/* Acceptable Use */}
-        <section className="mb-12">
+        {/* Acceptable Use (Terms of Service) */}
+        <section id="terms" className="mb-12 scroll-mt-24">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.useTitle')}</h2>
           <div className="space-y-4 text-slate-700 dark:text-slate-300">
             <p>
