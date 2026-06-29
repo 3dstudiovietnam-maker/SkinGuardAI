@@ -28,7 +28,7 @@ const videos: Video[] = [
     titleKey: "videos.v1Title",
     descKey: "videos.v1Desc",
     thumbnail: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=225&fit=crop",
-    videoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/video-1-app-demo_e4478692.mp4",
+    videoUrl: "/cdn/video-1-app-demo_e4478692.mp4",
     duration: "0:30",
     type: "demo"
   },
@@ -37,7 +37,7 @@ const videos: Video[] = [
     titleKey: "videos.v2Title",
     descKey: "videos.v2Desc",
     thumbnail: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=400&h=225&fit=crop",
-    videoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/video-2-trending-audio_82682e80.mp4",
+    videoUrl: "/cdn/video-2-trending-audio_82682e80.mp4",
     duration: "0:30",
     type: "trending"
   },
@@ -46,7 +46,7 @@ const videos: Video[] = [
     titleKey: "videos.v3Title",
     descKey: "videos.v3Desc",
     thumbnail: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=225&fit=crop",
-    videoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663394168688/kZ49tdkVmLHcu3Y3TSHN32/video-3-explainer_5518eb78.mp4",
+    videoUrl: "/cdn/video-3-explainer_5518eb78.mp4",
     duration: "0:45",
     type: "explainer"
   }
