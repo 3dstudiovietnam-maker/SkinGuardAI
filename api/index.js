@@ -1242,7 +1242,7 @@ RULES:
         { inlineData: { mimeType, data: base64Data } }
       ]
     }],
-    generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2048, temperature: 0.1 }
+    generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2048, temperature: 0.1, thinkingConfig: { thinkingBudget: 0 } }
   };
 }
 var aiRouter = router({
@@ -1253,8 +1253,10 @@ var aiRouter = router({
       const ip = ctx.req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || ctx.req.socket?.remoteAddress || "unknown";
       remaining = checkIpLimit(ip, 3);
     }
+    const mimeMatch = input.fileBase64.match(/^data:([^;]+);base64,/i);
+    const realMime = mimeMatch?.[1] || input.mimeType;
     const data = input.fileBase64.replace(/^data:[^;]+;base64,/i, "");
-    const payload = buildLabReportPrompt(input.language, input.mimeType, data);
+    const payload = buildLabReportPrompt(input.language, realMime, data);
     const apiKey = getApiKey();
     const url = `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
     const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
