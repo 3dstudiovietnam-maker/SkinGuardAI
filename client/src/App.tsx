@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -10,7 +10,7 @@ import { SkinStoreProvider } from "./contexts/SkinStore";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
-import { ScrollToTop } from "./components/ScrollToTop";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 // Lazy-loaded routes — split heavy pages (charts, PDF, camera, AI) out of the
 // initial bundle so the landing page loads fast. Loaded on demand per route.
@@ -50,12 +50,19 @@ function RouteFallback() {
 }
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
+  const [location] = useLocation();
+  const reduce = useReducedMotion();
+  // Gentle fade+slide page transition on navigation. Respects prefers-reduced-motion
+  // (drops movement to an instant swap — important for motion-sensitive users).
+  const variants = reduce
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } }
+    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6 } };
   return (
     <Layout>
-      <ScrollToTop />
-      <Suspense fallback={<RouteFallback />}>
-      <Switch>
+      <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo(0, 0)}>
+        <motion.div key={location} variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: reduce ? 0 : 0.22, ease: "easeOut" }}>
+          <Suspense fallback={<RouteFallback />}>
+          <Switch location={location}>
         <Route path={"/"} component={Home} />
         <Route path={"/dashboard"} component={Dashboard} />
         <Route path={"/lab-analysis"} component={LabAnalysis} />
@@ -86,8 +93,10 @@ function Router() {
         <Route path={"/disclaimer"} component={Disclaimer} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
-      </Switch>
-      </Suspense>
+          </Switch>
+          </Suspense>
+        </motion.div>
+      </AnimatePresence>
     </Layout>
   );
 }
