@@ -199,11 +199,11 @@ export default function Dashboard() {
         className="relative overflow-hidden rounded-3xl mb-8 bg-gradient-to-br from-primary to-primary/75 dark:from-primary/90 dark:to-primary/55 p-7 sm:p-10 text-white shadow-lg shadow-primary/20"
       >
         <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="absolute right-6 top-6 opacity-20 hidden sm:block pointer-events-none">
+        <div className="absolute right-6 top-6 opacity-20 hidden sm:block pointer-events-none" aria-hidden="true">
           <ScanLine className="w-24 h-24" />
         </div>
         <div className="relative max-w-xl">
-          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mb-5">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mb-5" aria-hidden="true">
             <ScanLine className="w-7 h-7" />
           </div>
           <h2 className="font-heading text-2xl sm:text-3xl font-bold mb-2">{t('dashboard.scanHeroTitle')}</h2>
