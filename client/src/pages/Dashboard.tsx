@@ -1,7 +1,7 @@
 /* DermIQ Dashboard - Clinical Serenity Design */
 import { useState } from "react";
 import { Link } from "wouter";
-import { Plus, MapPin, Clock, AlertTriangle, CheckCircle, ChevronRight, Shield, Zap, Sparkles, Gift, AlertCircle } from "lucide-react";
+import { Plus, MapPin, Clock, AlertTriangle, CheckCircle, ChevronRight, Shield, Zap, Sparkles, Gift, AlertCircle, ScanLine, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSkinStore } from "@/contexts/SkinStore";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -86,112 +86,145 @@ export default function Dashboard() {
   const plan = (user as any)?.plan as string | undefined;
   const planInfo = PLAN_INFO[plan ?? "essential"] ?? PLAN_INFO["essential"];
 
+  // Plan / promo card — kept intact, moved BELOW the primary action (Lien: "explanation after")
+  const planCard = (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.05 }}
+      className={`rounded-2xl border-2 p-5 mt-6 ${planInfo.color}`}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          {plan === "lifetime" ? (
+            <Zap className="w-5 h-5 text-amber-500" />
+          ) : (
+            <Shield className="w-5 h-5 text-primary" />
+          )}
+          <span className="font-semibold text-sm">{t(planInfo.labelKey)}</span>
+        </div>
+        {(plan === "essential" || !plan) && (
+          <Link href="/pricing">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-xs">
+              {t('dashboard.upgradePlan')}
+            </Button>
+          </Link>
+        )}
+        {(plan === "pro" || plan === "pro_plus") && (
+          <Link href="/pricing">
+            <Button size="sm" variant="outline" className="text-xs border-primary/30 text-primary">
+              {t('dashboard.viewPlans')}
+            </Button>
+          </Link>
+        )}
+      </div>
+
+      {/* Free scans info - csak Essential esetén jelenik meg */}
+      {(plan === "essential" || !plan) && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-amber-600" />
+          <span className="text-sm font-medium text-amber-800">
+            {t('dashboard.freeScansInfo')}
+          </span>
+        </div>
+      )}
+
+      {/* Promo code input - csak Essential esetén */}
+      {(plan === "essential" || !plan) && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <Gift className="w-4 h-4 text-amber-600" />
+            <span className="text-sm font-semibold text-amber-800">{t("auth.havePromoCode")}</span>
+          </div>
+          {promoSuccess ? (
+            <div className="flex items-center gap-2 text-green-700 text-sm font-semibold">
+              <CheckCircle className="w-4 h-4" />
+              <span>{t("auth.promoActivated")}</span>
+            </div>
+          ) : (
+            <>
+              {promoError && (
+                <p className="text-xs text-red-600 mb-2 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {promoError}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); }}
+                  placeholder={t("auth.promoCodePlaceholder") || "e.g. SKIN-LT-0550"}
+                  className="flex-1 px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white dark:bg-slate-900"
+                  disabled={promoLoading}
+                  onKeyDown={e => e.key === "Enter" && handlePromoRedeem()}
+                />
+                <Button
+                  onClick={handlePromoRedeem}
+                  disabled={promoLoading || !promoCode.trim()}
+                  size="sm"
+                  className="bg-amber-500 hover:bg-amber-600 text-white font-semibold"
+                >
+                  {promoLoading ? "..." : t("auth.activateBtn")}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        {planInfo.featureKeys.map((k, i) => (
+          <div key={i} className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300">
+            <CheckCircle className="w-3.5 h-3.5 text-primary shrink-0" />
+            {t(k)}
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+
   return (
     <div className="container py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-heading text-3xl font-bold">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground mt-1">{t('dashboard.overview')}</p>
         </div>
-        <Link href="/capture">
-          <Button className="bg-primary hover:bg-primary/90">
+        <Link href="/capture" className="hidden sm:block">
+          <Button variant="outline" className="border-primary/30 text-primary">
             <Plus className="w-4 h-4 mr-1.5" /> {t('dashboard.newCapture')}
           </Button>
         </Link>
       </div>
 
-      {/* Current Plan Card */}
+      {/* HERO — camera-first (Lien user feedback: hook before explanation, one tap to the scan) */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className={`rounded-2xl border-2 p-5 mb-8 ${planInfo.color}`}
+        className="relative overflow-hidden rounded-3xl mb-8 bg-gradient-to-br from-primary to-primary/75 dark:from-primary/90 dark:to-primary/55 p-7 sm:p-10 text-white shadow-lg shadow-primary/20"
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {plan === "lifetime" ? (
-              <Zap className="w-5 h-5 text-amber-500" />
-            ) : (
-              <Shield className="w-5 h-5 text-primary" />
-            )}
-            <span className="font-semibold text-sm">{t(planInfo.labelKey)}</span>
-          </div>
-          {(plan === "essential" || !plan) && (
-            <Link href="/pricing">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-xs">
-                {t('dashboard.upgradePlan')}
-              </Button>
-            </Link>
-          )}
-          {(plan === "pro" || plan === "pro_plus") && (
-            <Link href="/pricing">
-              <Button size="sm" variant="outline" className="text-xs border-primary/30 text-primary">
-                {t('dashboard.viewPlans')}
-              </Button>
-            </Link>
-          )}
+        <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <div className="absolute right-6 top-6 opacity-20 hidden sm:block pointer-events-none">
+          <ScanLine className="w-24 h-24" />
         </div>
-        
-        {/* Free scans info - csak Essential esetén jelenik meg */}
-        {(plan === "essential" || !plan) && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-600" />
-            <span className="text-sm font-medium text-amber-800">
-              {t('dashboard.freeScansInfo')}
-            </span>
+        <div className="relative max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mb-5">
+            <ScanLine className="w-7 h-7" />
           </div>
-        )}
-
-        {/* Promo code input - csak Essential esetén */}
-        {(plan === "essential" || !plan) && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl">
-            <div className="flex items-center gap-2 mb-3">
-              <Gift className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-semibold text-amber-800">{t("auth.havePromoCode")}</span>
-            </div>
-            {promoSuccess ? (
-              <div className="flex items-center gap-2 text-green-700 text-sm font-semibold">
-                <CheckCircle className="w-4 h-4" />
-                <span>{t("auth.promoActivated")}</span>
-              </div>
-            ) : (
-              <>
-                {promoError && (
-                  <p className="text-xs text-red-600 mb-2 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {promoError}
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); }}
-                    placeholder={t("auth.promoCodePlaceholder") || "e.g. SKIN-LT-0550"}
-                    className="flex-1 px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm uppercase tracking-wider bg-white dark:bg-slate-900"
-                    disabled={promoLoading}
-                    onKeyDown={e => e.key === "Enter" && handlePromoRedeem()}
-                  />
-                  <Button
-                    onClick={handlePromoRedeem}
-                    disabled={promoLoading || !promoCode.trim()}
-                    size="sm"
-                    className="bg-amber-500 hover:bg-amber-600 text-white font-semibold"
-                  >
-                    {promoLoading ? "..." : t("auth.activateBtn")}
-                  </Button>
-                </div>
-              </>
-            )}
+          <h2 className="font-heading text-2xl sm:text-3xl font-bold mb-2">{t('dashboard.scanHeroTitle')}</h2>
+          <p className="text-white/90 text-sm sm:text-base mb-6">{t('dashboard.scanHeroDesc')}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/capture">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold shadow-md">
+                <Camera className="w-5 h-5 mr-2" /> {t('dashboard.scanHeroCta')}
+              </Button>
+            </Link>
+            <Link href="/body-map">
+              <Button size="lg" variant="ghost" className="text-white hover:bg-white/15 border border-white/30">
+                <MapPin className="w-4 h-4 mr-2" /> {t('dashboard.bodyMap')}
+              </Button>
+            </Link>
           </div>
-        )}
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-          {planInfo.featureKeys.map((k, i) => (
-            <div key={i} className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300">
-              <CheckCircle className="w-3.5 h-3.5 text-primary shrink-0" />
-              {t(k)}
-            </div>
-          ))}
         </div>
       </motion.div>
 
@@ -311,6 +344,9 @@ export default function Dashboard() {
           </div>
         </Link>
       </div>
+
+      {/* Plan / promo card — moved to the bottom per Lien's "hook first, explain later" */}
+      {planCard}
     </div>
   );
 }
