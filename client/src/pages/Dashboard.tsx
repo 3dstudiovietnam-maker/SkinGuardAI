@@ -28,7 +28,7 @@ const PLAN_INFO: Record<string, { labelKey: string; color: string; featureKeys: 
   },
   lifetime: {
     labelKey: "userDashboard.planLifetime",
-    color: "border-amber-400 bg-amber-50",
+    color: "border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700",
     featureKeys: ["pricing.feat_2", "pricing.feat_3", "pricing.feat_5", "pricing.feat_6", "pricing.feat_7", "pricing.feat_8", "pricing.feat_9", "pricing.feat_10", "pricing.feat_11", "userDashboard.planLifetimeFeature"],
   },
 };
@@ -121,9 +121,9 @@ export default function Dashboard() {
 
       {/* Free scans info - csak Essential esetén jelenik meg */}
       {(plan === "essential" || !plan) && (
-        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-600" />
-          <span className="text-sm font-medium text-amber-800">
+          <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
             {t('dashboard.freeScansInfo')}
           </span>
         </div>
@@ -131,10 +131,10 @@ export default function Dashboard() {
 
       {/* Promo code input - csak Essential esetén */}
       {(plan === "essential" || !plan) && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl">
+        <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl">
           <div className="flex items-center gap-2 mb-3">
             <Gift className="w-4 h-4 text-amber-600" />
-            <span className="text-sm font-semibold text-amber-800">{t("auth.havePromoCode")}</span>
+            <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">{t("auth.havePromoCode")}</span>
           </div>
           {promoSuccess ? (
             <div className="flex items-center gap-2 text-green-700 text-sm font-semibold">
@@ -190,11 +190,6 @@ export default function Dashboard() {
           <h1 className="font-heading text-3xl font-bold">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground mt-1">{t('dashboard.overview')}</p>
         </div>
-        <Link href="/capture" className="hidden sm:block">
-          <Button variant="outline" className="border-primary/30 text-primary">
-            <Plus className="w-4 h-4 mr-1.5" /> {t('dashboard.newCapture')}
-          </Button>
-        </Link>
       </div>
 
       {/* HERO — camera-first (Lien user feedback: hook before explanation, one tap to the scan) */}
