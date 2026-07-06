@@ -1,7 +1,7 @@
 /* DermIQ Dashboard - Clinical Serenity Design */
 import { useState } from "react";
 import { Link } from "wouter";
-import { Plus, MapPin, Clock, AlertTriangle, CheckCircle, ChevronRight, Shield, Zap, Sparkles, Gift, AlertCircle, ScanLine, Camera } from "lucide-react";
+import { Plus, MapPin, Clock, AlertTriangle, CheckCircle, ChevronRight, Shield, Zap, Sparkles, Gift, AlertCircle, ScanLine, Camera, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSkinStore } from "@/contexts/SkinStore";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -310,6 +310,20 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <Link href="/lab-analysis">
+          <div className="bg-card rounded-2xl border border-border/60 p-5 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300 flex items-center justify-center">
+                <FlaskConical className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-heading font-semibold text-sm">{t('lab.qaLabel')}</h3>
+                <p className="text-xs text-muted-foreground">{t('lab.qaDesc')}</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground ml-auto" />
+            </div>
+          </div>
+        </Link>
         <Link href="/body-map">
           <div className="bg-card rounded-2xl border border-border/60 p-5 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-4">
