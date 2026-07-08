@@ -10,6 +10,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { AnimatedLogo } from "@/components/AnimatedLogo";
+import { MoleTrendChart } from "@/components/MoleTrendChart";
 
 const biyovisPromoTexts: Record<string, string> = {
   en: "💧 Taking care of your skin is just as important as monitoring it. Biyovis® 4-LEVEL HYDRO ACTIVE hydrating gel provides medical-grade regeneration. 👉 www.biyovis.hu/HU-eng",
@@ -238,6 +239,9 @@ export default function MoleDetail() {
               <p className="text-sm leading-relaxed">{t(`aiDescriptions.${analysis.recommendationCode}`)}</p>
             </div>
           )}
+
+          {/* ABCDE evolution over time — the "is it changing?" signal */}
+          <MoleTrendChart photos={photos} />
 
           {/* Biyovis Promo Card - permanent */}
           <div className="mt-3 bg-gradient-to-r from-blue-50 dark:from-slate-900 to-cyan-50 dark:to-slate-800 border border-blue-200 rounded-xl p-4">
