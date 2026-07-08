@@ -45,6 +45,7 @@ export default function Capture() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [step, setStep] = useState<"capture" | "details">("capture");
   const [moleName, setMoleName] = useState("");
+  const [noteText, setNoteText] = useState("");
   const [selectedRegion, setSelectedRegion] = useState(params.region || "");
   const [existingMoleId, setExistingMoleId] = useState<string>("");
   const [isNewMole, setIsNewMole] = useState(true);
@@ -191,7 +192,7 @@ export default function Capture() {
       });
       await addPhotoToMole(moleId, {
         dataUrl: capturedImage,
-        notes: "",
+        notes: noteText.trim(),
         aiAnalysis,
       });
       toast.success(t('capture.savedSuccess'));
@@ -199,18 +200,19 @@ export default function Capture() {
     } else {
       await addPhotoToMole(existingMoleId, {
         dataUrl: capturedImage,
-        notes: "",
+        notes: noteText.trim(),
         aiAnalysis,
       });
       toast.success(t('capture.photoAdded'));
       navigate(`/mole/${existingMoleId}`);
     }
-  }, [capturedImage, isNewMole, moleName, selectedRegion, existingMoleId, addMole, addPhotoToMole, navigate, t, analyzeImageMutation, limitReached]);
+  }, [capturedImage, isNewMole, moleName, noteText, selectedRegion, existingMoleId, addMole, addPhotoToMole, navigate, t, analyzeImageMutation, limitReached]);
 
   const reset = () => {
     setCapturedImage(null);
     setStep("capture");
     setMoleName("");
+    setNoteText("");
     setSelectedRegion(params.region || "");
     setExistingMoleId("");
     stopCamera();
@@ -498,6 +500,17 @@ export default function Capture() {
               </div>
             </div>
           )}
+
+          {/* Optional note — symptom context the camera can't see (itchy, bled, new since last check) */}
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">{t('monitor.notes')}</label>
+            <textarea
+              value={noteText}
+              onChange={e => setNoteText(e.target.value)}
+              rows={2}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+            />
+          </div>
 
           <Button
             className="w-full bg-primary hover:bg-primary/90 h-12"

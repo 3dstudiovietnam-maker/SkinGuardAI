@@ -240,6 +240,14 @@ export default function MoleDetail() {
             </div>
           )}
 
+          {/* User's own note captured with the latest photo — symptom context */}
+          {lastPhoto?.notes ? (
+            <div className="mt-4 bg-muted/30 border border-border rounded-xl p-4">
+              <p className="text-xs font-medium text-muted-foreground mb-1">{t('monitor.notes')}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-line">{lastPhoto.notes}</p>
+            </div>
+          ) : null}
+
           {/* ABCDE evolution over time — the "is it changing?" signal */}
           <MoleTrendChart photos={photos} />
 
