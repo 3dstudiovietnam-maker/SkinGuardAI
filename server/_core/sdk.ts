@@ -22,6 +22,9 @@ export type SessionPayload = {
   openId: string;
   appId: string;
   name: string;
+  // Optional email claim — carried by self-contained tokens so any HealthGuard
+  // app can provision the user locally (cross-app SSO) without an external call.
+  email?: string;
 };
 
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
@@ -154,9 +157,24 @@ class SDKServer {
     return new Map(Object.entries(parsed));
   }
 
-  private getSessionSecret() {
-    const secret = ENV.cookieSecret;
+  // Sign with the shared secret when configured so a token verifies on every
+  // HealthGuard app (cross-app SSO); fall back to the per-app secret if the
+  // shared one is not set yet — safe rollout, single-app behaviour until then.
+  private getSigningSecret() {
+    const secret = ENV.sharedCookieSecret || ENV.cookieSecret;
     return new TextEncoder().encode(secret);
+  }
+
+  // Verify against BOTH the shared secret and this app's own secret, so tokens
+  // minted before the shared secret existed (or by a sibling app) still validate.
+  // This is what lets us roll out SSO without logging anyone out.
+  private getVerifySecrets(): Uint8Array[] {
+    const enc = new TextEncoder();
+    const out: Uint8Array[] = [];
+    if (ENV.sharedCookieSecret) out.push(enc.encode(ENV.sharedCookieSecret));
+    if (ENV.cookieSecret) out.push(enc.encode(ENV.cookieSecret));
+    if (out.length === 0) out.push(enc.encode(""));
+    return out;
   }
 
   /**
@@ -166,13 +184,14 @@ class SDKServer {
    */
   async createSessionToken(
     openId: string,
-    options: { expiresInMs?: number; name?: string } = {}
+    options: { expiresInMs?: number; name?: string; email?: string } = {}
   ): Promise<string> {
     return this.signSession(
       {
         openId,
         appId: ENV.appId,
         name: options.name || "",
+        email: options.email,
       },
       options
     );
@@ -185,13 +204,18 @@ class SDKServer {
     const issuedAt = Date.now();
     const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
     const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1000);
-    const secretKey = this.getSessionSecret();
+    const secretKey = this.getSigningSecret();
 
-    return new SignJWT({
+    const claims: Record<string, unknown> = {
       openId: payload.openId,
       appId: payload.appId,
       name: payload.name,
-    })
+    };
+    if (isNonEmptyString(payload.email)) {
+      claims.email = payload.email;
+    }
+
+    return new SignJWT(claims)
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setExpirationTime(expirationSeconds)
       .sign(secretKey);
@@ -199,18 +223,32 @@ class SDKServer {
 
   async verifySession(
     cookieValue: string | undefined | null
-  ): Promise<{ openId: string; appId: string; name: string } | null> {
+  ): Promise<{ openId: string; appId: string; name: string; email?: string } | null> {
     if (!cookieValue) {
       console.warn("[Auth] Missing session cookie");
       return null;
     }
 
     try {
-      const secretKey = this.getSessionSecret();
-      const { payload } = await jwtVerify(cookieValue, secretKey, {
-        algorithms: ["HS256"],
-      });
-      const { openId, appId, name } = payload as Record<string, unknown>;
+      // Try each accepted secret (shared first, then this app's own) so a
+      // session minted by any HealthGuard app — old or new — verifies here.
+      let payload: Record<string, unknown> | null = null;
+      let lastError: unknown = null;
+      for (const secretKey of this.getVerifySecrets()) {
+        try {
+          const res = await jwtVerify(cookieValue, secretKey, {
+            algorithms: ["HS256"],
+          });
+          payload = res.payload as Record<string, unknown>;
+          break;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (!payload) {
+        throw lastError ?? new Error("Session signature did not match any key");
+      }
+      const { openId, appId, name, email } = payload as Record<string, unknown>;
 
       if (
         !isNonEmptyString(openId) ||
@@ -225,6 +263,7 @@ class SDKServer {
         openId,
         appId,
         name,
+        email: isNonEmptyString(email) ? email : undefined,
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -270,7 +309,30 @@ class SDKServer {
     const signedInAt = new Date();
     let user = await db.getUserByOpenId(sessionUserId);
 
-    // If user not in DB, sync from OAuth server automatically
+    // Cross-app single sign-on: the user has a valid HealthGuard session but no
+    // local record yet (they registered on a sibling app). Self-contained tokens
+    // carry an email claim, so we can provision the account locally with NO
+    // external call — this is what makes one free account work on every app.
+    if (!user && isNonEmptyString(session.email)) {
+      // Prefer an existing local account with the same email (they may have
+      // signed up here separately) to avoid a duplicate / unique-email conflict.
+      const byEmail = await db.getUserByEmail(session.email);
+      if (byEmail) {
+        user = byEmail;
+      } else {
+        await db.upsertUser({
+          openId: sessionUserId,
+          name: session.name || null,
+          email: session.email,
+          loginMethod: "email",
+          lastSignedIn: signedInAt,
+        });
+        user = await db.getUserByOpenId(sessionUserId);
+      }
+    }
+
+    // Legacy path: older tokens without an email claim — sync from the OAuth
+    // server automatically (unchanged behaviour).
     if (!user) {
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");

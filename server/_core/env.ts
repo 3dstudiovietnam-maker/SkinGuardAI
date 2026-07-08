@@ -1,6 +1,10 @@
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
+  // Shared across every HealthGuard app so one session verifies everywhere
+  // (cross-app SSO). New tokens are signed with this; the per-app cookieSecret
+  // above stays a verify-only fallback so existing sessions are never logged out.
+  sharedCookieSecret: process.env.JWT_SECRET_SHARED ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",

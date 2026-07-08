@@ -32,7 +32,10 @@ export const appRouter = router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
+      // Clear the shared-domain cookie AND any legacy host-only cookie of the
+      // same name, so logout fully signs the user out across the app family.
       ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
+      ctx.res.clearCookie(COOKIE_NAME, { path: "/" });
       return { success: true } as const;
     }),
 
@@ -58,7 +61,10 @@ export const appRouter = router({
         passwordHash,
         loginMethod: "email",
         plan: input.plan,
-        openId: `email_${Date.now()}`,
+        // Deterministic, cross-app openId derived from the email (email column is
+        // unique). Same email -> same openId on every HealthGuard app, so one free
+        // account works everywhere. Hashed + truncated to fit openId varchar(64).
+        openId: `email_${crypto.createHash("sha256").update(input.email.trim().toLowerCase()).digest("hex").slice(0, 48)}`,
       });
 
       const insertedUser = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
@@ -102,6 +108,7 @@ export const appRouter = router({
       const openId = user.openId || `email_${user.id}`;
       const sessionToken = await sdk.createSessionToken(openId, {
         name: user.name || user.email || "",
+        email: user.email ?? undefined,
         expiresInMs: ONE_YEAR_MS,
       });
 

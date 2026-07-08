@@ -92,4 +92,19 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+// Look up a user by email — used by cross-app SSO provisioning so a shared
+// session matches an existing local account (email is unique) instead of
+// creating a duplicate.
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
 // TODO: add feature queries here as your schema grows.

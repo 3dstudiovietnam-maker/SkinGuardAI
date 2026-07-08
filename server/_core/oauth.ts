@@ -43,6 +43,7 @@ export function registerOAuthRoutes(app: Express) {
       const openId = `google_${userInfo.id}`;
       const sessionToken = await sdk.createSessionToken(openId, {
         name: userInfo.name || "",
+        email: userInfo.email || undefined,
         expiresInMs: ONE_YEAR_MS,
       });
 
@@ -86,6 +87,7 @@ export function registerOAuthRoutes(app: Express) {
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
+        email: userInfo.email ?? undefined,
         expiresInMs: ONE_YEAR_MS,
       });
 
