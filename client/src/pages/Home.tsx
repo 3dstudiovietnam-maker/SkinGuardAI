@@ -3,7 +3,7 @@
  * Hero with generated illustration, features grid, CTA sections
  */
 import { Link } from "wouter";
-import { Camera, MapPin, GitCompareArrows, Bell, Shield, ArrowRight, CheckCircle, Facebook } from "lucide-react";
+import { Camera, MapPin, GitCompareArrows, Bell, Shield, ArrowRight, CheckCircle, Facebook, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -60,6 +60,22 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
+
+              {/* Lab & Report Analysis — surfaced in the hero because most users are on a
+                  phone and would otherwise never find it inside the hamburger menu. */}
+              <Link href="/lab-analysis" className="no-underline block mt-6">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-teal-200 dark:border-teal-700/60 bg-teal-50 dark:bg-teal-900/25 hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-colors max-w-lg">
+                  <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center shrink-0">
+                    <FlaskConical className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm text-teal-900 dark:text-teal-200 leading-tight">{t('lab.qaLabel')}</p>
+                    <p className="text-xs text-teal-700 dark:text-teal-400 leading-snug mt-0.5">{t('lab.qaDesc')}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
+                </div>
+              </Link>
+
               <div className="flex items-center gap-6 mt-8 text-sm text-slate-600 dark:text-slate-400">
                 <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-cyan-500" /> {t('hero.freeToStart')}</span>
                 <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-cyan-500" /> {t('hero.noAccountNeeded')}</span>
