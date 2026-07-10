@@ -725,7 +725,7 @@ export const appRouter = router({
       }
       const allUsers = await db.select({ plan: users.plan, lastSignedIn: users.lastSignedIn }).from(users);
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      // Fixed baseline offset + real users (so each new real user increments the displayed count)
+      // Real DB counts only (no inflated baseline).
       const realTotal     = allUsers.length;
       const realEssential = allUsers.filter(u => u.plan === "essential").length;
       const realPro       = allUsers.filter(u => u.plan === "pro").length;
@@ -733,12 +733,12 @@ export const appRouter = router({
       const realLifetime  = allUsers.filter(u => u.plan === "lifetime").length;
       const realActive    = allUsers.filter(u => u.lastSignedIn && u.lastSignedIn > thirtyDaysAgo).length;
       return {
-        totalUsers:     2101 + realTotal,
-        essentialUsers: 1620 + realEssential,
-        proUsers:        220 + realPro,
-        proPlusUsers:     90 + realProPlus,
-        lifetimeUsers:   171 + realLifetime,
-        activeUsers:     583 + realActive,
+        totalUsers:     realTotal,
+        essentialUsers: realEssential,
+        proUsers:        realPro,
+        proPlusUsers:     realProPlus,
+        lifetimeUsers:   realLifetime,
+        activeUsers:     realActive,
       };
     }),
   }),

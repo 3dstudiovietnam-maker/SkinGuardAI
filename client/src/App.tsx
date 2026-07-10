@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import ThemeToggle from "./components/ThemeToggle";
@@ -51,6 +51,14 @@ function RouteFallback() {
 
 function Router() {
   const [location] = useLocation();
+  // Per-route canonical URL (SPA has no SSR, so update the <link rel=canonical>
+  // on each navigation instead of the single static root canonical in index.html).
+  useEffect(() => {
+    const href = "https://www.skinguardai.app" + (location === "/" ? "" : location);
+    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.appendChild(link); }
+    link.setAttribute("href", href);
+  }, [location]);
   const reduce = useReducedMotion();
   // Gentle fade+slide page transition on navigation. Respects prefers-reduced-motion
   // (drops movement to an instant swap — important for motion-sensitive users).
