@@ -302,10 +302,10 @@ export default function Capture() {
         <div className={`mb-6 px-4 py-3 rounded-xl flex items-center justify-between text-sm ${FREE_LIMIT - totalCaptures <= 3 ? 'bg-amber-50 border border-amber-300' : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}>
           <span className={FREE_LIMIT - totalCaptures <= 3 ? 'text-amber-700 font-medium' : 'text-slate-500 dark:text-slate-400'}>
             {FREE_LIMIT - totalCaptures <= 3 ? '⚠️ ' : ''}
-            <span className="font-bold">{Math.max(0, FREE_LIMIT - totalCaptures)}</span> free scan{FREE_LIMIT - totalCaptures !== 1 ? 's' : ''} remaining
+            <span className="font-bold">{Math.max(0, FREE_LIMIT - totalCaptures)}</span> {t('capture.scansRemaining')}
           </span>
           <Link href="/pricing">
-            <span className="text-xs text-cyan-600 hover:underline font-semibold cursor-pointer">Upgrade for unlimited →</span>
+            <span className="text-xs text-cyan-600 hover:underline font-semibold cursor-pointer">{t('capture.upgradeUnlimited')} →</span>
           </Link>
         </div>
       )}
