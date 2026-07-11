@@ -88,10 +88,12 @@ export default function Layout({ children }: LayoutProps) {
 
             {isAuthenticated && user ? (
               <div className="hidden 2xl:flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary" />
-                </div>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{user.name}</span>
+                <Link href="/user-dashboard" className="flex items-center gap-2 no-underline hover:opacity-80 transition-opacity">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{user.name}</span>
+                </Link>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -154,10 +156,10 @@ export default function Layout({ children }: LayoutProps) {
               <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
                 {isAuthenticated && user ? (
                   <div className="flex items-center justify-between px-3 py-2">
-                    <div className="flex items-center gap-2">
+                    <Link href="/user-dashboard" className="flex items-center gap-2 no-underline" onClick={() => setMobileOpen(false)}>
                       <User className="w-4 h-4 text-cyan-600" />
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{user.name}</span>
-                    </div>
+                    </Link>
                     <Button size="sm" variant="ghost" onClick={handleLogout} className="text-slate-600 dark:text-slate-400">
                       <LogOut className="w-4 h-4 mr-1" /> {t('nav.logout')}
                     </Button>
