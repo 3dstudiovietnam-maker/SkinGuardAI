@@ -227,6 +227,11 @@ export default function Capture() {
           </div>
           <h1 className="font-heading text-3xl font-bold mb-3">{t('capture.signInTitle')}</h1>
           <p className="text-muted-foreground mb-6">{t('capture.signInDesc')}</p>
+          <Link href="/login">
+            <Button className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 text-base font-semibold rounded-xl">
+              {t('auth.signInBtn')}
+            </Button>
+          </Link>
         </div>
       </div>
     );
