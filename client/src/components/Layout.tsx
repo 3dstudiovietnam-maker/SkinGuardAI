@@ -125,9 +125,9 @@ export default function Layout({ children }: LayoutProps) {
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="md:hidden flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-              aria-label="Menu"
+              aria-label={t('nav.menu')}
             >
-              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Menu</span>
+              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('nav.menu')}</span>
               {mobileOpen ? (
                 <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               ) : (

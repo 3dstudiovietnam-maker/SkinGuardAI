@@ -245,19 +245,19 @@ export default function Capture() {
           <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-6">
             <Lock className="w-10 h-10 text-amber-500" />
           </div>
-          <h1 className="font-heading text-3xl font-bold mb-3 text-slate-900 dark:text-slate-100">Free Scan Limit Reached</h1>
+          <h1 className="font-heading text-3xl font-bold mb-3 text-slate-900 dark:text-slate-100">{t('capture.limitTitle')}</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-2 text-lg">
-            You've used all <span className="font-bold text-amber-600">10 free AI scans</span>.
+            {t('capture.limitBody')}
           </p>
           <p className="text-slate-500 dark:text-slate-400 mb-8">
-            Upgrade to Pro or Pro+ to unlock unlimited AI analyses, detailed reports, and cloud backup.
+            {t('capture.limitUpgrade')}
           </p>
 
           {/* Usage bar */}
           <div className="bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 mx-auto max-w-xs">
             <div className="bg-amber-500 h-3 rounded-full w-full" />
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-8">{totalCaptures} / {FREE_LIMIT} scans used</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-8">{totalCaptures} / {FREE_LIMIT} {t('capture.scansUsed')}</p>
 
           {/* Upgrade cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -265,24 +265,24 @@ export default function Capture() {
               <div className="p-5 rounded-2xl border-2 border-cyan-500 bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
                 <p className="font-heading font-bold text-cyan-700 text-lg">Pro</p>
                 <p className="text-cyan-600 font-semibold">$6.99 / month</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Unlimited scans + cloud backup</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('capture.proDesc')}</p>
               </div>
             </Link>
             <Link href="/pricing">
               <div className="p-5 rounded-2xl border-2 border-violet-500 bg-violet-50 hover:bg-violet-100 transition-colors cursor-pointer">
                 <p className="font-heading font-bold text-violet-700 text-lg">Pro Plus</p>
                 <p className="text-violet-600 font-semibold">$49 / year</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Best value · $4.08/month</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('capture.proPlusDesc')} · $4.08/month</p>
               </div>
             </Link>
           </div>
 
           <Link href="/pricing">
             <Button className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 text-base font-semibold rounded-xl">
-              View All Plans →
+              {t('capture.viewAllPlans')} →
             </Button>
           </Link>
-          <p className="text-xs text-slate-400 mt-4">Your existing 10 scans remain accessible.</p>
+          <p className="text-xs text-slate-400 mt-4">{t('capture.existingScans')}</p>
         </motion.div>
       </div>
     );
