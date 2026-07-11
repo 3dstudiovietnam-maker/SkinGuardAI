@@ -169,7 +169,6 @@ export default function SignUp() {
                 window.location.href = authUrl;
               }}
               className="w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
-              title="Sign up with Google"
             >
               <Chrome className="w-4 h-4" />
               <span className="text-sm font-medium">Google</span>
