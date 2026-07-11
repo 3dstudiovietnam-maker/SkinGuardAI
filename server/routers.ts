@@ -7,11 +7,11 @@ import { aiRouter } from "./ai";
 import { getDb } from "./db";
 import {
   userPreferences, emailNotifications, users, userSubscriptions,
-  passwordResetTokens, emailVerificationTokens,
+  passwordResetTokens, emailVerificationTokens, socialLogins,
   moles, photos, analyses  // 🔥 Új importok
 } from "../drizzle/schema";
 import { sql } from "drizzle-orm";
-import { eq, and, count } from "drizzle-orm";
+import { eq, and, count, inArray } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { TRPCError } from "@trpc/server";
@@ -34,6 +34,42 @@ export const appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       // Clear the shared-domain cookie AND any legacy host-only cookie of the
       // same name, so logout fully signs the user out across the app family.
+      ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
+      ctx.res.clearCookie(COOKIE_NAME, { path: "/" });
+      return { success: true } as const;
+    }),
+
+    // Permanently delete the account and ALL associated data (GDPR/CCPA erasure,
+    // Apple 5.1.1(v) account-deletion requirement). Irreversible.
+    deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const uid = ctx.user.id;
+
+      // Owned content: moles -> photos -> analyses. The schema declares FK
+      // cascades, but we delete child-first explicitly so nothing orphans even
+      // if a constraint is missing in the live DB.
+      const userMoles = await db.select({ id: moles.id }).from(moles).where(eq(moles.userId, uid));
+      const moleIds = userMoles.map((m) => m.id);
+      if (moleIds.length) {
+        const userPhotos = await db.select({ id: photos.id }).from(photos).where(inArray(photos.moleId, moleIds));
+        const photoIds = userPhotos.map((p) => p.id);
+        if (photoIds.length) await db.delete(analyses).where(inArray(analyses.photoId, photoIds));
+        await db.delete(photos).where(inArray(photos.moleId, moleIds));
+      }
+      await db.delete(moles).where(eq(moles.userId, uid));
+
+      // User-owned tables with no FK cascade — delete explicitly.
+      await db.delete(userSubscriptions).where(eq(userSubscriptions.userId, uid));
+      await db.delete(emailNotifications).where(eq(emailNotifications.userId, uid));
+      await db.delete(userPreferences).where(eq(userPreferences.userId, uid));
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, uid));
+      await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, uid));
+      await db.delete(socialLogins).where(eq(socialLogins.userId, uid));
+
+      // Finally the account itself, then sign out.
+      await db.delete(users).where(eq(users.id, uid));
+      const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
       ctx.res.clearCookie(COOKIE_NAME, { path: "/" });
       return { success: true } as const;

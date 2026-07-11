@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, BarChart3, Heart, Settings, LogOut, Zap, Shield, Clock } from "lucide-react";
+import { Camera, BarChart3, Heart, Settings, LogOut, Zap, Shield, Clock, Trash2, AlertTriangle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
@@ -12,6 +12,9 @@ export default function UserDashboard() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [, navigate] = useLocation();
   const logoutMutation = trpc.auth.logout.useMutation();
+  const deleteAccountMutation = trpc.auth.deleteAccount.useMutation();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { t } = useLanguage();
 
   if (loading) {
@@ -53,6 +56,18 @@ export default function UserDashboard() {
     } catch (error) {
       console.error("Logout failed:", error);
       setIsLoggingOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteAccountMutation.mutateAsync();
+      navigate("/");
+      window.location.reload();
+    } catch (error) {
+      console.error("Account deletion failed:", error);
+      setIsDeleting(false);
     }
   };
 
@@ -317,6 +332,49 @@ export default function UserDashboard() {
                   </Button>
                 </Link>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Danger Zone — permanent account deletion (GDPR/CCPA + Apple 5.1.1(v)) */}
+        <div className="mt-8 p-6 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg">
+          <div className="flex items-start gap-4">
+            <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-red-900 dark:text-red-200 mb-2">{t('userDashboard.dangerZone')}</h3>
+              <p className="text-sm text-red-700 dark:text-red-300 mb-4">{t('userDashboard.deleteDesc')}</p>
+              {!confirmDelete ? (
+                <Button
+                  onClick={() => setConfirmDelete(true)}
+                  variant="outline"
+                  className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/40"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {t('userDashboard.deleteBtn')}
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-red-800 dark:text-red-200">{t('userDashboard.deleteConfirmWarn')}</p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      onClick={handleDeleteAccount}
+                      disabled={isDeleting}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {isDeleting ? t('userDashboard.deleting') : t('userDashboard.deleteConfirmYes')}
+                    </Button>
+                    <Button
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={isDeleting}
+                      variant="outline"
+                      className="border-slate-300"
+                    >
+                      {t('userDashboard.deleteCancel')}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
