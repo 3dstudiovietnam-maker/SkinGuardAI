@@ -42,6 +42,9 @@ export default function Capture() {
   const totalCaptures = moles.reduce((sum, m) => sum + (m.photoCount ?? 0), 0);
   const limitReached = !isPremium && totalCaptures >= FREE_LIMIT;
 
+  // Apple 3.1.1 — no prices / upgrade CTAs / pricing links inside the native (Capacitor) app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [step, setStep] = useState<"capture" | "details">("capture");
   const [moleName, setMoleName] = useState("");
@@ -249,9 +252,11 @@ export default function Capture() {
           <p className="text-slate-600 dark:text-slate-400 mb-2 text-lg">
             {t('capture.limitBody')}
           </p>
-          <p className="text-slate-500 dark:text-slate-400 mb-8">
-            {t('capture.limitUpgrade')}
-          </p>
+          {!isNative && (
+            <p className="text-slate-500 dark:text-slate-400 mb-8">
+              {t('capture.limitUpgrade')}
+            </p>
+          )}
 
           {/* Usage bar */}
           <div className="bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 mx-auto max-w-xs">
@@ -259,29 +264,33 @@ export default function Capture() {
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-8">{totalCaptures} / {FREE_LIMIT} {t('capture.scansUsed')}</p>
 
-          {/* Upgrade cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            <Link href="/pricing">
-              <div className="p-5 rounded-2xl border-2 border-cyan-500 bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
-                <p className="font-heading font-bold text-cyan-700 text-lg">Pro</p>
-                <p className="text-cyan-600 font-semibold">$6.99 / month</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('capture.proDesc')}</p>
+          {/* Upgrade cards — hidden in the native (Capacitor) app (Apple 3.1.1) */}
+          {!isNative && (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <Link href="/pricing">
+                  <div className="p-5 rounded-2xl border-2 border-cyan-500 bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
+                    <p className="font-heading font-bold text-cyan-700 text-lg">Pro</p>
+                    <p className="text-cyan-600 font-semibold">$6.99 / month</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('capture.proDesc')}</p>
+                  </div>
+                </Link>
+                <Link href="/pricing">
+                  <div className="p-5 rounded-2xl border-2 border-violet-500 bg-violet-50 hover:bg-violet-100 transition-colors cursor-pointer">
+                    <p className="font-heading font-bold text-violet-700 text-lg">Pro Plus</p>
+                    <p className="text-violet-600 font-semibold">$49 / year</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('capture.proPlusDesc')} · $4.08/month</p>
+                  </div>
+                </Link>
               </div>
-            </Link>
-            <Link href="/pricing">
-              <div className="p-5 rounded-2xl border-2 border-violet-500 bg-violet-50 hover:bg-violet-100 transition-colors cursor-pointer">
-                <p className="font-heading font-bold text-violet-700 text-lg">Pro Plus</p>
-                <p className="text-violet-600 font-semibold">$49 / year</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('capture.proPlusDesc')} · $4.08/month</p>
-              </div>
-            </Link>
-          </div>
 
-          <Link href="/pricing">
-            <Button className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 text-base font-semibold rounded-xl">
-              {t('capture.viewAllPlans')} →
-            </Button>
-          </Link>
+              <Link href="/pricing">
+                <Button className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 text-base font-semibold rounded-xl">
+                  {t('capture.viewAllPlans')} →
+                </Button>
+              </Link>
+            </>
+          )}
           <p className="text-xs text-slate-400 mt-4">{t('capture.existingScans')}</p>
         </motion.div>
       </div>
@@ -304,9 +313,11 @@ export default function Capture() {
             {FREE_LIMIT - totalCaptures <= 3 ? '⚠️ ' : ''}
             <span className="font-bold">{Math.max(0, FREE_LIMIT - totalCaptures)}</span> {t('capture.scansRemaining')}
           </span>
-          <Link href="/pricing">
-            <span className="text-xs text-cyan-600 hover:underline font-semibold cursor-pointer">{t('capture.upgradeUnlimited')} →</span>
-          </Link>
+          {!isNative && (
+            <Link href="/pricing">
+              <span className="text-xs text-cyan-600 hover:underline font-semibold cursor-pointer">{t('capture.upgradeUnlimited')} →</span>
+            </Link>
+          )}
         </div>
       )}
 

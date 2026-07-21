@@ -2,7 +2,8 @@
 import { Check, X, Star, HelpCircle, Zap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -62,8 +63,18 @@ export default function Pricing() {
   const { t } = useLanguage();
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [, navigate] = useLocation();
 
-  const openGumroad = (url: string) => window.open(url, "_blank");
+  // Apple 3.1.1 — native app must not show prices/purchase options
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  useEffect(() => {
+    if (isNative) navigate("/dashboard", { replace: true });
+  }, [isNative, navigate]);
+
+  const openGumroad = (url: string) => {
+    if (isNative) return;
+    window.open(url, "_blank");
+  };
 
   // FAQ items built from translations
   const FAQS = [
@@ -74,6 +85,9 @@ export default function Pricing() {
     { q: t('pricing.pfaq_q5'), a: t('pricing.pfaq_a5') },
     { q: t('pricing.pfaq_q6'), a: t('pricing.pfaq_a6') },
   ];
+
+  // Native (Capacitor) view: render nothing — the effect above redirects to /dashboard
+  if (isNative) return null;
 
   return (
     <div className="container py-12">

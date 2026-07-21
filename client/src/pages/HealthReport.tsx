@@ -28,6 +28,9 @@ export default function HealthReport() {
 
   const isPremium = user?.plan === "pro" || user?.plan === "pro_plus" || user?.plan === "lifetime";
 
+  // Apple 3.1.1 — no upgrade CTAs / pricing links inside the native (Capacitor) app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+
   const highRisk   = moles.filter(m => m.riskLevel === "high").length;
   const mediumRisk = moles.filter(m => m.riskLevel === "medium").length;
   const lowRisk    = moles.filter(m => m.riskLevel === "low").length;
@@ -429,7 +432,7 @@ export default function HealthReport() {
                             size="sm"
                             variant="ghost"
                             className={`shrink-0 h-8 w-8 p-0 ${isPremium ? "text-slate-400 hover:text-cyan-600" : "text-slate-300 cursor-not-allowed"}`}
-                            title={isPremium ? "Copy link to this mole" : "Upgrade to Pro to share mole links"}
+                            title={isPremium ? "Copy link to this mole" : (isNative ? "" : "Upgrade to Pro to share mole links")}
                             disabled={!isPremium}
                             onClick={e => {
                               e.stopPropagation();
@@ -509,9 +512,11 @@ export default function HealthReport() {
               </div>
               {!isPremium && (
                 <div className="text-center space-y-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    🔒 PDF export and sharing are available on <a href="/pricing" className="text-cyan-600 hover:underline font-medium">Pro and Pro+ plans</a>. Upgrade to unlock full reports.
-                  </p>
+                  {!isNative && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      🔒 PDF export and sharing are available on <a href="/pricing" className="text-cyan-600 hover:underline font-medium">Pro and Pro+ plans</a>. Upgrade to unlock full reports.
+                    </p>
+                  )}
                   {isAuthenticated && (
                     <button
                       onClick={() => setShowPromoModal(true)}

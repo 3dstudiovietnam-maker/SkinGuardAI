@@ -23,6 +23,9 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
 
+  // Apple 3.1.1 — no pricing links inside the native (Capacitor) app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+
   return (
     <div>
       {/* Hero Section */}
@@ -54,11 +57,13 @@ export default function Home() {
                     {t('hero.startMonitoring')} <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
-                <Link href="/pricing">
-                  <Button size="lg" variant="outline" className="h-12 px-6 text-base border-cyan-200 text-cyan-700 hover:bg-cyan-50">
-                    {t('hero.viewPlans')}
-                  </Button>
-                </Link>
+                {!isNative && (
+                  <Link href="/pricing">
+                    <Button size="lg" variant="outline" className="h-12 px-6 text-base border-cyan-200 text-cyan-700 hover:bg-cyan-50">
+                      {t('hero.viewPlans')}
+                    </Button>
+                  </Link>
+                )}
               </div>
 
               {/* Lab & Report Analysis — surfaced in the hero because most users are on a

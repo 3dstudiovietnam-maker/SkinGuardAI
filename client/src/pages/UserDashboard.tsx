@@ -17,6 +17,12 @@ export default function UserDashboard() {
   const [isDeleting, setIsDeleting] = useState(false);
   const { t } = useLanguage();
 
+  // Apple 3.1.1 — no upgrade CTAs / pricing links inside the native (Capacitor) app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  // Strip "( … $ … )" price fragments from plan labels in the native app
+  const planLabel = (label: string) =>
+    isNative ? label.replace(/\s*[（(][^()（）]*\$[^()（）]*[）)]/g, "") : label;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 flex items-center justify-center">
@@ -161,7 +167,7 @@ export default function UserDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-xl">{t(currentPlan.nameKey)}</CardTitle>
+                <CardTitle className="text-xl">{planLabel(t(currentPlan.nameKey))}</CardTitle>
                 <CardDescription>{t('userDashboard.currentPlanDesc')}</CardDescription>
               </div>
               <Zap className="w-8 h-8 text-yellow-500" />
@@ -171,7 +177,7 @@ export default function UserDashboard() {
             {user.plan === "essential" && (
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
                 <span className="text-sm font-semibold text-amber-700">{t('userDashboard.freeScansIncluded')}</span>
-                <span className="text-sm text-amber-600">{t('userDashboard.upgradeForUnlimited')}</span>
+                {!isNative && <span className="text-sm text-amber-600">{t('userDashboard.upgradeForUnlimited')}</span>}
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
@@ -182,14 +188,14 @@ export default function UserDashboard() {
                 </div>
               ))}
             </div>
-            {user.plan === "essential" && (
+            {!isNative && user.plan === "essential" && (
               <Link href="/pricing">
                 <Button className="bg-cyan-500 hover:bg-cyan-600">
                   {t('userDashboard.upgradeToPro')}
                 </Button>
               </Link>
             )}
-            {(user.plan === "pro" || user.plan === "pro_plus") && (
+            {!isNative && (user.plan === "pro" || user.plan === "pro_plus") && (
               <Link href="/pricing">
                 <Button variant="outline" className="border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
                   {t('userDashboard.viewAllPlans')}

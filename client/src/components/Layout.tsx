@@ -25,6 +25,9 @@ export default function Layout({ children }: LayoutProps) {
   const { logout: storeLogout } = useSkinStore();
   const { t } = useLanguage();
 
+  // Apple 3.1.1 — hide pricing entry points inside the native (Capacitor) app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+
   const handleLogout = async () => {
     try {
       await authLogout();
@@ -64,7 +67,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/videos", label: t('nav.videos'), icon: Video },
     { href: "/faq", label: t('nav.faq'), icon: HelpCircle },
     { href: "/test", label: t('nav.testKnowledge'), icon: FlaskConical },
-  ];
+  ].filter((item) => !isNative || item.href !== "/pricing");
 
   return (
     <div className="min-h-screen bg-background">
@@ -303,7 +306,7 @@ export default function Layout({ children }: LayoutProps) {
               <ul className="space-y-2 text-sm">
                 <li><Link href="/" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.home')}</Link></li>
                 <li><Link href="/dashboard" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.dashboard')}</Link></li>
-                <li><Link href="/pricing" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.pricing')}</Link></li>
+                {!isNative && <li><Link href="/pricing" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.pricing')}</Link></li>}
                 <li><Link href="/test" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.testKnowledge')}</Link></li>
                 <li><Link href="/contact" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.contact')}</Link></li>
                 <li><Link href="/about" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.about')}</Link></li>

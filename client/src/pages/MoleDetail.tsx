@@ -33,6 +33,9 @@ export default function MoleDetail() {
   const { user } = useAuth();
   const { t, language } = useLanguage();
   const isPremium = user?.plan === "pro" || user?.plan === "pro_plus" || user?.plan === "lifetime";
+
+  // Apple 3.1.1 — no upgrade CTAs / pricing links inside the native (Capacitor) app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const mole = getMole(id || "");
@@ -131,13 +134,13 @@ export default function MoleDetail() {
               size="sm"
               variant="outline"
               onClick={handleShare}
-              title={isPremium ? t('moleDetail.copyLink') : t('moleDetail.shareUpgrade')}
+              title={isPremium ? t('moleDetail.copyLink') : (isNative ? "" : t('moleDetail.shareUpgrade'))}
               className={!isPremium ? "text-slate-300 border-slate-200 dark:border-slate-700 cursor-not-allowed" : ""}
               disabled={!isPremium}
             >
               {isPremium ? <Share2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             </Button>
-            {!isPremium && (
+            {!isPremium && !isNative && (
               <Link href="/pricing">
                 <span className="text-[9px] font-semibold text-red-500 hover:underline whitespace-nowrap cursor-pointer">
                   {t('moleDetail.proFeature')}

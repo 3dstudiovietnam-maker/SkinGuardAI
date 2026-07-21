@@ -86,6 +86,12 @@ export default function Dashboard() {
   const plan = (user as any)?.plan as string | undefined;
   const planInfo = PLAN_INFO[plan ?? "essential"] ?? PLAN_INFO["essential"];
 
+  // Apple 3.1.1 — no upgrade CTAs / pricing links inside the native (Capacitor) app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  // Strip "( … $ … )" price fragments from plan labels in the native app
+  const planLabel = (label: string) =>
+    isNative ? label.replace(/\s*[（(][^()（）]*\$[^()（）]*[）)]/g, "") : label;
+
   // Plan / promo card — kept intact, moved BELOW the primary action (Lien: "explanation after")
   const planCard = (
     <motion.div
@@ -101,16 +107,16 @@ export default function Dashboard() {
           ) : (
             <Shield className="w-5 h-5 text-primary" />
           )}
-          <span className="font-semibold text-sm">{t(planInfo.labelKey)}</span>
+          <span className="font-semibold text-sm">{planLabel(t(planInfo.labelKey))}</span>
         </div>
-        {(plan === "essential" || !plan) && (
+        {!isNative && (plan === "essential" || !plan) && (
           <Link href="/pricing">
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-xs">
               {t('dashboard.upgradePlan')}
             </Button>
           </Link>
         )}
-        {(plan === "pro" || plan === "pro_plus") && (
+        {!isNative && (plan === "pro" || plan === "pro_plus") && (
           <Link href="/pricing">
             <Button size="sm" variant="outline" className="text-xs border-primary/30 text-primary">
               {t('dashboard.viewPlans')}

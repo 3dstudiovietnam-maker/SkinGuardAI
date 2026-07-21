@@ -16,6 +16,9 @@ const spring = { type: "spring" as const, stiffness: 260, damping: 20 };
 export default function LogIn() {
   const { t } = useLanguage();
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
+  // Apple 3.1.1 — native (Capacitor) app must never see plan cards, prices, or Gumroad
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -96,8 +99,9 @@ export default function LogIn() {
         }
       }
 
-      // If user is on Essential plan, show plan selection
-      if (result.plan === "essential") {
+      // If user is on Essential plan, show plan selection (web only — native skips
+      // straight to the dashboard on the free path, Apple 3.1.1)
+      if (result.plan === "essential" && !isNative) {
         setShowPlanSelection(true);
       } else {
         setTimeout(() => {
@@ -141,18 +145,20 @@ export default function LogIn() {
 
   const handleCardAction = async (id: "essential" | "pro" | "pro_plus" | "lifetime") => {
     if (id === "lifetime") {
+      if (isNative) return; // Apple 3.1.1 — no purchase links in the native app
       window.open("https://noxuniverse.gumroad.com/l/skinguardailifetime", "_blank");
       return;
     }
     if (id === "essential") {
       await handlePlanSelect("essential");
     } else {
+      if (isNative) return; // Apple 3.1.1 — no purchase links in the native app
       window.open("https://noxuniverse.gumroad.com/l/skinguardpro", "_blank");
     }
   };
 
-  // ── Plan Selection Screen ────────────────────────────────────────────────
-  if (showPlanSelection) {
+  // ── Plan Selection Screen ── never rendered in the native app (Apple 3.1.1)
+  if (showPlanSelection && !isNative) {
     const planCards = [
       {
         id: "essential" as const,
@@ -410,7 +416,7 @@ export default function LogIn() {
         {/* Form Card */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
           {/* Social Login Buttons */}
-          <div className="mb-6 space-y-3">
+          <div className="mb-6 space-y-3" style={(typeof window !== "undefined" && (window as any).Capacitor?.isNativePlatform?.()) ? { display: "none" } : undefined}>
             <p className="text-xs text-slate-500 dark:text-slate-400 text-center font-medium">{t("auth.signInWith")}</p>
             <button
               type="button"

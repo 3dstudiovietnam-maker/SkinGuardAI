@@ -157,7 +157,7 @@ export default function SignUp() {
           )}
 
           {/* Social Login Buttons */}
-          <div className="mb-6 space-y-3">
+          <div className="mb-6 space-y-3" style={(typeof window !== "undefined" && (window as any).Capacitor?.isNativePlatform?.()) ? { display: "none" } : undefined}>
             <p className="text-xs text-slate-500 dark:text-slate-400 text-center font-medium">{t("auth.signUpWith")}</p>
             <button
               type="button"

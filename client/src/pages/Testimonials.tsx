@@ -141,12 +141,13 @@ export default function Testimonials() {
         </div>
       </motion.div>
 
-      {/* CTA */}
+      {/* CTA — hidden in the native (Capacitor) app (Apple 3.1.1) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
         className="text-center mt-16"
+        style={(typeof window !== "undefined" && (window as any).Capacitor?.isNativePlatform?.()) ? { display: "none" } : undefined}
       >
         <h2 className="font-heading text-2xl md:text-3xl font-bold mb-4">
           Ready to Join Our Community?

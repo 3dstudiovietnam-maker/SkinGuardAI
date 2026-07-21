@@ -88,6 +88,9 @@ export default function FAQ() {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Apple 3.1.1 — hide the Subscriptions & Billing FAQ (mentions plan prices) in the native app
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+
   const toggleItem = (id: string) => {
     const newOpen = new Set(openItems);
     if (newOpen.has(id)) {
@@ -99,7 +102,9 @@ export default function FAQ() {
   };
 
   // Build translated FAQ data for filtering
-  const translatedFAQ = FAQ_STRUCTURE.map(cat => ({
+  const translatedFAQ = FAQ_STRUCTURE.filter(
+    cat => !isNative || cat.categoryKey !== "faq.subscriptionsBilling"
+  ).map(cat => ({
     ...cat,
     questions: cat.questions.map(q => ({
       ...q,
