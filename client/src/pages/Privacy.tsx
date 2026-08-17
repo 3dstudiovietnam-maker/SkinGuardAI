@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Shield } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LEGAL_LAST_UPDATED } from "@/const";
 
 export default function Privacy() {
   const { t } = useLanguage();
@@ -31,7 +32,7 @@ export default function Privacy() {
           </div>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">{t('footer.legal.privacy')}</h1>
         </div>
-        <p className="text-slate-500 dark:text-slate-400 mb-10 text-sm">{t('leg.updatedLabel')} {new Date().toLocaleDateString()}</p>
+        <p className="text-slate-500 dark:text-slate-400 mb-10 text-sm">{t('leg.updatedLabel')} {LEGAL_LAST_UPDATED}</p>
 
         {/* How your data is handled */}
         <section className="mb-12">
@@ -52,6 +53,12 @@ export default function Privacy() {
             <p className="text-slate-700 dark:text-slate-300">{t('leg.medIntro')}</p>
             <p className="text-slate-700 dark:text-slate-300 font-semibold">{t('leg.medConsult')}</p>
           </div>
+        </section>
+
+        {/* Children's data — required by App Store 5.1.1 / COPPA / GDPR Art. 8 */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.ageTitle')}</h2>
+          <p className="text-slate-700 dark:text-slate-300">{t('leg.ageBody')}</p>
         </section>
 
         {/* Contact / data controller */}

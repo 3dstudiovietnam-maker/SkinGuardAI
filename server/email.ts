@@ -11,6 +11,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Canonical public origin for links we put INTO emails.
+// These used to be hardcoded to the legacy "skinguardai.manus.space" host, which
+// the app no longer serves — so password-reset and e-mail-verification links were
+// dead. That is not just a broken feature: if a user cannot log back in, they
+// cannot exercise the export/delete rights the Privacy Policy promises them.
+// Same pattern (and same default) as the Google OAuth redirect_uri in oauth.ts.
+// NOTE: the Microsoft/Twitter redirect_uri values in oauth.ts are deliberately
+// left alone — those must match what is registered in each provider's console.
+const APP_ORIGIN = process.env.APP_URL || "https://www.skinguardai.app";
+
 // Email templates
 const emailTemplates = {
   passwordReset: (resetLink: string, userName: string) => ({
@@ -96,13 +106,13 @@ const emailTemplates = {
         <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
           <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
           <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">
-            Your email has been verified! You're all set to start monitoring your skin health with AI precision.
+            Your email has been verified! You're all set to start tracking your skin health with AI support.
           </p>
           <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
             Get started by taking your first scan or exploring your dashboard.
           </p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://skinguardai.manus.space/dashboard" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+            <a href="${APP_ORIGIN}/dashboard" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
               Go to Dashboard
             </a>
           </div>
@@ -117,7 +127,7 @@ const emailTemplates = {
 };
 
 export async function sendPasswordResetEmail(email: string, userName: string, resetToken: string) {
-  const resetLink = `https://skinguardai.manus.space/reset-password?token=${resetToken}`;
+  const resetLink = `${APP_ORIGIN}/reset-password?token=${resetToken}`;
   const template = emailTemplates.passwordReset(resetLink, userName);
 
   try {
@@ -135,7 +145,7 @@ export async function sendPasswordResetEmail(email: string, userName: string, re
 }
 
 export async function sendEmailVerificationEmail(email: string, userName: string, verificationToken: string) {
-  const verificationLink = `https://skinguardai.manus.space/verify-email?token=${verificationToken}`;
+  const verificationLink = `${APP_ORIGIN}/verify-email?token=${verificationToken}`;
   const template = emailTemplates.emailVerification(verificationLink, userName);
 
   try {

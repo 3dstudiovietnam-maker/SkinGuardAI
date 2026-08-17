@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle, ArrowLeft, ShieldAlert, Stethoscope } from "lucide-react";
 import { Link } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LEGAL_LAST_UPDATED } from "@/const";
 
 export default function Disclaimer() {
   const { t } = useLanguage();
@@ -150,7 +151,7 @@ export default function Disclaimer() {
 
         {/* Footer */}
         <div className="text-center text-xs text-slate-400 pt-6 border-t border-slate-200 dark:border-slate-700">
-          <p>{t('disclaimer.lastUpdated')}: {new Date().toLocaleDateString()}</p>
+          <p>{t('disclaimer.lastUpdated')}: {LEGAL_LAST_UPDATED}</p>
         </div>
       </div>
     </div>

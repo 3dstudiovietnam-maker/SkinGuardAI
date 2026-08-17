@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, FileText, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LEGAL_LAST_UPDATED } from "@/const";
 
 export default function Terms() {
   const { t } = useLanguage();
@@ -36,7 +37,7 @@ export default function Terms() {
           </div>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">{t('footer.legal.terms')}</h1>
         </div>
-        <p className="text-slate-500 dark:text-slate-400 mb-10 text-sm">{t('leg.updatedLabel')} {new Date().toLocaleDateString()}</p>
+        <p className="text-slate-500 dark:text-slate-400 mb-10 text-sm">{t('leg.updatedLabel')} {LEGAL_LAST_UPDATED}</p>
 
         {/* Medical disclaimer — front and centre */}
         <section className="mb-12">
@@ -51,6 +52,12 @@ export default function Terms() {
             </ul>
             <p className="text-slate-700 dark:text-slate-300 font-semibold">{t('leg.medConsult')}</p>
           </div>
+        </section>
+
+        {/* Age requirement — who this app is for */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.ageTitle')}</h2>
+          <p className="text-slate-700 dark:text-slate-300">{t('leg.ageBody')}</p>
         </section>
 
         {/* Acceptable use */}
@@ -94,6 +101,12 @@ export default function Terms() {
             <p><strong>{t('leg.copyrightLabel')} &copy; {new Date().getFullYear()} SkinGuard AI</strong></p>
             <p>{t('leg.ipBody')}</p>
           </div>
+        </section>
+
+        {/* Governing law & forum */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.lawTitle')}</h2>
+          <p className="text-slate-700 dark:text-slate-300">{t('leg.lawBody')}</p>
         </section>
 
         <div className="text-center text-sm text-slate-500 dark:text-slate-400 pt-8 border-t border-slate-200 dark:border-slate-700">

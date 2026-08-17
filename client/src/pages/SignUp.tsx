@@ -327,11 +327,11 @@ export default function SignUp() {
           {/* Terms */}
           <p className="text-xs text-slate-600 dark:text-slate-400 text-center mt-6">
             {t("auth.agreeTerms")}{" "}
-            <Link href="/legal" className="text-cyan-600 hover:underline">
+            <Link href="/terms" className="text-cyan-600 hover:underline">
               {t("auth.terms")}
             </Link>
             {" "}{t("auth.and")}{" "}
-            <Link href="/legal" className="text-cyan-600 hover:underline">
+            <Link href="/privacy" className="text-cyan-600 hover:underline">
               {t("auth.privacy")}
             </Link>
           </p>

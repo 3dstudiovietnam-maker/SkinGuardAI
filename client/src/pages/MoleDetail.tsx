@@ -12,18 +12,46 @@ import { trpc } from "@/lib/trpc";
 import { AnimatedLogo } from "@/components/AnimatedLogo";
 import { MoleTrendChart } from "@/components/MoleTrendChart";
 
+/**
+ * Third-party partner promotion.
+ * Two legal constraints are baked in here on purpose:
+ *  1. No medical claim. The previous copy said the gel "provides medical-grade
+ *     regeneration" in all 11 languages. A cosmetic moisturiser making a
+ *     regeneration/medical-grade claim inside a health app is an unsubstantiated
+ *     medical claim (FTC health-claim substantiation, EU Reg. 655/2013 on
+ *     cosmetic claims, App Store 1.4.1). The copy is now purely descriptive.
+ *  2. Disclosed as advertising. A paid/partner placement must be identifiable
+ *     as such (FTC endorsement guides, EU UCPD art. 7(2)) — see adLabels below.
+ * Biyovis® is the trademark of its owner and is used with the partner's
+ * permission; keep the ® symbol and do not restyle their logo.
+ */
 const biyovisPromoTexts: Record<string, string> = {
-  en: "💧 Taking care of your skin is just as important as monitoring it. Biyovis® 4-LEVEL HYDRO ACTIVE hydrating gel provides medical-grade regeneration. 👉 www.biyovis.hu/HU-eng",
-  hu: "💧 Bőröd figyelése mellett a megfelelő ápolás is fontos. A Biyovis® 4-LEVEL HYDRO ACTIVE hidratáló gél orvosi minőségű regenerációt nyújt. 👉 www.biyovis.hu/HU-eng",
-  vi: "💧 Chăm sóc da cũng quan trọng không kém việc theo dõi. Gel dưỡng ẩm Biyovis® 4-LEVEL HYDRO ACTIVE cung cấp khả năng tái tạo cấp độ y tế. 👉 www.biyovis.hu/HU-eng",
-  hi: "💧 आपकी त्वचा की देखभाल करना उतना ही महत्वपूर्ण है जितना उसकी निगरानी करना। Biyovis® 4-LEVEL HYDRO ACTIVE हाइड्रेटिंग जेल मेडिकल-ग्रेड पुनर्जनन प्रदान करता है। 👉 www.biyovis.hu/HU-eng",
-  th: "💧 การดูแลผิวของคุณสำคัญพอๆ กับการสังเกตผิว Biyovis® 4-LEVEL HYDRO ACTIVE เจลให้ความชุ่มชื้นคุณภาพทางการแพทย์เพื่อการฟื้นฟูผิว 👉 www.biyovis.hu/HU-eng",
-  zh: "💧 护理皮肤与监测皮肤同样重要。Biyovis® 4-LEVEL HYDRO ACTIVE 保湿凝胶提供医疗级修复。 👉 www.biyovis.hu/HU-eng",
-  de: "💧 Die Pflege Ihrer Haut ist genauso wichtig wie ihre Überwachung. Biyovis® 4-LEVEL HYDRO ACTIVE feuchtigkeitsspendendes Gel bietet medizinische Regeneration. 👉 www.biyovis.hu/HU-eng",
-  es: "💧 Cuidar tu piel es tan importante como monitorearla. El gel hidratante Biyovis® 4-LEVEL HYDRO ACTIVE proporciona regeneración de grado médico. 👉 www.biyovis.hu/HU-eng",
-  ru: "💧 Уход за кожей так же важен, как и ее мониторинг. Увлажняющий гель Biyovis® 4-LEVEL HYDRO ACTIVE обеспечивает медицинскую регенерацию. 👉 www.biyovis.hu/HU-eng",
-  pt: "💧 Cuidar da sua pele é tão importante quanto monitorizá-la. O gel hidratante Biyovis® 4-LEVEL HYDRO ACTIVE oferece regeneração de grau médico. 👉 www.biyovis.hu/HU-eng",
-  ro: "💧 Îngrijirea pielii tale este la fel de importantă ca și monitorizarea acesteia. Gelul hidratant Biyovis® 4-LEVEL HYDRO ACTIVE oferă regenerare de calitate medicală. 👉 www.biyovis.hu/HU-eng",
+  en: "💧 Taking care of your skin is just as important as monitoring it. Biyovis® 4-LEVEL HYDRO ACTIVE is a hydrating skincare gel. 👉 www.biyovis.hu/HU-eng",
+  hu: "💧 Bőröd figyelése mellett a megfelelő ápolás is fontos. A Biyovis® 4-LEVEL HYDRO ACTIVE hidratáló bőrápoló gél. 👉 www.biyovis.hu/HU-eng",
+  vi: "💧 Chăm sóc da cũng quan trọng không kém việc theo dõi. Biyovis® 4-LEVEL HYDRO ACTIVE là gel dưỡng ẩm chăm sóc da. 👉 www.biyovis.hu/HU-eng",
+  hi: "💧 आपकी त्वचा की देखभाल करना उतना ही महत्वपूर्ण है जितना उसकी निगरानी करना। Biyovis® 4-LEVEL HYDRO ACTIVE एक हाइड्रेटिंग स्किनकेयर जेल है। 👉 www.biyovis.hu/HU-eng",
+  th: "💧 การดูแลผิวของคุณสำคัญพอๆ กับการสังเกตผิว Biyovis® 4-LEVEL HYDRO ACTIVE เป็นเจลบำรุงผิวให้ความชุ่มชื้น 👉 www.biyovis.hu/HU-eng",
+  zh: "💧 护理皮肤与监测皮肤同样重要。Biyovis® 4-LEVEL HYDRO ACTIVE 是一款保湿护肤凝胶。 👉 www.biyovis.hu/HU-eng",
+  de: "💧 Die Pflege Ihrer Haut ist genauso wichtig wie ihre Überwachung. Biyovis® 4-LEVEL HYDRO ACTIVE ist ein feuchtigkeitsspendendes Hautpflegegel. 👉 www.biyovis.hu/HU-eng",
+  es: "💧 Cuidar tu piel es tan importante como monitorearla. Biyovis® 4-LEVEL HYDRO ACTIVE es un gel hidratante para el cuidado de la piel. 👉 www.biyovis.hu/HU-eng",
+  ru: "💧 Уход за кожей так же важен, как и её мониторинг. Biyovis® 4-LEVEL HYDRO ACTIVE — увлажняющий гель для ухода за кожей. 👉 www.biyovis.hu/HU-eng",
+  pt: "💧 Cuidar da sua pele é tão importante quanto monitorizá-la. O Biyovis® 4-LEVEL HYDRO ACTIVE é um gel hidratante de cuidado da pele. 👉 www.biyovis.hu/HU-eng",
+  ro: "💧 Îngrijirea pielii tale este la fel de importantă ca și monitorizarea acesteia. Biyovis® 4-LEVEL HYDRO ACTIVE este un gel hidratant pentru îngrijirea pielii. 👉 www.biyovis.hu/HU-eng",
+};
+
+/** Advertising disclosure label shown above the partner card. */
+const adLabels: Record<string, string> = {
+  en: "Advertisement · partner",
+  hu: "Hirdetés · partner",
+  vi: "Quảng cáo · đối tác",
+  hi: "विज्ञापन · पार्टनर",
+  th: "โฆษณา · พันธมิตร",
+  zh: "广告 · 合作伙伴",
+  de: "Anzeige · Partner",
+  es: "Publicidad · socio",
+  ru: "Реклама · партнёр",
+  pt: "Publicidade · parceiro",
+  ro: "Publicitate · partener",
 };
 
 export default function MoleDetail() {
@@ -106,6 +134,7 @@ export default function MoleDetail() {
 
 
   const biyovisText = biyovisPromoTexts[language] ?? biyovisPromoTexts['en'];
+  const adLabel = adLabels[language] ?? adLabels['en'];
 
   const daysSinceLastCheck = Math.floor((Date.now() - mole.lastChecked) / (1000 * 60 * 60 * 24));
   const componentKey = userId || 'no-user';
@@ -254,8 +283,11 @@ export default function MoleDetail() {
           {/* ABCDE evolution over time — the "is it changing?" signal */}
           <MoleTrendChart photos={photos} />
 
-          {/* Biyovis Promo Card - permanent */}
+          {/* Biyovis Promo Card — permanent partner placement, labelled as advertising */}
           <div className="mt-3 bg-gradient-to-r from-blue-50 dark:from-slate-900 to-cyan-50 dark:to-slate-800 border border-blue-200 rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-2">
+              {adLabel}
+            </p>
             <a href="https://www.biyovis.hu/HU-eng" target="_blank" rel="noopener noreferrer" className="block hover:opacity-90 transition-opacity">
               <img
                 src="/Biyovislogo.jpg"

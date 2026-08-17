@@ -5,6 +5,7 @@
 
 import { useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LEGAL_LAST_UPDATED } from "@/const";
 
 export default function Legal() {
   const { t } = useLanguage();
@@ -134,6 +135,18 @@ export default function Legal() {
           </div>
         </section>
 
+        {/* Age requirement */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.ageTitle')}</h2>
+          <p className="text-slate-700 dark:text-slate-300">{t('leg.ageBody')}</p>
+        </section>
+
+        {/* Governing law & forum */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.lawTitle')}</h2>
+          <p className="text-slate-700 dark:text-slate-300">{t('leg.lawBody')}</p>
+        </section>
+
         {/* Contact */}
         <section className="mb-12">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.contactTitle')}</h2>
@@ -154,7 +167,7 @@ export default function Legal() {
 
         {/* Last Updated */}
         <div className="text-center text-sm text-slate-500 dark:text-slate-400 pt-8 border-t border-slate-200 dark:border-slate-700">
-          <p>{t('leg.updatedLabel')} {new Date().toLocaleDateString()}</p>
+          <p>{t('leg.updatedLabel')} {LEGAL_LAST_UPDATED}</p>
           <p>{t('leg.subjectChange')}</p>
         </div>
       </div>

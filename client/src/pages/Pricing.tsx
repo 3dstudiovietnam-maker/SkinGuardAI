@@ -325,6 +325,25 @@ export default function Pricing() {
 
       </AnimatePresence>
 
+      {/* ── Billing terms ──
+          Required disclosure for auto-renewing subscriptions (App Store 3.1.2,
+          US ROSCA / negative-option rules, EU consumer law): length, price,
+          automatic renewal, how to cancel, refunds, and what "Lifetime" means.
+          Rendered on the web pricing page only — the native app never reaches
+          this component (the isNative guard above redirects to /dashboard). */}
+      <div className="max-w-3xl mx-auto mb-14">
+        <div className="rounded-xl border border-border/60 bg-muted/40 p-5">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {t('pricing.billingTerms')}
+          </p>
+          <p className="text-xs text-muted-foreground mt-3">
+            <a href="/terms" className="underline hover:text-foreground">{t('footer.legal.terms')}</a>
+            {" · "}
+            <a href="/privacy" className="underline hover:text-foreground">{t('footer.legal.privacy')}</a>
+          </p>
+        </div>
+      </div>
+
       {/* ── FAQ ── */}
       <div className="max-w-2xl mx-auto">
         <h2 className="font-heading text-2xl font-bold text-center mb-8">
