@@ -43,7 +43,12 @@ const EN_FAQ_SOURCES = `sources: 'Sources & Credibility',
       src_q2: 'What analysis method does SkinGuard AI use?',
       src_a2: 'Our analyses follow the globally accepted ABCDE methodology — the cornerstone of early melanoma detection. A=Asymmetry, B=Border irregularity, C=Color variation, D=Diameter (>6mm), E=Evolution (changes over time). This standard is used by dermatologists worldwide.',
       src_q3: 'Which AI model powers SkinGuard AI?',
-      src_a3: 'We use Google\\'s Gemini 2.5 Flash model — validated at 94% accuracy and tuned with the latest findings from dermatological research. It analyzes each image for ABCDE markers and returns a structured risk assessment.',
+      // NOTE: a hard-coded model-accuracy percentage used to sit in this string and
+      // this script would have re-injected it into translations.ts on the next run.
+      // SkinGuard AI has never run an accuracy validation study, so the figure was
+      // unsubstantiated (FTC health-claim substantiation / App Store 1.4.1).
+      // Do NOT reintroduce any accuracy figure here without a published, citable study.
+      src_a3: 'We use Google\\'s Gemini 2.5 Flash model, tuned with the latest findings from dermatological research. It analyzes each image for ABCDE markers and returns a structured risk assessment.',
       src_q4: 'Is SkinGuard AI scientifically validated?',
       src_a4: 'SkinGuard AI is built on scientifically validated foundations: ISIC Archive data (peer-reviewed dermoscopic imagery), ABCDE criteria (the standard dermatological method), and Gemini 2.5 Flash AI (Google\\'s advanced vision model). It is a monitoring tool — not a medical device — but follows best practices in skin health monitoring.'`;
 

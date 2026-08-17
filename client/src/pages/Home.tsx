@@ -3,7 +3,7 @@
  * Hero with generated illustration, features grid, CTA sections
  */
 import { Link } from "wouter";
-import { Camera, MapPin, GitCompareArrows, Bell, Shield, ArrowRight, CheckCircle, Facebook, FlaskConical } from "lucide-react";
+import { Camera, MapPin, GitCompareArrows, Bell, Shield, ArrowRight, CheckCircle, Facebook, FlaskConical, AlertTriangle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -291,151 +291,92 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Honesty Section — what SkinGuard AI is, and what it is not.
+          Replaces the former testimonial block: the app has no verified user
+          reviews, so no reviews, ratings or user counts are shown anywhere. */}
       <section className="bg-slate-50 dark:bg-slate-800 py-16 md:py-20">
-        <div className="container">
+        <div className="container max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-xs font-medium mb-6">
+              {t('disclaimer.badge')}
+            </div>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-slate-100">
-              {t('social.title')}
+              {t('disclaimer.title')}
             </h2>
             <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
-              {t('social.subtitle')}
+              {t('disclaimer.subtitle')}
             </p>
           </motion.div>
 
-          {/* Testimonial Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* Sarah M. - Canada */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-amber-200 dark:border-amber-900/50 flex flex-col gap-4"
             >
-              <div className="flex items-center gap-1 text-amber-400">
-                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
-              </div>
-              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
-                "Okay so — full transparency — I downloaded SkinGuard AI on a whim after seeing it mentioned in a health forum. I almost didn't bother. I've had this spot on my cheek basically forever and figured it was just... there. You know how it is.<br/><br/>The app flagged it as HIGH risk. Asymmetric borders, mixed pigmentation. I honestly didn't want to believe it. But I booked a dermatologist appointment anyway — just to be sure, I told myself.<br/><br/>She was really thorough and really clear: this needs watching. Monthly monitoring, no direct sun, come back regularly. She wasn't alarmist about it, but she was serious.<br/><br/>I've been using the app every four weeks since then to track any changes. It keeps me accountable in a way I wouldn't be otherwise. Like, I'd probably forget to check without it.<br/><br/>I'm not saying it saved my life — I genuinely don't know. But I'm really glad I didn't scroll past it."
-              </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-cyan-100 text-cyan-700" aria-hidden="true">
-                  SM
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Sarah M., 41</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">🇨🇦 Toronto, Canada</p>
-                </div>
+                <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm leading-snug">
+                  {t('disclaimer.warning')}
+                </p>
               </div>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                {['disclaimer.bullet2', 'disclaimer.bullet3', 'disclaimer.bullet4'].map((key) => (
+                  <li key={key} className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                    <span>{t(key)}</span>
+                  </li>
+                ))}
+              </ul>
             </motion.div>
 
-            {/* James W. - Australia */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-cyan-200 dark:border-cyan-900/50 flex flex-col gap-4"
             >
-              <div className="flex items-center gap-1 text-amber-400">
-                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
-              </div>
-              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
-                "Look, I'm not realy a 'go to the doctor' kind of bloke. My girlfreind basically forced me to try SkinGuard AI. Got a HIGH risk result on a spot I'd had for ages. We have the highest melanoma rates in the world, us Aussies. This app forced me to act. Mate, just downlod it."
-              </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-teal-100 text-teal-700" aria-hidden="true">
-                  JW
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center shrink-0">
+                  <Shield className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">James W., 38</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">🇦🇺 Sydney, Australia</p>
-                </div>
+                <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm leading-snug">
+                  {t('disclaimer.bullet5')}
+                </p>
               </div>
-            </motion.div>
-
-            {/* Attila K. - Founder */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-cyan-200 flex flex-col gap-4 relative"
-            >
-              <span className="absolute top-4 right-4 text-xs bg-cyan-100 text-cyan-700 font-semibold px-2 py-0.5 rounded-full">Founder</span>
-              <div className="flex items-center gap-1 text-amber-400">
-                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
-              </div>
-              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
-                "I am the founder of SkinGuard AI. I say this not to promote, but because the context matters.<br/><br/>I built this platform because I believed that AI could do what most people cannot — look at a mole objectively, without dismissing it, without hoping it is nothing. I believed in the concept. I did not expect to become one of its cases.<br/><br/>I live in Southeast Asia. The sun here is not something you step into — it surrounds you. I tested the app on myself, as I had done many times. This time the result was different. HIGH risk. My own face.<br/><br/>My dermatologist confirmed what the AI flagged. The borders were irregular. Pigmentation inconsistent. She was direct: monthly monitoring, no sun exposure, return immediately if anything changes. In Asia. Where the UV index is extreme every single day.<br/><br/>I follow every instruction. Wide hat, SPF 50, shade when possible. I scan it every four weeks. I watch every millimetre.<br/><br/>I built this for you. It turned out I also built it for myself.<br/><br/>We have a saying: Better safe than sorry.... Jobb félni mint megijedni...."
-              </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                <img
-                  src="/attila.jpg"
-                  alt="Attila K."
-                  className="w-10 h-10 rounded-full object-cover border-2 border-cyan-300"
-                />
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Attila Koch, 52</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">🇭🇺 Founder, HealthGuardAI</p>
-                </div>
-              </div>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li className="flex items-start gap-2">
+                  <Lock className="w-4 h-4 text-cyan-500 mt-0.5 shrink-0" />
+                  <span>{t('hero.privateSecure')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-cyan-500 mt-0.5 shrink-0" />
+                  <span>{t('hero.freeToStart')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-cyan-500 mt-0.5 shrink-0" />
+                  <span>{t('hero.noAccountNeeded')}</span>
+                </li>
+              </ul>
             </motion.div>
           </div>
 
-          {/* Short testimonials row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Erik H. - Norway */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
-            >
-              <div className="flex items-center gap-1 text-amber-400">
-                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
-              </div>
-              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
-                "I am not someone who writs reviews for apps. But this one is diferent. HIGH risk detected on my neck. My doktor agreed. Monthly monitoring since. It works. That is all I will say."
-              </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-sky-100 text-sky-700" aria-hidden="true">
-                  EH
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Erik H., 50</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">🇳🇴 Oslo, Norway</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Margaret L. - USA */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
-            >
-              <div className="flex items-center gap-1 text-amber-400">
-                {"★★★★★".split("").map((s, i) => <span key={i}>{s}</span>)}
-              </div>
-              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed italic">
-                "I want to start by saying — I am 65 years old and I have lived in Arizona my whole life. Sun capital of America, honey. I thought I knew everything about taking care of my skin.<br/><br/>My granddaughter put SkinGuard AI on my phone during Christmas. I humored her. I scanned a spot I'd had on my forearm for years.<br/><br/>HIGH risk. My doctor — who I've been going to for twenty years — said the same thing. Monthly monitoring. No more sitting by the pool without full sun protection. At 65, in Phoenix.<br/><br/>I'll tell you what though — I'd rather be sitting in the shade and here, than the alternative. I scan every month. I follow the rules.<br/><br/>Thank you to whoever built this. And thank you to my granddaughter for making me try it."
-              </p>
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-indigo-100 text-indigo-700" aria-hidden="true">
-                  ML
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">Margaret L., 65</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">🇺🇸 Phoenix, Arizona</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed text-center mt-8 max-w-2xl mx-auto"
+          >
+            {t('disclaimer.alwaysConsult')}
+          </motion.p>
         </div>
       </section>
 

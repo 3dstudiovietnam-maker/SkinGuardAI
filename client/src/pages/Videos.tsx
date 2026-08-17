@@ -61,22 +61,10 @@ const upcomingVideos: UpcomingVideo[] = [
     duration: "~3:00",
     type: "tutorial",
   },
-  {
-    id: "dermatologist-interview",
-    titleKey: "videos.u2Title",
-    descKey: "videos.u2Desc",
-    thumbnail: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=225&fit=crop",
-    duration: "~8:00",
-    type: "interview",
-  },
-  {
-    id: "patient-story",
-    titleKey: "videos.u3Title",
-    descKey: "videos.u3Desc",
-    thumbnail: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=225&fit=crop",
-    duration: "~5:00",
-    type: "story",
-  },
+  // Removed: the announced "Dermatologist Q&A" and "Patient Story" videos.
+  // Neither exists, and advertising an unrecorded expert endorsement / patient
+  // success story is fabricated social proof (FTC 16 CFR Part 465, App Store 1.4.1).
+  // Only announce content that is actually in production.
 ];
 
 export default function Videos() {
@@ -305,11 +293,11 @@ export default function Videos() {
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         <div className="bg-card rounded-xl border border-border/60 p-6 text-center">
-          <p className="font-heading text-3xl font-bold text-primary mb-2">6</p>
+          <p className="font-heading text-3xl font-bold text-primary mb-2">{videos.length + upcomingVideos.length}</p>
           <p className="text-muted-foreground">{t('videos.videoStats')}</p>
         </div>
         <div className="bg-card rounded-xl border border-border/60 p-6 text-center">
-          <p className="font-heading text-3xl font-bold text-primary mb-2">~20 min</p>
+          <p className="font-heading text-3xl font-bold text-primary mb-2">~5 min</p>
           <p className="text-muted-foreground">{t('videos.totalDuration')}</p>
         </div>
         <div className="bg-card rounded-xl border border-border/60 p-6 text-center">
