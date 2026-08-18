@@ -158,7 +158,7 @@ export const analyses = pgTable("analyses", {
   diameterCode:       text("diameter_code").notNull(),
   overallRisk:        text("overall_risk").notNull(), // low, medium, high
   recommendationCode: text("recommendation_code").notNull(),
-  disclaimer:         text("disclaimer").default("This AI screening is for informational purposes only and is not a medical diagnosis. Always consult a qualified dermatologist for professional evaluation."),
+  disclaimer:         text("disclaimer").default("This AI analysis is for informational purposes only and is not a medical diagnosis. Always consult a qualified dermatologist for professional evaluation."),
   createdAt:          timestamp("created_at").defaultNow().notNull(),
 });
 

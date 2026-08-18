@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { AnimatedLogo } from "@/components/AnimatedLogo";
 import { MoleTrendChart } from "@/components/MoleTrendChart";
+import { WEB_ORIGIN } from "@/lib/apiBase";
 
 /**
  * Third-party partner promotion.
@@ -119,7 +120,9 @@ export default function MoleDetail() {
       toast.warning(t('moleDetail.shareUpgrade'));
       return;
     }
-    const url = `${window.location.origin}/mole/${mole.id}`;
+    // WEB_ORIGIN, not window.location.origin: in the native shell the latter is
+    // "capacitor://localhost" and the copied link is dead outside the device.
+    const url = `${WEB_ORIGIN}/mole/${mole.id}`;
     navigator.clipboard.writeText(url).then(
       () => toast.success(t('moleDetail.linkCopied')),
       () => toast.error(t('moleDetail.copyFailed'))

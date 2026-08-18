@@ -121,7 +121,7 @@ var init_schema = __esm({
       overallRisk: text("overall_risk").notNull(),
       // low, medium, high
       recommendationCode: text("recommendation_code").notNull(),
-      disclaimer: text("disclaimer").default("This AI screening is for informational purposes only and is not a medical diagnosis. Always consult a qualified dermatologist for professional evaluation."),
+      disclaimer: text("disclaimer").default("This AI analysis is for informational purposes only and is not a medical diagnosis. Always consult a qualified dermatologist for professional evaluation."),
       createdAt: timestamp("created_at").defaultNow().notNull()
     });
   }
@@ -139,6 +139,10 @@ var init_env = __esm({
     ENV = {
       appId: process.env.VITE_APP_ID ?? "",
       cookieSecret: process.env.JWT_SECRET ?? "",
+      // Shared across every HealthGuard app so one session verifies everywhere
+      // (cross-app SSO). New tokens are signed with this; the per-app cookieSecret
+      // above stays a verify-only fallback so existing sessions are never logged out.
+      sharedCookieSecret: process.env.JWT_SECRET_SHARED ?? "",
       databaseUrl: process.env.DATABASE_URL ?? "",
       oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
       ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
@@ -233,6 +237,15 @@ async function getUserByOpenId(openId) {
     return void 0;
   }
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  return result.length > 0 ? result[0] : void 0;
+}
+async function getUserByEmail(email) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return void 0;
+  }
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
   return result.length > 0 ? result[0] : void 0;
 }
 var _db;
@@ -410,6 +423,11 @@ var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
 init_db();
 
 // server/_core/cookies.ts
+var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
+function isIpAddress(host) {
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
+  return host.includes(":");
+}
 function isSecureRequest(req) {
   if (req.protocol === "https") return true;
   const forwardedProto = req.headers["x-forwarded-proto"];
@@ -417,12 +435,24 @@ function isSecureRequest(req) {
   const protoList = Array.isArray(forwardedProto) ? forwardedProto : forwardedProto.split(",");
   return protoList.some((proto) => proto.trim().toLowerCase() === "https");
 }
+var FAMILY_DOMAIN = "healthguardai.app";
+function getSharedCookieDomain(req) {
+  const hostname = (req.hostname || "").toLowerCase();
+  if (!hostname || LOCAL_HOSTS.has(hostname) || isIpAddress(hostname)) return void 0;
+  if (hostname === FAMILY_DOMAIN || hostname.endsWith(`.${FAMILY_DOMAIN}`)) {
+    return `.${FAMILY_DOMAIN}`;
+  }
+  return void 0;
+}
 function getSessionCookieOptions(req) {
+  const secure = isSecureRequest(req);
+  const domain = getSharedCookieDomain(req);
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req)
+    sameSite: secure ? "none" : "lax",
+    secure,
+    ...domain ? { domain } : {}
   };
 }
 
@@ -543,9 +573,23 @@ var SDKServer = class {
     const parsed = parseCookieHeader(cookieHeader);
     return new Map(Object.entries(parsed));
   }
-  getSessionSecret() {
-    const secret = ENV.cookieSecret;
+  // Sign with the shared secret when configured so a token verifies on every
+  // HealthGuard app (cross-app SSO); fall back to the per-app secret if the
+  // shared one is not set yet — safe rollout, single-app behaviour until then.
+  getSigningSecret() {
+    const secret = ENV.sharedCookieSecret || ENV.cookieSecret;
     return new TextEncoder().encode(secret);
+  }
+  // Verify against BOTH the shared secret and this app's own secret, so tokens
+  // minted before the shared secret existed (or by a sibling app) still validate.
+  // This is what lets us roll out SSO without logging anyone out.
+  getVerifySecrets() {
+    const enc = new TextEncoder();
+    const out = [];
+    if (ENV.sharedCookieSecret) out.push(enc.encode(ENV.sharedCookieSecret));
+    if (ENV.cookieSecret) out.push(enc.encode(ENV.cookieSecret));
+    if (out.length === 0) out.push(enc.encode(""));
+    return out;
   }
   /**
    * Create a session token for a Manus user openId
@@ -557,7 +601,8 @@ var SDKServer = class {
       {
         openId,
         appId: ENV.appId,
-        name: options.name || ""
+        name: options.name || "",
+        email: options.email
       },
       options
     );
@@ -566,12 +611,16 @@ var SDKServer = class {
     const issuedAt = Date.now();
     const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
     const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1e3);
-    const secretKey = this.getSessionSecret();
-    return new SignJWT({
+    const secretKey = this.getSigningSecret();
+    const claims = {
       openId: payload.openId,
       appId: payload.appId,
       name: payload.name
-    }).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setExpirationTime(expirationSeconds).sign(secretKey);
+    };
+    if (isNonEmptyString(payload.email)) {
+      claims.email = payload.email;
+    }
+    return new SignJWT(claims).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setExpirationTime(expirationSeconds).sign(secretKey);
   }
   async verifySession(cookieValue) {
     if (!cookieValue) {
@@ -579,11 +628,23 @@ var SDKServer = class {
       return null;
     }
     try {
-      const secretKey = this.getSessionSecret();
-      const { payload } = await jwtVerify(cookieValue, secretKey, {
-        algorithms: ["HS256"]
-      });
-      const { openId, appId, name } = payload;
+      let payload = null;
+      let lastError = null;
+      for (const secretKey of this.getVerifySecrets()) {
+        try {
+          const res = await jwtVerify(cookieValue, secretKey, {
+            algorithms: ["HS256"]
+          });
+          payload = res.payload;
+          break;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (!payload) {
+        throw lastError ?? new Error("Session signature did not match any key");
+      }
+      const { openId, appId, name, email } = payload;
       if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
         console.warn("[Auth] Session payload missing required fields");
         return null;
@@ -591,7 +652,8 @@ var SDKServer = class {
       return {
         openId,
         appId,
-        name
+        name,
+        email: isNonEmptyString(email) ? email : void 0
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -627,6 +689,21 @@ var SDKServer = class {
     const sessionUserId = session.openId;
     const signedInAt = /* @__PURE__ */ new Date();
     let user = await getUserByOpenId(sessionUserId);
+    if (!user && isNonEmptyString(session.email)) {
+      const byEmail = await getUserByEmail(session.email);
+      if (byEmail) {
+        user = byEmail;
+      } else {
+        await upsertUser({
+          openId: sessionUserId,
+          name: session.name || null,
+          email: session.email,
+          loginMethod: "email",
+          lastSignedIn: signedInAt
+        });
+        user = await getUserByOpenId(sessionUserId);
+      }
+    }
     if (!user) {
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
@@ -684,6 +761,7 @@ function registerOAuthRoutes(app2) {
       const openId = `google_${userInfo.id}`;
       const sessionToken = await sdk.createSessionToken(openId, {
         name: userInfo.name || "",
+        email: userInfo.email || void 0,
         expiresInMs: ONE_YEAR_MS
       });
       const cookieOptions = getSessionCookieOptions(req);
@@ -717,6 +795,7 @@ function registerOAuthRoutes(app2) {
       });
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
+        email: userInfo.email ?? void 0,
         expiresInMs: ONE_YEAR_MS
       });
       const cookieOptions = getSessionCookieOptions(req);
@@ -1021,8 +1100,8 @@ function checkIpLimit(ip, maxPerDay = 3) {
 var GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 var GEMINI_MODEL = "gemini-2.5-flash";
 var LAB_MODEL = "gemini-2.5-flash";
-var LAB_LITE = true;
-var ABCDE_PROMPT = `You are a dermatology screening AI assistant. Analyze this skin mole/lesion image using the ABCDE dermoscopy criteria.
+var LAB_LITE = false;
+var ABCDE_PROMPT = `You are an AI assistant that describes photographs of skin moles/lesions against the ABCDE criteria that dermatologists teach for skin self-examination. You do not screen for, detect or diagnose disease \u2014 you describe what is visible in the image so the user can track it and discuss it with a dermatologist. Analyze this skin mole/lesion image using the ABCDE criteria.
 
 Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) with this EXACT structure:
 {
@@ -1044,7 +1123,7 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
   },
   "overallRisk": "<low|medium|high>",
   "recommendationCode": "<code from list below>",
-  "disclaimer": "This AI screening is for informational purposes only and is not a medical diagnosis. Always consult a qualified dermatologist for professional evaluation."
+  "disclaimer": "This AI analysis is for informational purposes only and is not a medical diagnosis. Always consult a qualified dermatologist for professional evaluation."
 }
 
 AVAILABLE DESCRIPTION CODES (choose the most appropriate one):
@@ -1313,7 +1392,7 @@ function buildLabReportPrompt(lang, files) {
   return {
     contents: [{
       parts: [
-        { text: `You are a meticulous medical health-literacy expert writing a PROFESSIONAL, patient-friendly summary of a LABORATORY REPORT for a layperson and their family. CRITICAL OUTPUT LANGUAGE: write your ENTIRE response - every field value, finding, explanation, question and note - in ${langName}. These instructions are in English, but your output must be written 100% in ${langName}, NOT in English. The attached file(s) are medical lab report(s) (may be several pages or panels). Today's date is ${today} (for reference only \u2014 do NOT deliberate about ages or years). Read EVERYTHING: patient/header details, every test row on every page, units, reference ranges, and dates.
+        { text: `You are a meticulous medical health-literacy expert writing a PROFESSIONAL, patient-friendly summary of a MEDICAL REPORT for a layperson and their family. The report may be a laboratory/blood test, a nerve-conduction study (EMG/ENG), an imaging or radiology report, a pathology report, or another diagnostic medical document. CRITICAL OUTPUT LANGUAGE: write your ENTIRE response - every field value, finding, explanation, question and note - in ${langName}. These instructions are in English, but your output must be written 100% in ${langName}, NOT in English. The attached file(s) are medical report(s) - lab/blood results, EMG/ENG nerve-conduction studies, imaging/radiology, pathology or similar (may be several pages or panels). Today's date is ${today} (for reference only \u2014 do NOT deliberate about ages or years). Read EVERYTHING: patient/header details, every test row on every page, units, reference ranges, and dates.
 
 Write like a caring, careful doctor explaining results to a family: clear, reassuring, honest, and genuinely useful. CONNECT the findings into one coherent picture instead of listing them in isolation. Always account for the patient's AGE and SEX when interpreting reference ranges (e.g. ideal young-adult targets are not realistic for an elderly patient; note sex-specific ranges).
 
@@ -1329,7 +1408,8 @@ CRITICAL RULES:
 - Tailor interpretation to the patient's age and sex when shown; if a flagged value is expected/benign for that age, say so in referenceNotes or the finding.
 - "findings" covers the abnormal or clinically meaningful results (not every normal one). "reassuring" covers the normal / good news.
 - emergencyRedFlags must be genuinely urgent symptoms relevant to the abnormal findings.
-- If the file is NOT a readable lab report, set "analyzable" false, leave arrays empty, and put a short note in "overview" (in ${langName}) asking for a clearer photo or the original PDF.
+- Some reports (e.g. EMG/ENG nerve-conduction, imaging/radiology, pathology) have NO numeric test table - that is fine: leave "tests" empty and summarize the study's key measurements and the doctor's own impression/conclusion in "overview" and "findings", in plain language (do NOT add a diagnosis of your own - restate what the report itself states).
+- If the file is NOT a readable medical report, set "analyzable" false, leave arrays empty, and put a short note in "overview" (in ${langName}) asking for a clearer photo or the original PDF.
 - Keep the overview and every explanation FOCUSED and CONCISE \u2014 a few clear sentences each. This is a fast, readable summary, not a long essay.
 - Output ONLY the final JSON values. NEVER write your reasoning, calculations, working notes, or any repeated/looping text inside a field \u2014 each field holds exactly ONE concise final value. Do not deliberate; just state the result.
 - ALL human-readable text MUST be in ${langName}.${LAB_LITE ? "\n- BRIEF MODE (this is CRITICAL \u2014 respond quickly and compactly): each finding explanation = 1 short sentence; overview = 2 sentences. Include only the most important items \u2014 at most 4 findings, 3 questions, 3 further tests, 3 reassuring points, 3 emergency red flags, 2 dos and 2 donts. STILL include EVERY test row in the table (these are compact)." : ""}` },
@@ -1438,7 +1518,7 @@ var aiRouter = router({
 init_db();
 init_schema();
 import { sql } from "drizzle-orm";
-import { eq as eq3, and, count } from "drizzle-orm";
+import { eq as eq3, and, count, inArray } from "drizzle-orm";
 import { z as z4 } from "zod";
 import bcrypt from "bcryptjs";
 import { TRPCError as TRPCError5 } from "@trpc/server";
@@ -1454,6 +1534,7 @@ var transporter = nodemailer.createTransport({
     pass: ENV.emailPassword || "your-app-password"
   }
 });
+var APP_ORIGIN = process.env.APP_URL || "https://www.skinguardai.app";
 var emailTemplates = {
   passwordReset: (resetLink, userName) => ({
     subject: "Reset Your SkinGuard AI Password",
@@ -1536,13 +1617,13 @@ var emailTemplates = {
         <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
           <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
           <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">
-            Your email has been verified! You're all set to start monitoring your skin health with AI precision.
+            Your email has been verified! You're all set to start tracking your skin health with AI support.
           </p>
           <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
             Get started by taking your first scan or exploring your dashboard.
           </p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://skinguardai.manus.space/dashboard" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+            <a href="${APP_ORIGIN}/dashboard" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
               Go to Dashboard
             </a>
           </div>
@@ -1556,7 +1637,7 @@ var emailTemplates = {
   })
 };
 async function sendPasswordResetEmail(email, userName, resetToken) {
-  const resetLink = `https://skinguardai.manus.space/reset-password?token=${resetToken}`;
+  const resetLink = `${APP_ORIGIN}/reset-password?token=${resetToken}`;
   const template = emailTemplates.passwordReset(resetLink, userName);
   try {
     await transporter.sendMail({
@@ -1572,7 +1653,7 @@ async function sendPasswordResetEmail(email, userName, resetToken) {
   }
 }
 async function sendEmailVerificationEmail(email, userName, verificationToken) {
-  const verificationLink = `https://skinguardai.manus.space/verify-email?token=${verificationToken}`;
+  const verificationLink = `${APP_ORIGIN}/verify-email?token=${verificationToken}`;
   const template = emailTemplates.emailVerification(verificationLink, userName);
   try {
     await transporter.sendMail({
@@ -1619,6 +1700,34 @@ var appRouter = router({
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
+      ctx.res.clearCookie(COOKIE_NAME, { path: "/" });
+      return { success: true };
+    }),
+    // Permanently delete the account and ALL associated data (GDPR/CCPA erasure,
+    // Apple 5.1.1(v) account-deletion requirement). Irreversible.
+    deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const uid = ctx.user.id;
+      const userMoles = await db.select({ id: moles.id }).from(moles).where(eq3(moles.userId, uid));
+      const moleIds = userMoles.map((m) => m.id);
+      if (moleIds.length) {
+        const userPhotos = await db.select({ id: photos.id }).from(photos).where(inArray(photos.moleId, moleIds));
+        const photoIds = userPhotos.map((p) => p.id);
+        if (photoIds.length) await db.delete(analyses).where(inArray(analyses.photoId, photoIds));
+        await db.delete(photos).where(inArray(photos.moleId, moleIds));
+      }
+      await db.delete(moles).where(eq3(moles.userId, uid));
+      await db.delete(userSubscriptions).where(eq3(userSubscriptions.userId, uid));
+      await db.delete(emailNotifications).where(eq3(emailNotifications.userId, uid));
+      await db.delete(userPreferences).where(eq3(userPreferences.userId, uid));
+      await db.delete(passwordResetTokens).where(eq3(passwordResetTokens.userId, uid));
+      await db.delete(emailVerificationTokens).where(eq3(emailVerificationTokens.userId, uid));
+      await db.delete(socialLogins).where(eq3(socialLogins.userId, uid));
+      await db.delete(users).where(eq3(users.id, uid));
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
+      ctx.res.clearCookie(COOKIE_NAME, { path: "/" });
       return { success: true };
     }),
     // Email signup
@@ -1641,7 +1750,10 @@ var appRouter = router({
         passwordHash,
         loginMethod: "email",
         plan: input.plan,
-        openId: `email_${Date.now()}`
+        // Deterministic, cross-app openId derived from the email (email column is
+        // unique). Same email -> same openId on every HealthGuard app, so one free
+        // account works everywhere. Hashed + truncated to fit openId varchar(64).
+        openId: `email_${crypto.createHash("sha256").update(input.email.trim().toLowerCase()).digest("hex").slice(0, 48)}`
       });
       const insertedUser = await db.select().from(users).where(eq3(users.email, input.email)).limit(1);
       if (insertedUser.length === 0) {
@@ -1675,6 +1787,7 @@ var appRouter = router({
       const openId = user.openId || `email_${user.id}`;
       const sessionToken = await sdk.createSessionToken(openId, {
         name: user.name || user.email || "",
+        email: user.email ?? void 0,
         expiresInMs: ONE_YEAR_MS
       });
       const cookieOptions = getSessionCookieOptions(ctx.req);
@@ -2170,12 +2283,12 @@ var appRouter = router({
       const realLifetime = allUsers.filter((u) => u.plan === "lifetime").length;
       const realActive = allUsers.filter((u) => u.lastSignedIn && u.lastSignedIn > thirtyDaysAgo).length;
       return {
-        totalUsers: 2101 + realTotal,
-        essentialUsers: 1620 + realEssential,
-        proUsers: 220 + realPro,
-        proPlusUsers: 90 + realProPlus,
-        lifetimeUsers: 171 + realLifetime,
-        activeUsers: 583 + realActive
+        totalUsers: realTotal,
+        essentialUsers: realEssential,
+        proUsers: realPro,
+        proPlusUsers: realProPlus,
+        lifetimeUsers: realLifetime,
+        activeUsers: realActive
       };
     })
   })
@@ -2199,6 +2312,34 @@ async function createContext(opts) {
 // api/_index.ts
 init_env();
 var app = express();
+var NATIVE_ORIGINS = /* @__PURE__ */ new Set([
+  "capacitor://localhost",
+  // iOS
+  "https://localhost",
+  // Android (Capacitor 4+ default androidScheme)
+  "ionic://localhost",
+  // legacy
+  "http://localhost"
+  // legacy
+]);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && NATIVE_ORIGINS.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Vary", "Origin");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, x-trpc-source"
+    );
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+  }
+  next();
+});
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.get("/api/config", (_req, res) => {

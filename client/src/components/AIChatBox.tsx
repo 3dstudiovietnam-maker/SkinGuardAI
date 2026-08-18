@@ -53,6 +53,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Markdown } from "@/components/Markdown";
+import { API_BASE } from "@/lib/apiBase";
 import { cn } from "@/lib/utils";
 import { Loader2, Send, Sparkles } from "lucide-react";
 import { useState, useRef, useEffect, ReactNode } from "react";
@@ -323,7 +324,7 @@ function ThinkingIndicator() {
 // ============================================================================
 
 export function AIChatBox({
-  api = "/api/chat",
+  api = `${API_BASE}/api/chat`,
   chatId,
   userId,
   initialMessages,

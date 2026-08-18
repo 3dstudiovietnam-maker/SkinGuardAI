@@ -1,15 +1,32 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Renders the animated logo video onto a <canvas>, removing its near-white
- * background so the logo sits transparently on any nav background (works in
- * both light and dark themes). Same-origin video, so the canvas is not tainted.
+ * Animated SkinGuard eye logo.
+ *
+ * Web: the video is drawn frame by frame onto a <canvas> so its near-white
+ * background can be keyed out and the logo sits transparently on any nav
+ * background (works in both light and dark themes). Same-origin video, so the
+ * canvas is not tainted.
+ *
+ * Native (Capacitor/WKWebView): that pipeline produces nothing. The <video> is
+ * kept out of the visual flow so only the keyed canvas shows, and WKWebView
+ * does not feed frames from a video it treats as invisible — verified in the
+ * iOS Simulator, where the header rendered as a blank grey gap on every screen
+ * while the same <video> shown directly played fine. Rather than ship that gap,
+ * the native shell gets the static transparent PNG of the same logo, which
+ * looks correct on both the light and the dark nav.
  */
+const isNativeShell =
+  typeof window !== "undefined" &&
+  !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+    .Capacitor?.isNativePlatform?.();
+
 export default function LogoVideo({ src, className }: { src: string; className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    if (isNativeShell) return;
     const canvas = canvasRef.current;
     const video = videoRef.current;
     if (!canvas || !video) return;
@@ -52,6 +69,10 @@ export default function LogoVideo({ src, className }: { src: string; className?:
       video.removeEventListener("loadeddata", start);
     };
   }, [src]);
+
+  if (isNativeShell) {
+    return <img src="/logo.png" alt="" aria-hidden="true" className={className} />;
+  }
 
   return (
     <>

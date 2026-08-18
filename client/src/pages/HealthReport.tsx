@@ -13,6 +13,7 @@ import { useSkinStore } from "@/contexts/SkinStore";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
+import { WEB_ORIGIN } from "@/lib/apiBase";
 
 export default function HealthReport() {
   const [, navigate] = useLocation();
@@ -247,9 +248,11 @@ export default function HealthReport() {
     }
     // Use selected mole if available, otherwise fall back to the first mole, then the report URL
     const targetId = selectedMoleId ?? moles[0]?.id;
+    // WEB_ORIGIN, not window.location.origin: in the native shell the latter is
+    // "capacitor://localhost" and the copied link is dead outside the device.
     const shareUrl = targetId
-      ? `${window.location.origin}/mole/${targetId}`
-      : window.location.href;
+      ? `${WEB_ORIGIN}/mole/${targetId}`
+      : `${WEB_ORIGIN}${window.location.pathname}`;
     navigator.clipboard.writeText(shareUrl).then(
       () => toast.success(t('healthReport.linkCopied')),
       () => toast.error(t('healthReport.copyFailed'))
@@ -437,7 +440,7 @@ export default function HealthReport() {
                             onClick={e => {
                               e.stopPropagation();
                               if (!isPremium) { toast.warning("Upgrade to Pro or Pro+ to share mole links."); return; }
-                              const url = `${window.location.origin}/mole/${mole.id}`;
+                              const url = `${WEB_ORIGIN}/mole/${mole.id}`;
                               navigator.clipboard.writeText(url).then(
                                 () => toast.success(t('healthReport.linkCopied')),
                                 () => toast.error(t('healthReport.copyFailed'))
