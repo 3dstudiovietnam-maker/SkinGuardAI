@@ -1424,10 +1424,16 @@ CRITICAL RULES:
       thinkingConfig: { thinkingBudget: LAB_LITE ? 0 : 1024 }
     },
     safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      // Health apps hear about symptoms, injuries and distress, so the filters
+      // must not fire on the very conversations we exist to hold. Dangerous
+      // content therefore blocks only at HIGH: the prompts above are written to
+      // meet self-harm and crisis talk with compassion and a hotline rather than
+      // a refusal, and that has to keep working. The other three carry no such
+      // need and stay at Google's normal threshold.
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
     ]
   };
 }
@@ -1849,10 +1855,23 @@ var appRouter = router({
       }
       return { success: true, plan: targetPlan };
     }),
+    // Select the free plan, or step back down to it.
+    //
+    // This is the only plan change a signed-in user may make on their own, and
+    // it deliberately cannot reach a paid tier: the plan came straight from
+    // client input, so anyone signed in could award themselves one by calling
+    // this. Paid tiers are granted only by redeemPromoCode, which validates the
+    // code against the activation_codes table.
     // Update plan
     updatePlan: protectedProcedure.input(z4.object({ plan: z4.enum(["essential", "pro", "pro_plus"]) })).mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      if (input.plan !== "essential") {
+        throw new TRPCError5({
+          code: "FORBIDDEN",
+          message: "Paid plans are activated by purchase or promo code, not by selecting them here."
+        });
+      }
       await db.update(users).set({ plan: input.plan }).where(eq3(users.id, ctx.user.id));
       const subscription = await db.select().from(userSubscriptions).where(eq3(userSubscriptions.userId, ctx.user.id)).limit(1);
       if (subscription.length > 0) {

@@ -233,10 +233,25 @@ export const appRouter = router({
       return { success: true, plan: targetPlan };
     }),
 
+    // Select the free plan, or step back down to it.
+    //
+    // This is the only plan change a signed-in user may make on their own, and
+    // it deliberately cannot reach a paid tier: the plan came straight from
+    // client input, so anyone signed in could award themselves one by calling
+    // this. Paid tiers are granted only by redeemPromoCode, which validates the
+    // code against the activation_codes table.
     // Update plan
     updatePlan: protectedProcedure.input(z.object({ plan: z.enum(["essential", "pro", "pro_plus"]) })).mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+
+      if (input.plan !== "essential") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Paid plans are activated by purchase or promo code, not by selecting them here.",
+        });
+      }
+
 
       await db.update(users).set({ plan: input.plan }).where(eq(users.id, ctx.user.id));
 
