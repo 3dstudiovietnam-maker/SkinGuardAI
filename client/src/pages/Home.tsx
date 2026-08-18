@@ -46,7 +46,11 @@ export default function Home() {
               </h1>
               <div className="mb-5">
                 <p className="text-2xl md:text-3xl text-cyan-600 font-semibold">{t('hero.accuracy')}</p>
-                <p className="text-lg text-emerald-600 font-semibold mt-2">{t('hero.healthMonitor')}</p>
+                {/* The "+ Free Health Monitor" line that used to sit here has been
+                    removed: it advertised the /test-monitor screen, which is no
+                    longer part of the app (see App.tsx — fitness fork leftover with
+                    seeded fake entries). The landing page must not promise a
+                    feature the build does not contain (App Store 2.3.1). */}
               </div>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8 max-w-lg">
                 {t('hero.description')}

@@ -1,6 +1,28 @@
 /*
  * SkinGuard AI - Health Monitor
  * Track weight, BMI, hydration, and sleep for comprehensive health insights
+ *
+ * ⚠️ UNROUTED — DO NOT RE-ADD TO App.tsx / Layout.tsx AS-IS.
+ *
+ * This screen came across from the fitness app in the HealthGuard family and was
+ * still sitting in the main navigation of a skin-logging app. Three separate
+ * reasons it cannot ship in that state:
+ *
+ *  1. Fabricated data. `metrics` is seeded with three invented measurements
+ *     ("Post-workout measurement", 75.5 kg, dated 2026-03-06). Every reviewer and
+ *     every new user opens the screen and sees health records that are not theirs.
+ *  2. It stores nothing. State is plain useState — no localStorage, no tRPC. Add
+ *     an entry, navigate away, it is gone. A navigation-level feature that does
+ *     not persist reads as broken (App Store 2.1).
+ *  3. Wrong subject matter. Body-composition verdicts (Underweight / Normal /
+ *     Overweight / Obese) plus the unconditional "Your BMI indicates it is time
+ *     to incorporate some light exercise" are a health judgement about the user's
+ *     body, driven by the fake seed data, in an app whose entire disclaimer scope
+ *     is photographing and tracking moles.
+ *
+ * To bring it back: give it real persistence, delete the seeded rows, make the
+ * fitness copy conditional on a real measurement the user entered, and decide
+ * whether body-composition advice belongs in this product's disclaimer scope.
  */
 import { TrendingUp, Plus, Trash2, Calendar, Droplet, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";

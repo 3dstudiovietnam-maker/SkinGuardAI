@@ -808,136 +808,8 @@ function registerOAuthRoutes(app2) {
   });
 }
 
-// server/_core/chat.ts
-init_env();
-import { streamText, stepCountIs } from "ai";
-import { tool } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
-import { z } from "zod/v4";
-
-// server/_core/patchedFetch.ts
-function createPatchedFetch(originalFetch) {
-  return async (input, init) => {
-    const response = await originalFetch(input, init);
-    if (!response.body) return response;
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    const encoder = new TextEncoder();
-    let buffer = "";
-    const stream = new ReadableStream({
-      async pull(controller) {
-        try {
-          const { done, value } = await reader.read();
-          if (done) {
-            if (buffer.length > 0) {
-              const fixed = buffer.replace(/"type":""/g, '"type":"function"');
-              controller.enqueue(encoder.encode(fixed));
-            }
-            controller.close();
-            return;
-          }
-          buffer += decoder.decode(value, { stream: true });
-          const eventSeparator = "\n\n";
-          let separatorIndex;
-          while ((separatorIndex = buffer.indexOf(eventSeparator)) !== -1) {
-            const completeEvent = buffer.slice(
-              0,
-              separatorIndex + eventSeparator.length
-            );
-            buffer = buffer.slice(separatorIndex + eventSeparator.length);
-            const fixedEvent = completeEvent.replace(
-              /"type":""/g,
-              '"type":"function"'
-            );
-            controller.enqueue(encoder.encode(fixedEvent));
-          }
-        } catch (error) {
-          controller.error(error);
-        }
-      }
-    });
-    return new Response(stream, {
-      headers: response.headers,
-      status: response.status,
-      statusText: response.statusText
-    });
-  };
-}
-
-// server/_core/chat.ts
-function createLLMProvider() {
-  const baseURL = ENV.forgeApiUrl.endsWith("/v1") ? ENV.forgeApiUrl : `${ENV.forgeApiUrl}/v1`;
-  return createOpenAI({
-    baseURL,
-    apiKey: ENV.forgeApiKey,
-    fetch: createPatchedFetch(fetch)
-  });
-}
-var tools = {
-  getWeather: tool({
-    description: "Get the current weather for a location",
-    inputSchema: z.object({
-      location: z.string().describe("The city and country, e.g. 'Tokyo, Japan'"),
-      unit: z.enum(["celsius", "fahrenheit"]).optional().default("celsius")
-    }),
-    execute: async ({ location, unit }) => {
-      const temp = Math.floor(Math.random() * 30) + 5;
-      const conditions = ["sunny", "cloudy", "rainy", "partly cloudy"][Math.floor(Math.random() * 4)];
-      return {
-        location,
-        temperature: unit === "fahrenheit" ? Math.round(temp * 1.8 + 32) : temp,
-        unit,
-        conditions,
-        humidity: Math.floor(Math.random() * 50) + 30
-      };
-    }
-  }),
-  calculate: tool({
-    description: "Perform a mathematical calculation",
-    inputSchema: z.object({
-      expression: z.string().describe("The math expression to evaluate, e.g. '2 + 2'")
-    }),
-    execute: async ({ expression }) => {
-      try {
-        const sanitized = expression.replace(/[^0-9+\-*/().%\s]/g, "");
-        const result = Function(
-          `"use strict"; return (${sanitized})`
-        )();
-        return { expression, result };
-      } catch {
-        return { expression, error: "Invalid expression" };
-      }
-    }
-  })
-};
-function registerChatRoutes(app2) {
-  const openai = createLLMProvider();
-  app2.post("/api/chat", async (req, res) => {
-    try {
-      const { messages } = req.body;
-      if (!messages || !Array.isArray(messages)) {
-        res.status(400).json({ error: "messages array is required" });
-        return;
-      }
-      const result = streamText({
-        model: openai.chat("gpt-4o"),
-        system: "You are a helpful assistant. You have access to tools for getting weather and doing calculations. Use them when appropriate.",
-        messages,
-        tools,
-        stopWhen: stepCountIs(5)
-      });
-      result.pipeUIMessageStreamToResponse(res);
-    } catch (error) {
-      console.error("[/api/chat] Error:", error);
-      if (!res.headersSent) {
-        res.status(500).json({ error: "Internal server error" });
-      }
-    }
-  });
-}
-
 // server/_core/systemRouter.ts
-import { z as z2 } from "zod";
+import { z } from "zod";
 
 // server/_core/notification.ts
 init_env();
@@ -1061,16 +933,16 @@ var adminProcedure = t.procedure.use(
 // server/_core/systemRouter.ts
 var systemRouter = router({
   health: publicProcedure.input(
-    z2.object({
-      timestamp: z2.number().min(0, "timestamp cannot be negative")
+    z.object({
+      timestamp: z.number().min(0, "timestamp cannot be negative")
     })
   ).query(() => ({
     ok: true
   })),
   notifyOwner: adminProcedure.input(
-    z2.object({
-      title: z2.string().min(1, "title is required"),
-      content: z2.string().min(1, "content is required")
+    z.object({
+      title: z.string().min(1, "title is required"),
+      content: z.string().min(1, "content is required")
     })
   ).mutation(async ({ input }) => {
     const delivered = await notifyOwner(input);
@@ -1081,7 +953,7 @@ var systemRouter = router({
 });
 
 // server/ai.ts
-import { z as z3 } from "zod";
+import { z as z2 } from "zod";
 import { TRPCError as TRPCError4 } from "@trpc/server";
 var ipLimitMap = /* @__PURE__ */ new Map();
 function checkIpLimit(ip, maxPerDay = 3) {
@@ -1439,12 +1311,12 @@ CRITICAL RULES:
 }
 var aiRouter = router({
   // Authenticated lab analysis — logged-in users get the full reader, no IP cap.
-  analyzeLabReport: protectedProcedure.input(z3.object({
-    files: z3.array(z3.object({
-      fileBase64: z3.string().min(1),
-      mimeType: z3.string().default("image/jpeg")
+  analyzeLabReport: protectedProcedure.input(z2.object({
+    files: z2.array(z2.object({
+      fileBase64: z2.string().min(1),
+      mimeType: z2.string().default("image/jpeg")
     })).min(1).max(5),
-    language: z3.string().default("en")
+    language: z2.string().default("en")
   })).mutation(async ({ input }) => {
     const files = input.files.map((f) => {
       const m = f.fileBase64.match(/^data:([^;]+);base64,/i);
@@ -1455,12 +1327,12 @@ var aiRouter = router({
     return { ...result, remainingToday: 999 };
   }),
   // Public IP-rate-limited demo (works without login).
-  publicAnalyzeLabReport: publicProcedure.input(z3.object({
-    files: z3.array(z3.object({
-      fileBase64: z3.string().min(1),
-      mimeType: z3.string().default("image/jpeg")
+  publicAnalyzeLabReport: publicProcedure.input(z2.object({
+    files: z2.array(z2.object({
+      fileBase64: z2.string().min(1),
+      mimeType: z2.string().default("image/jpeg")
     })).min(1).max(5),
-    language: z3.string().default("en")
+    language: z2.string().default("en")
   })).mutation(async ({ input, ctx }) => {
     const isPremiumUser = ctx.user !== null && ["pro", "pro_plus", "lifetime"].includes(ctx.user.plan ?? "");
     let remaining = 999;
@@ -1477,9 +1349,9 @@ var aiRouter = router({
     return { ...result, remainingToday: remaining };
   }),
   analyzeImage: protectedProcedure.input(
-    z3.object({
-      imageBase64: z3.string().min(100, "Image data is too short \u2014 please provide a valid image"),
-      mimeType: z3.string().default("image/jpeg")
+    z2.object({
+      imageBase64: z2.string().min(100, "Image data is too short \u2014 please provide a valid image"),
+      mimeType: z2.string().default("image/jpeg")
     })
   ).mutation(async ({ input }) => {
     const base64Data = input.imageBase64.replace(
@@ -1497,9 +1369,9 @@ var aiRouter = router({
   // ── Public endpoint: no auth required, IP-rate-limited (3/day) ─────────────
   // Premium/Lifetime logged-in users bypass the IP limit entirely.
   publicAnalyzeImage: publicProcedure.input(
-    z3.object({
-      imageBase64: z3.string().min(100, "Image data is too short"),
-      mimeType: z3.string().default("image/jpeg")
+    z2.object({
+      imageBase64: z2.string().min(100, "Image data is too short"),
+      mimeType: z2.string().default("image/jpeg")
     })
   ).mutation(async ({ input, ctx }) => {
     const isPremiumUser = ctx.user !== null && ["pro", "pro_plus", "lifetime"].includes(ctx.user.plan ?? "");
@@ -1525,7 +1397,7 @@ init_db();
 init_schema();
 import { sql } from "drizzle-orm";
 import { eq as eq3, and, count, inArray } from "drizzle-orm";
-import { z as z4 } from "zod";
+import { z as z3 } from "zod";
 import bcrypt from "bcryptjs";
 import { TRPCError as TRPCError5 } from "@trpc/server";
 import crypto from "crypto";
@@ -1737,14 +1609,15 @@ var appRouter = router({
       return { success: true };
     }),
     // Email signup
-    signupEmail: publicProcedure.input(z4.object({
-      name: z4.string().min(2, "Name must be at least 2 characters"),
-      email: z4.string().email("Invalid email address"),
-      password: z4.string().min(8, "Password must be at least 8 characters"),
-      plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
+    signupEmail: publicProcedure.input(z3.object({
+      name: z3.string().min(2, "Name must be at least 2 characters"),
+      email: z3.string().email("Invalid email address"),
+      password: z3.string().min(8, "Password must be at least 8 characters"),
+      plan: z3.enum(["essential", "pro", "pro_plus"]).default("essential")
     })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      const plan = "essential";
       const existingUser = await db.select().from(users).where(eq3(users.email, input.email)).limit(1);
       if (existingUser.length > 0) {
         throw new TRPCError5({ code: "CONFLICT", message: "Email already registered" });
@@ -1755,7 +1628,7 @@ var appRouter = router({
         email: input.email,
         passwordHash,
         loginMethod: "email",
-        plan: input.plan,
+        plan,
         // Deterministic, cross-app openId derived from the email (email column is
         // unique). Same email -> same openId on every HealthGuard app, so one free
         // account works everywhere. Hashed + truncated to fit openId varchar(64).
@@ -1766,18 +1639,18 @@ var appRouter = router({
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create user" });
       }
       const userId = insertedUser[0].id;
-      await db.insert(userSubscriptions).values({ userId, plan: input.plan, status: "active" });
+      await db.insert(userSubscriptions).values({ userId, plan, status: "active" });
       await db.insert(userPreferences).values({ userId, weeklyEmailEnabled: true, skinAlertEmailEnabled: true });
       const verificationToken = crypto.randomBytes(32).toString("hex");
       const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1e3);
       await db.insert(emailVerificationTokens).values({ userId, token: verificationToken, expiresAt: verificationExpiresAt });
       await sendEmailVerificationEmail(input.email, input.name, verificationToken);
-      return { success: true, userId, plan: input.plan, message: "Verification email sent" };
+      return { success: true, userId, plan, message: "Verification email sent" };
     }),
     // Email login
-    loginEmail: publicProcedure.input(z4.object({
-      email: z4.string().email("Invalid email address"),
-      password: z4.string().min(8, "Invalid password")
+    loginEmail: publicProcedure.input(z3.object({
+      email: z3.string().email("Invalid email address"),
+      password: z3.string().min(8, "Invalid password")
     })).mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
@@ -1801,7 +1674,7 @@ var appRouter = router({
       return { success: true, userId: user.id, plan: user.plan };
     }),
     // Redeem promo code → upgrade plan
-    redeemPromoCode: protectedProcedure.input(z4.object({ code: z4.string().min(1, "Please enter a promo code") })).mutation(async ({ input, ctx }) => {
+    redeemPromoCode: protectedProcedure.input(z3.object({ code: z3.string().min(1, "Please enter a promo code") })).mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const inputCode = input.code.trim().toUpperCase();
@@ -1863,7 +1736,7 @@ var appRouter = router({
     // this. Paid tiers are granted only by redeemPromoCode, which validates the
     // code against the activation_codes table.
     // Update plan
-    updatePlan: protectedProcedure.input(z4.object({ plan: z4.enum(["essential", "pro", "pro_plus"]) })).mutation(async ({ input, ctx }) => {
+    updatePlan: protectedProcedure.input(z3.object({ plan: z3.enum(["essential", "pro", "pro_plus"]) })).mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       if (input.plan !== "essential") {
@@ -1882,7 +1755,7 @@ var appRouter = router({
       return { success: true, plan: input.plan };
     }),
     // Verify email
-    verifyEmail: publicProcedure.input(z4.object({ token: z4.string() })).mutation(async ({ input }) => {
+    verifyEmail: publicProcedure.input(z3.object({ token: z3.string() })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const tokenRecord = await db.select().from(emailVerificationTokens).where(eq3(emailVerificationTokens.token, input.token)).limit(1);
@@ -1896,7 +1769,7 @@ var appRouter = router({
       return { success: true, message: "Email verified successfully" };
     }),
     // Request password reset
-    requestPasswordReset: publicProcedure.input(z4.object({ email: z4.string().email("Invalid email address") })).mutation(async ({ input }) => {
+    requestPasswordReset: publicProcedure.input(z3.object({ email: z3.string().email("Invalid email address") })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const userList = await db.select().from(users).where(eq3(users.email, input.email)).limit(1);
@@ -1911,7 +1784,7 @@ var appRouter = router({
       return { success: true, message: "If an account exists, a reset link will be sent" };
     }),
     // Verify password reset token
-    verifyResetToken: publicProcedure.input(z4.object({ token: z4.string() })).query(async ({ input }) => {
+    verifyResetToken: publicProcedure.input(z3.object({ token: z3.string() })).query(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const tokenList = await db.select().from(passwordResetTokens).where(eq3(passwordResetTokens.token, input.token)).limit(1);
@@ -1921,7 +1794,7 @@ var appRouter = router({
       return { success: true, userId: resetToken.userId };
     }),
     // Reset password with token
-    resetPassword: publicProcedure.input(z4.object({ token: z4.string(), password: z4.string().min(8, "Password must be at least 8 characters") })).mutation(async ({ input }) => {
+    resetPassword: publicProcedure.input(z3.object({ token: z3.string(), password: z3.string().min(8, "Password must be at least 8 characters") })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const tokenList = await db.select().from(passwordResetTokens).where(eq3(passwordResetTokens.token, input.token)).limit(1);
@@ -1955,7 +1828,7 @@ var appRouter = router({
       }).from(moles).leftJoin(photos, eq3(photos.moleId, moles.id)).where(eq3(moles.userId, ctx.user.id)).groupBy(moles.id);
     }),
     // Egy anyajegy lekérése ID alapján (csak ha a useré)
-    getById: protectedProcedure.input(z4.object({ id: z4.number() })).query(async ({ ctx, input }) => {
+    getById: protectedProcedure.input(z3.object({ id: z3.number() })).query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const moleList = await db.select().from(moles).where(and(
@@ -1968,10 +1841,10 @@ var appRouter = router({
       return moleList[0];
     }),
     // Új anyajegy létrehozása
-    create: protectedProcedure.input(z4.object({
-      name: z4.string().min(1, "Name is required"),
-      region: z4.string().min(1, "Region is required"),
-      reminderDays: z4.number().default(90)
+    create: protectedProcedure.input(z3.object({
+      name: z3.string().min(1, "Name is required"),
+      region: z3.string().min(1, "Region is required"),
+      reminderDays: z3.number().default(90)
     })).mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
@@ -1985,13 +1858,13 @@ var appRouter = router({
       return result[0];
     }),
     // Anyajegy módosítása
-    update: protectedProcedure.input(z4.object({
-      id: z4.number(),
-      name: z4.string().optional(),
-      region: z4.string().optional(),
-      reminderDays: z4.number().optional(),
-      riskLevel: z4.enum(["low", "medium", "high", "unknown"]).optional(),
-      lastChecked: z4.date().optional()
+    update: protectedProcedure.input(z3.object({
+      id: z3.number(),
+      name: z3.string().optional(),
+      region: z3.string().optional(),
+      reminderDays: z3.number().optional(),
+      riskLevel: z3.enum(["low", "medium", "high", "unknown"]).optional(),
+      lastChecked: z3.date().optional()
     })).mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
@@ -2012,7 +1885,7 @@ var appRouter = router({
       return result[0];
     }),
     // Anyajegy törlése
-    delete: protectedProcedure.input(z4.object({ id: z4.number() })).mutation(async ({ ctx, input }) => {
+    delete: protectedProcedure.input(z3.object({ id: z3.number() })).mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const existing = await db.select().from(moles).where(and(
@@ -2031,10 +1904,10 @@ var appRouter = router({
   // ============================================================================
   photo: router({
     // Kép feltöltése (mole-hoz rendelve)
-    upload: protectedProcedure.input(z4.object({
-      moleId: z4.number(),
-      dataUrl: z4.string().min(10, "Invalid image data"),
-      notes: z4.string().optional()
+    upload: protectedProcedure.input(z3.object({
+      moleId: z3.number(),
+      dataUrl: z3.string().min(10, "Invalid image data"),
+      notes: z3.string().optional()
     })).mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
@@ -2055,7 +1928,7 @@ var appRouter = router({
       return result[0];
     }),
     // Egy anyajegy összes képének lekérése
-    getByMoleId: protectedProcedure.input(z4.object({ moleId: z4.number() })).query(async ({ ctx, input }) => {
+    getByMoleId: protectedProcedure.input(z3.object({ moleId: z3.number() })).query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const mole = await db.select().from(moles).where(and(
@@ -2084,7 +1957,7 @@ var appRouter = router({
       }).from(photos).leftJoin(analyses, eq3(analyses.photoId, photos.id)).where(eq3(photos.moleId, input.moleId)).orderBy(photos.timestamp);
     }),
     // Kép törlése
-    delete: protectedProcedure.input(z4.object({ id: z4.number() })).mutation(async ({ ctx, input }) => {
+    delete: protectedProcedure.input(z3.object({ id: z3.number() })).mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const photo = await db.select({
@@ -2106,7 +1979,7 @@ var appRouter = router({
   // ============================================================================
   analysis: router({
     // Elemzés lekérése kép alapján
-    getByPhotoId: protectedProcedure.input(z4.object({ photoId: z4.number() })).query(async ({ ctx, input }) => {
+    getByPhotoId: protectedProcedure.input(z3.object({ photoId: z3.number() })).query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
       const photo = await db.select({
@@ -2122,18 +1995,18 @@ var appRouter = router({
       return analysisList[0] || null;
     }),
     // AI elemzés mentése (a Vertex AI válasza alapján)
-    save: protectedProcedure.input(z4.object({
-      photoId: z4.number(),
-      asymmetryScore: z4.number().min(0).max(100),
-      asymmetryCode: z4.string(),
-      borderScore: z4.number().min(0).max(100),
-      borderCode: z4.string(),
-      colorScore: z4.number().min(0).max(100),
-      colorCode: z4.string(),
-      diameterScore: z4.number().min(0).max(100),
-      diameterCode: z4.string(),
-      overallRisk: z4.enum(["low", "medium", "high"]),
-      recommendationCode: z4.string()
+    save: protectedProcedure.input(z3.object({
+      photoId: z3.number(),
+      asymmetryScore: z3.number().min(0).max(100),
+      asymmetryCode: z3.string(),
+      borderScore: z3.number().min(0).max(100),
+      borderCode: z3.string(),
+      colorScore: z3.number().min(0).max(100),
+      colorCode: z3.string(),
+      diameterScore: z3.number().min(0).max(100),
+      diameterCode: z3.string(),
+      overallRisk: z3.enum(["low", "medium", "high"]),
+      recommendationCode: z3.string()
     })).mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
@@ -2189,9 +2062,9 @@ var appRouter = router({
       const prefs = await db.select().from(userPreferences).where(eq3(userPreferences.userId, ctx.user.id)).limit(1);
       return prefs[0] || null;
     }),
-    updatePreferences: protectedProcedure.input(z4.object({
-      weeklyEmailEnabled: z4.boolean().optional(),
-      skinAlertEmailEnabled: z4.boolean().optional()
+    updatePreferences: protectedProcedure.input(z3.object({
+      weeklyEmailEnabled: z3.boolean().optional(),
+      skinAlertEmailEnabled: z3.boolean().optional()
     })).mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return { success: false };
@@ -2210,9 +2083,9 @@ var appRouter = router({
       }
       return { success: true };
     }),
-    googleCallback: publicProcedure.input(z4.object({
-      code: z4.string(),
-      plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
+    googleCallback: publicProcedure.input(z3.object({
+      code: z3.string(),
+      plan: z3.enum(["essential", "pro", "pro_plus"]).default("essential")
     })).mutation(async ({ input }) => {
       try {
         const tokenData = await getGoogleAccessToken(input.code);
@@ -2235,9 +2108,9 @@ var appRouter = router({
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Google authentication failed" });
       }
     }),
-    microsoftCallback: publicProcedure.input(z4.object({
-      code: z4.string(),
-      plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
+    microsoftCallback: publicProcedure.input(z3.object({
+      code: z3.string(),
+      plan: z3.enum(["essential", "pro", "pro_plus"]).default("essential")
     })).mutation(async ({ input }) => {
       try {
         const tokenData = await getMicrosoftAccessToken(input.code);
@@ -2260,9 +2133,9 @@ var appRouter = router({
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Microsoft authentication failed" });
       }
     }),
-    twitterCallback: publicProcedure.input(z4.object({
-      code: z4.string(),
-      plan: z4.enum(["essential", "pro", "pro_plus"]).default("essential")
+    twitterCallback: publicProcedure.input(z3.object({
+      code: z3.string(),
+      plan: z3.enum(["essential", "pro", "pro_plus"]).default("essential")
     })).mutation(async ({ input }) => {
       try {
         const tokenData = await getTwitterAccessToken(input.code);
@@ -2365,7 +2238,6 @@ app.get("/api/config", (_req, res) => {
   res.json({ googleClientId: ENV.googleClientId });
 });
 registerOAuthRoutes(app);
-registerChatRoutes(app);
 app.use(
   "/api/trpc",
   createExpressMiddleware({

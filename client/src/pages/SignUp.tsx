@@ -87,7 +87,13 @@ export default function SignUp() {
         localStorage.setItem("skinguard_pending_promo", promoCode.trim().toUpperCase());
       }
       
-      setTimeout(() => { window.location.href = "/dashboard"; }, 2000);
+      // Go to /login, not /dashboard. signupEmail creates the account and sends
+      // the verification mail but never issues a session cookie, so the new user
+      // is still signed out — sending them to /dashboard showed "Account created,
+      // redirecting…" and then dropped them on the signed-out dashboard asking
+      // them to sign in. First run for an App Review tester should not look like
+      // a failed registration.
+      setTimeout(() => { window.location.href = "/login"; }, 2000);
     } catch (err: any) {
       const msg = err.message || t("auth.accountCreationFailed") || "Sikertelen regisztráció";
       const isEmailConflict =

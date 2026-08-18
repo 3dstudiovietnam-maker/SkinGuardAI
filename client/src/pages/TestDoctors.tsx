@@ -5,6 +5,33 @@ import { ChevronLeft, MapPin, Search, Navigation, ExternalLink, Map } from "luci
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+/**
+ * Hand a URL to the browser/OS instead of to this SPA.
+ *
+ * window.open() is not reliable here. WKWebView (and every desktop browser's
+ * popup blocker) only honours it when it is called straight out of a user
+ * gesture. getCurrentPosition() answers asynchronously, so by the time the
+ * success callback ran the gesture was over and the call was swallowed: the
+ * user tapped "Find dermatologists near me", granted location, and then
+ * nothing at all happened — a dead primary button in the shipped app
+ * (App Store Guideline 2.1). Reproduced in the iOS simulator.
+ *
+ * Inside the native shell we navigate instead. Capacitor's navigation policy
+ * intercepts any URL that is not part of the app, opens it in the system
+ * browser and cancels the in-app navigation, so the SPA stays exactly where it
+ * was. On the web we keep the new tab, with the same navigation as a fallback
+ * for when the popup blocker refuses it.
+ */
+const openExternal = (url: string) => {
+  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  if (isNative) {
+    window.location.href = url;
+    return;
+  }
+  const opened = window.open(url, "_blank", "noopener,noreferrer");
+  if (!opened) window.location.href = url;
+};
+
 export default function TestDoctors() {
   const { t } = useLanguage();
   const [searchText, setSearchText] = useState("");
@@ -23,7 +50,7 @@ export default function TestDoctors() {
       (pos) => {
         const { latitude: lat, longitude: lon } = pos.coords;
         const url = `https://www.google.com/maps/search/dermatologist/@${lat},${lon},12z`;
-        window.open(url, "_blank", "noopener,noreferrer");
+        openExternal(url);
         setLocating(false);
       },
       () => {
@@ -38,7 +65,7 @@ export default function TestDoctors() {
     if (!searchText.trim()) return;
     const query = `dermatologist near ${searchText.trim()}`;
     const url = `https://www.google.com/maps/search/${encodeURIComponent(query)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    openExternal(url);
   };
 
   return (

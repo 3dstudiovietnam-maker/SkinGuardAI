@@ -1,4 +1,4 @@
-import { Play, Download, X, Clock, Film } from "lucide-react";
+import { Play, X, Clock, Film } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,12 +22,22 @@ interface UpcomingVideo {
   type: "tutorial" | "interview" | "story" | "tips";
 }
 
+/**
+ * Thumbnails are bundled assets, not remote stock photos.
+ *
+ * These used to point at images.unsplash.com. In the native shell the whole web
+ * build ships inside the binary, so every card on this page went blank the
+ * moment the device was offline or the CDN was slow — and an App Review device
+ * on a throttled network is exactly that case. They were also generic stock
+ * photos of unrelated lab scenes standing in for our own videos. Both problems
+ * disappear by using the images we already ship in /cdn.
+ */
 const videos: Video[] = [
   {
     id: "app-demo",
     titleKey: "videos.v1Title",
     descKey: "videos.v1Desc",
-    thumbnail: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=225&fit=crop",
+    thumbnail: "/cdn/skinguard-hero-3d-dxG4qYePkYE5GXRkK2HRWb.webp",
     videoUrl: "/cdn/video-1-app-demo_e4478692.mp4",
     duration: "0:30",
     type: "demo"
@@ -36,7 +46,7 @@ const videos: Video[] = [
     id: "trending",
     titleKey: "videos.v2Title",
     descKey: "videos.v2Desc",
-    thumbnail: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=400&h=225&fit=crop",
+    thumbnail: "/cdn/photo-guide-close-clear-ax4jkAFvPvwifxMphXMUqa.webp",
     videoUrl: "/cdn/video-2-trending-audio_82682e80.mp4",
     duration: "0:30",
     type: "trending"
@@ -45,7 +55,7 @@ const videos: Video[] = [
     id: "explainer",
     titleKey: "videos.v3Title",
     descKey: "videos.v3Desc",
-    thumbnail: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=225&fit=crop",
+    thumbnail: "/cdn/photography-guide_35cf840e.png",
     videoUrl: "/cdn/video-3-explainer_5518eb78.mp4",
     duration: "0:45",
     type: "explainer"
@@ -57,7 +67,7 @@ const upcomingVideos: UpcomingVideo[] = [
     id: "body-map-tutorial",
     titleKey: "videos.u1Title",
     descKey: "videos.u1Desc",
-    thumbnail: "https://images.unsplash.com/photo-1551076805-e1869033e561?w=400&h=225&fit=crop",
+    thumbnail: "/cdn/photo-guide-good-lighting-VBaTFkQqNDHKVDFqjTzbGr.webp",
     duration: "~3:00",
     type: "tutorial",
   },
@@ -236,10 +246,18 @@ export default function Videos() {
               >
                 <X className="w-8 h-8" />
               </button>
+              {/* playsInline is not cosmetic on iOS: without it WKWebView takes the
+                  video fullscreen the instant it starts, tearing the user out of
+                  the modal, and autoplay with sound is refused outright so the
+                  player just sits black. Inline + muted lets it start where it is;
+                  controls let the viewer unmute. */}
               <video
                 src={selectedVideoData.videoUrl}
                 controls
                 autoPlay
+                muted
+                playsInline
+                preload="metadata"
                 className="w-full rounded-lg"
               />
               <div className="mt-4 text-white">
@@ -251,7 +269,7 @@ export default function Videos() {
         )}
       </AnimatePresence>
 
-      {/* Download / Share Section */}
+      {/* Share Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -264,16 +282,19 @@ export default function Videos() {
         <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
           {t('videos.shareSubtitle')}
         </p>
+        {/*
+          The "Download All Videos" button that used to sit here pointed at
+          https://bit.ly/skinguardai. That short link resolves to
+          https://3000-ionh6p7y81zplj94ebjlx-796f4523.us1.manus.computer/ — an
+          expired ephemeral build-sandbox host that now answers HTTP 502 (checked
+          2026-08-18). So the app's own page offered a download that led nowhere,
+          through a shortened URL whose destination neither the user nor an App
+          Review engineer can see, and which is not a domain we control. That is
+          a dead advertised feature (Guideline 2.3.1) and a link we cannot vouch
+          for. There is no download endpoint in this app — the three videos are
+          bundled and play in-app — so the button is removed rather than repointed.
+        */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="https://bit.ly/skinguardai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            {t('videos.downloadAll')}
-          </a>
           <a
             href="https://www.facebook.com/share/g/1aSGhpR12p/"
             target="_blank"

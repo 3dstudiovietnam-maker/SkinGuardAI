@@ -170,3 +170,19 @@
     }
   }
 }
+
+/* iOS safe areas. The native shell draws under the status bar and the home
+   indicator, so anything pinned to an edge has to reserve that space itself.
+   env() resolves to 0px in a browser, so these are no-ops on the web. */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+/* For position:fixed elements anchored to the bottom (FABs, the cookie bar).
+   margin-bottom lifts them clear of the home indicator while composing with
+   whatever Tailwind bottom-* offset they already carry. */
+.safe-mb {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}

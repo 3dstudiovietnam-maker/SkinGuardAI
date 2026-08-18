@@ -67,6 +67,18 @@ export default function LabAnalysis() {
   const [staged, setStaged] = useState<{ name: string; dataUrl: string; mimeType: string }[]>([]);
   const [error, setError] = useState<string>("");
 
+  /**
+   * The "Download PDF" button below is window.print(), and WKWebView on iOS does
+   * not implement it — no print sheet, no PDF, no error. Inside the native shell
+   * it is a button that visibly does nothing, which is precisely what Guideline
+   * 2.1 rejections are written about. The report itself renders in full on screen
+   * either way, so natively we simply do not offer the button.
+   */
+  const isNative =
+    typeof window !== "undefined" &&
+    !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+      .Capacitor?.isNativePlatform?.();
+
   const result = analyze.data as LabResult | undefined;
   const statusLabel = (s?: string) =>
     s === "high" ? t('lab.statusHigh') : s === "low" ? t('lab.statusLow') :
@@ -213,13 +225,15 @@ export default function LabAnalysis() {
 
         {result && result.analyzable !== false && (
           <>
-            {/* Download/Print PDF */}
-            <div className="no-print flex justify-end mt-6">
-              <button onClick={() => window.print()}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-colors shadow-sm">
-                <Download className="w-4 h-4" /> {t('lab.downloadPdf')}
-              </button>
-            </div>
+            {/* Download/Print PDF — web only; window.print() is a no-op in WKWebView */}
+            {!isNative && (
+              <div className="no-print flex justify-end mt-6">
+                <button onClick={() => window.print()}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-colors shadow-sm">
+                  <Download className="w-4 h-4" /> {t('lab.downloadPdf')}
+                </button>
+              </div>
+            )}
 
             {/* ── The printable LIGHT document ── */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}

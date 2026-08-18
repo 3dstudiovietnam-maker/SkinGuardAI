@@ -4,7 +4,6 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
-import { registerChatRoutes } from "./chat";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -41,8 +40,9 @@ async function startServer() {
   });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
-  // Chat API with streaming and tool calling
-  registerChatRoutes(app);
+  // Chat API removed — see the note in api/_index.ts. POST /api/chat was an
+  // unauthenticated, unmetered gpt-4o relay with the starter template's example
+  // tools, and no screen in this app ever called it.
   // tRPC API
   app.use(
     "/api/trpc",

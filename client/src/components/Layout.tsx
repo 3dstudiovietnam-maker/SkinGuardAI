@@ -3,7 +3,7 @@
  */
 import { Link, useLocation, useRoute } from "wouter";
 import LogoVideo from "@/components/LogoVideo";
-import { Shield, LayoutDashboard, User, Camera, MapPin, CreditCard, Menu, X, LogIn, LogOut, FileText, TrendingUp, Facebook, Mail, UserPlus, Video, HelpCircle, Phone, Github, Twitter, Instagram, Linkedin, Youtube, Send, Heart, Info, FlaskConical, BookOpen, AlertTriangle } from "lucide-react";
+import { Shield, LayoutDashboard, User, Camera, MapPin, CreditCard, Menu, X, LogIn, LogOut, FileText, TrendingUp, Facebook, Mail, UserPlus, Video, HelpCircle, Phone, Github, Twitter, Instagram, Linkedin, Youtube, Heart, Info, FlaskConical, BookOpen, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useSkinStore } from "@/contexts/SkinStore";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -19,8 +19,6 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const { user, isAuthenticated, logout: authLogout } = useAuth();
   const { logout: storeLogout } = useSkinStore();
   const { t } = useLanguage();
@@ -38,22 +36,20 @@ export default function Layout({ children }: LayoutProps) {
     window.location.href = "/";
   };
 
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !email.includes("@")) return;
-    
-    setNewsletterStatus("loading");
-    try {
-      // Itt jön majd a newsletter API hívás
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setNewsletterStatus("success");
-      setEmail("");
-      setTimeout(() => setNewsletterStatus("idle"), 3000);
-    } catch {
-      setNewsletterStatus("error");
-      setTimeout(() => setNewsletterStatus("idle"), 3000);
-    }
-  };
+  /*
+   * The footer newsletter sign-up has been removed.
+   *
+   * It was not connected to anything. The submit handler awaited a 1-second
+   * setTimeout and then displayed "✓ Subscribed! Thanks for joining." next to
+   * the words "Unsubscribe at any time" — while the address the user had just
+   * typed was thrown away. There is no newsletter list, no endpoint and no
+   * unsubscribe. A field that asks for an email address on a skin-health site
+   * and then lies about what happened to it is a false statement to the user
+   * (App Store Guideline 2.3.1) whichever way it is read. Nothing is lost by
+   * taking it out: no code existed behind it. The footer.newsletter.* strings
+   * are left in translations.ts so the 11-language key parity is untouched if
+   * a real list is wired up later.
+   */
 
   const navItems = [
     { href: "/", label: t('nav.home'), icon: Shield },
@@ -62,7 +58,9 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/body-map", label: t('nav.bodyMap'), icon: MapPin },
     { href: "/capture", label: t('nav.capture'), icon: Camera },
     { href: "/health-report", label: t('nav.healthReport'), icon: FileText },
-    { href: "/test-monitor", label: t('nav.monitor'), icon: TrendingUp },
+    // "/test-monitor" (Health Monitor) removed from the nav — see App.tsx: it is
+    // fitness-app fork leftover (weight/BMI/hydration/sleep) seeded with fake
+    // entries and storing nothing. Its route is gone, so a nav item would 404.
     { href: "/pricing", label: t('nav.pricing'), icon: CreditCard },
     { href: "/videos", label: t('nav.videos'), icon: Video },
     { href: "/faq", label: t('nav.faq'), icon: HelpCircle },
@@ -72,7 +70,9 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-lg">
+      {/* safe-top: reserves the iOS status bar / Dynamic Island height inside the
+          sticky header, so page content never runs under the clock. */}
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-lg safe-top">
         <div className="container flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-3 no-underline">
             <img
@@ -284,7 +284,7 @@ export default function Layout({ children }: LayoutProps) {
       <footer className="bg-slate-900 text-slate-300 py-12 md:py-16">
         <div className="container">
           {/* Main Footer Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {/* About NOX Universe */}
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -325,54 +325,8 @@ export default function Layout({ children }: LayoutProps) {
               </ul>
             </div>
 
-            {/* Newsletter */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">{t('footer.newsletter.title')}</h4>
-              <p className="text-sm text-slate-400 mb-4">
-                {t('footer.newsletter.subtitle')}
-              </p>
-              <form onSubmit={handleNewsletterSubmit} className="space-y-3">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t('footer.newsletter.emailPlaceholder')}
-                    className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    disabled={newsletterStatus === "loading"}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={newsletterStatus === "loading"}
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white px-6"
-                  >
-                    {newsletterStatus === "loading" ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        {t('footer.newsletter.sending')}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <Send className="w-4 h-4" />
-                        {t('footer.newsletter.button')}
-                      </span>
-                    )}
-                  </Button>
-                </div>
-                {newsletterStatus === "success" && (
-                  <p className="text-sm text-green-400">{t('footer.newsletter.success')}</p>
-                )}
-                {newsletterStatus === "error" && (
-                  <p className="text-sm text-red-400">{t('footer.newsletter.error')}</p>
-                )}
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {t('footer.newsletter.privacy')}
-                </p>
-              </form>
-            </div>
+            {/* The newsletter sign-up column stood here — removed, see the note
+                where handleNewsletterSubmit used to be defined. */}
           </div>
 
           {/* Social Media & Contact Bar */}

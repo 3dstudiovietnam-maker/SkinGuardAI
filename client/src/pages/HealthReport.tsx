@@ -51,9 +51,23 @@ export default function HealthReport() {
     t('healthReport.recSunProtection'),
   ];
 
+  /**
+   * Gate messages for the locked Pro features.
+   *
+   * Two things were wrong with the hardcoded English strings these replace.
+   * First, this app ships in 11 languages and these toasts were the only UI a
+   * Thai or Hindi user would see in English. Second, inside the native shell an
+   * "Upgrade to Pro" nudge is a call to action pointing at a purchase we do not
+   * sell through In-App Purchase (App Store 3.1.1) — the rest of the app already
+   * hides every such CTA behind isNative, and these two were missed. Natively we
+   * now say only that the feature belongs to a paid plan, with no upgrade call.
+   */
+  const premiumOnlyNotice = () =>
+    isNative ? t('moleDetail.proFeature') : t('moleDetail.shareUpgrade');
+
   const handleExportPDF = () => {
     if (!isPremium) {
-      toast.warning("Upgrade to Pro or Pro+ to export PDF reports.");
+      toast.warning(premiumOnlyNotice());
       return;
     }
     try {
@@ -243,7 +257,7 @@ export default function HealthReport() {
 
   const handleShareReport = () => {
     if (!isPremium) {
-      toast.warning("Upgrade to Pro or Pro+ to share mole links.");
+      toast.warning(premiumOnlyNotice());
       return;
     }
     // Use selected mole if available, otherwise fall back to the first mole, then the report URL
@@ -423,7 +437,7 @@ export default function HealthReport() {
                             size="sm"
                             variant="ghost"
                             className="shrink-0 h-8 w-8 p-0 text-cyan-500 hover:text-cyan-700"
-                            title="View AI Analysis"
+                            title={t('moleDetail.aiAnalysis')}
                             onClick={e => {
                               e.stopPropagation();
                               navigate(`/mole/${mole.id}`);
@@ -435,11 +449,11 @@ export default function HealthReport() {
                             size="sm"
                             variant="ghost"
                             className={`shrink-0 h-8 w-8 p-0 ${isPremium ? "text-slate-400 hover:text-cyan-600" : "text-slate-300 cursor-not-allowed"}`}
-                            title={isPremium ? "Copy link to this mole" : (isNative ? "" : "Upgrade to Pro to share mole links")}
+                            title={isPremium ? t('healthReport.shareLink') : (isNative ? t('moleDetail.proFeature') : t('moleDetail.shareUpgrade'))}
                             disabled={!isPremium}
                             onClick={e => {
                               e.stopPropagation();
-                              if (!isPremium) { toast.warning("Upgrade to Pro or Pro+ to share mole links."); return; }
+                              if (!isPremium) { toast.warning(premiumOnlyNotice()); return; }
                               const url = `${WEB_ORIGIN}/mole/${mole.id}`;
                               navigator.clipboard.writeText(url).then(
                                 () => toast.success(t('healthReport.linkCopied')),
@@ -487,6 +501,15 @@ export default function HealthReport() {
 
             <div className="max-w-4xl mx-auto space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* PDF export is web-only. jsPDF's doc.save() finishes by clicking an
+                    <a download> at a blob: URL, and WKWebView honours neither — the
+                    tap does nothing at all, after which the old code still toasted
+                    "PDF exported!". A paid feature that silently fails and then
+                    claims success is a Guideline 2.1 rejection waiting to happen, so
+                    the button is not offered in the native shell. Bringing it back
+                    natively needs @capacitor/filesystem + @capacitor/share (write
+                    the bytes, then hand them to the iOS share sheet). */}
+                {!isNative && (
                 <Button
                   size="lg"
                   className={`h-12 text-base text-white ${isPremium ? "bg-cyan-600 hover:bg-cyan-700" : "bg-slate-300 hover:bg-slate-300 cursor-not-allowed"}`}
@@ -499,6 +522,7 @@ export default function HealthReport() {
                     <><Lock className="w-4 h-4 mr-2" /> {t('healthReport.exportPDF')}</>
                   )}
                 </Button>
+                )}
                 <Button
                   size="lg"
                   variant="outline"

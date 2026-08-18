@@ -22,7 +22,13 @@ const MoleDetail = lazy(() => import("./pages/MoleDetail"));
 const Comparison = lazy(() => import("./pages/Comparison"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const HealthReport = lazy(() => import("./pages/HealthReport"));
-const TestMonitor = lazy(() => import("./pages/TestMonitor"));
+// TestMonitor ("Health Monitor") is deliberately NOT routed. See the header of
+// client/src/pages/TestMonitor.tsx: it is fork leftover from the fitness app in
+// this family — weight/BMI/hydration/sleep with three hardcoded fake entries, no
+// persistence at all, and a blanket "Your BMI indicates it is time to exercise"
+// verdict. Shipping it would put fabricated health records and an unrelated
+// body-composition judgement into a skin-logging app. Leaving the import out
+// keeps it out of the bundle; the file is kept so the work is not lost.
 const Legal = lazy(() => import("./pages/Legal"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -81,7 +87,6 @@ function Router() {
         <Route path={"/comparison/:id"} component={Comparison} />
         <Route path={"/pricing"} component={Pricing} />
         <Route path={"/health-report"} component={HealthReport} />
-        <Route path={"/test-monitor"} component={TestMonitor} />
         <Route path={"/legal"} component={Legal} />
         <Route path={"/privacy"} component={Privacy} />
         <Route path={"/terms"} component={Terms} />

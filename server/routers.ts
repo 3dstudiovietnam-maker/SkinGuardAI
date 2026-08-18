@@ -85,6 +85,13 @@ export const appRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
 
+      // Signup always starts on the free plan. The tier arrived as client input,
+      // so honouring it here would let anyone register straight into a paid one.
+      // Paid tiers come only from redeemPromoCode, which validates the code
+      // against the activation_codes table.
+      const plan = "essential" as const;
+
+
       const existingUser = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
       if (existingUser.length > 0) {
         throw new TRPCError({ code: "CONFLICT", message: "Email already registered" });
@@ -96,7 +103,7 @@ export const appRouter = router({
         email: input.email,
         passwordHash,
         loginMethod: "email",
-        plan: input.plan,
+        plan: plan,
         // Deterministic, cross-app openId derived from the email (email column is
         // unique). Same email -> same openId on every HealthGuard app, so one free
         // account works everywhere. Hashed + truncated to fit openId varchar(64).
@@ -109,7 +116,7 @@ export const appRouter = router({
       }
       const userId = insertedUser[0].id;
 
-      await db.insert(userSubscriptions).values({ userId, plan: input.plan, status: "active" });
+      await db.insert(userSubscriptions).values({ userId, plan: plan, status: "active" });
       await db.insert(userPreferences).values({ userId, weeklyEmailEnabled: true, skinAlertEmailEnabled: true });
 
       const verificationToken = crypto.randomBytes(32).toString("hex");
@@ -117,7 +124,7 @@ export const appRouter = router({
       await db.insert(emailVerificationTokens).values({ userId, token: verificationToken, expiresAt: verificationExpiresAt });
       await sendEmailVerificationEmail(input.email, input.name, verificationToken);
 
-      return { success: true, userId, plan: input.plan, message: "Verification email sent" };
+      return { success: true, userId, plan: plan, message: "Verification email sent" };
     }),
 
     // Email login

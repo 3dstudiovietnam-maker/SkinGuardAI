@@ -7,7 +7,6 @@ import "dotenv/config";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "../server/_core/oauth";
-import { registerChatRoutes } from "../server/_core/chat";
 import { appRouter } from "../server/routers";
 import { createContext } from "../server/_core/context";
 import { ENV } from "../server/_core/env";
@@ -56,8 +55,21 @@ app.get("/api/config", (_req, res) => {
 // Google / Microsoft / Twitter OAuth callbacks
 registerOAuthRoutes(app);
 
-// AI Chat (streaming)
-registerChatRoutes(app);
+// AI Chat (streaming) — REMOVED, deliberately.
+//
+// registerChatRoutes() published POST /api/chat: an unauthenticated, unmetered
+// streaming relay to gpt-4o, with the starter template's example tools still
+// wired in ("You are a helpful assistant" + getWeather + calculate). Nothing in
+// this app ever called it — the only consumer, AIChatBox, lives solely in the
+// unrouted ComponentShowcase page. So it was an open LLM proxy on a public URL,
+// billable to us by anyone who found it, and, if found, a general-purpose
+// unmoderated chatbot answering under a skin-health brand.
+//
+// server/_core/chat.ts is left on disk. If a real assistant is ever wanted here,
+// re-register it behind the session check used by protectedProcedure, add rate
+// limiting like server/ai.ts's checkIpLimit, and replace the example tools and
+// the system prompt with ones written for this app.
+// NOTE: this only takes effect on the next API deploy.
 
 // tRPC API
 app.use(
