@@ -39,6 +39,9 @@ const SignUp = lazy(() => import("./pages/SignUp"));
 const LogIn = lazy(() => import("./pages/LogIn"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+// The signup e-mail links here. Without this route the link 404s and the
+// user can never confirm their address.
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const About = lazy(() => import("./pages/About"));
 const TestPage = lazy(() => import("./pages/TestPage"));
@@ -101,6 +104,7 @@ function Router() {
         <Route path={"/login"} component={LogIn} />
         <Route path={"/forgot-password"} component={ForgotPassword} />
         <Route path={"/reset-password"} component={ResetPassword} />
+        <Route path={"/verify-email"} component={VerifyEmail} />
         <Route path={"/user-dashboard"} component={UserDashboard} />
         <Route path={"/about"} component={About} />
         <Route path={"/test"} component={TestPage} />
