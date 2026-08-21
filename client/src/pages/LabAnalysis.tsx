@@ -4,6 +4,7 @@ import { Upload, FlaskConical, ShieldAlert, FileText, Stethoscope, Loader2, Lock
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import ReportAiContent from "@/components/ReportAiContent";
 
 // HealthGuard Lab Reader — portable, professional lab-report analysis page (i18n via lab.* keys).
 // Renders a self-contained LIGHT "document" (works in dark mode + prints cleanly to PDF).
@@ -406,6 +407,16 @@ export default function LabAnalysis() {
 
               {/* Disclaimer footer */}
               <p className="text-xs text-slate-400 border-t border-slate-200 pt-4 leading-relaxed">{result.disclaimer || t('lab.disclaimerBody')}</p>
+
+              {/* Play's AI-Generated Content policy: flag a bad answer without
+                  leaving the app. Only the summary text travels, never the
+                  uploaded lab report itself. */}
+              <div className="flex justify-center pt-1">
+                <ReportAiContent
+                  surface="lab-report"
+                  content={[overview, result.urgency?.text].filter(Boolean).join("\n\n")}
+                />
+              </div>
             </motion.div>
           </>
         )}

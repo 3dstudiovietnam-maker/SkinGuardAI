@@ -51,6 +51,8 @@ export default function Privacy() {
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('leg.medTitle')}</h2>
           <div className="bg-primary/5 dark:bg-primary/10 p-6 rounded-lg border border-primary/20 space-y-4">
             <p className="text-slate-700 dark:text-slate-300">{t('leg.medIntro')}</p>
+            {/* Play Health apps policy wording for a non-SaMD health app. */}
+            <p className="text-slate-700 dark:text-slate-300 font-semibold">{t('disclaimer.notDevice')}</p>
             <p className="text-slate-700 dark:text-slate-300 font-semibold">{t('leg.medConsult')}</p>
           </div>
         </section>

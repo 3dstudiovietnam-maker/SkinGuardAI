@@ -126,3 +126,7 @@ credentials.json
 *.keystore
 keystore.properties
 android/keystore.properties
+
+# Lifetime / promo activation code dumps — these are sellable goods, not source.
+*-LT-codes.*
+*-PP-codes.*

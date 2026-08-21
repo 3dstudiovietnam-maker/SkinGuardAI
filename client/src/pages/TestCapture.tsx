@@ -5,6 +5,8 @@ import { Camera, Upload, RotateCcw, Loader2, AlertCircle, ChevronLeft, RefreshCw
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
+import { useCaptureConsent } from "@/components/CameraDisclosure";
+import ReportAiContent from "@/components/ReportAiContent";
 
 type Step = "upload" | "analyzing" | "result";
 
@@ -34,6 +36,10 @@ const RISK_EMOJIS = { low: "✅", medium: "🤔", high: "⚠️" };
 
 export default function TestCapture() {
   const { t } = useLanguage();
+  // Prominent disclosure gate — must run before getUserMedia() fires Android's
+  // camera permission prompt, and before a gallery photo of someone's skin is
+  // uploaded to the AI provider.
+  const { requestConsent, disclosure } = useCaptureConsent();
   const [step, setStep] = useState<Step>("upload");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -251,14 +257,14 @@ export default function TestCapture() {
             {!capturedImage && !cameraActive && (
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <button
-                  onClick={() => startCamera()}
+                  onClick={() => requestConsent(() => startCamera())}
                   className="flex flex-col items-center gap-3 py-8 rounded-2xl border-2 border-dashed border-cyan-300 bg-cyan-50 hover:bg-cyan-100 transition-colors"
                 >
                   <Camera className="w-8 h-8 text-cyan-600" />
                   <span className="text-sm font-semibold text-cyan-700">{t("test.takePhoto")}</span>
                 </button>
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => requestConsent(() => fileInputRef.current?.click())}
                   className="flex flex-col items-center gap-3 py-8 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <Upload className="w-8 h-8 text-slate-500 dark:text-slate-400" />
@@ -346,6 +352,16 @@ export default function TestCapture() {
             {/* Disclaimer */}
             <p className="text-xs text-slate-400 text-center leading-relaxed">{t("test.disclaimer")}</p>
 
+            {/* Play's AI-Generated Content policy: a way to flag this output
+                without leaving the app. The photo is never attached — only the
+                generated wording the user is objecting to. */}
+            <div className="flex justify-center">
+              <ReportAiContent
+                surface="mole-analysis"
+                content={`overallRisk=${result.overallRisk} recommendation=${result.recommendationCode} A=${result.asymmetry.score}/${result.asymmetry.descriptionCode} B=${result.border.score}/${result.border.descriptionCode} C=${result.color.score}/${result.color.descriptionCode} D=${result.diameter.score}/${result.diameter.descriptionCode}`}
+              />
+            </div>
+
             {/* Buttons */}
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" onClick={reset} className="rounded-xl">
@@ -360,6 +376,7 @@ export default function TestCapture() {
           </motion.div>
         )}
       </div>
+      {disclosure}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { AnimatedLogo } from "@/components/AnimatedLogo";
 import { MoleTrendChart } from "@/components/MoleTrendChart";
+import ReportAiContent from "@/components/ReportAiContent";
 import { WEB_ORIGIN } from "@/lib/apiBase";
 
 /**
@@ -301,6 +302,16 @@ export default function MoleDetail() {
                 {biyovisText}
               </p>
             </a>
+          </div>
+
+          {/* Play's AI-Generated Content policy: flag a bad answer without
+              leaving the app. The mole photo is never attached — only the
+              generated wording. */}
+          <div className="mt-3 flex justify-end">
+            <ReportAiContent
+              surface="mole-analysis"
+              content={`overallRisk=${analysis.overallRisk} recommendation=${analysis.recommendationCode} A=${analysis.asymmetry?.score} B=${analysis.border?.score} C=${analysis.color?.score} D=${analysis.diameter?.score}`}
+            />
           </div>
 
           {/* Disclaimer */}

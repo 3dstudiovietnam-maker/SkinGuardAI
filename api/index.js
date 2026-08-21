@@ -955,6 +955,228 @@ var systemRouter = router({
 // server/ai.ts
 import { z as z2 } from "zod";
 import { TRPCError as TRPCError4 } from "@trpc/server";
+
+// server/email.ts
+init_env();
+import nodemailer from "nodemailer";
+var transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: ENV.emailUser || "your-email@gmail.com",
+    pass: ENV.emailPassword || "your-app-password"
+  }
+});
+var APP_ORIGIN = process.env.APP_URL || "https://www.skinguardai.app";
+var emailTemplates = {
+  passwordReset: (resetLink, userName) => ({
+    subject: "Reset Your SkinGuard AI Password",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">SkinGuard AI</h1>
+        </div>
+        <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
+          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
+          <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
+            We received a request to reset your password. Click the button below to create a new password.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+              Reset Password
+            </a>
+          </div>
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">
+            Or copy and paste this link in your browser:
+          </p>
+          <p style="color: #06b6d4; font-size: 12px; word-break: break-all; margin-bottom: 30px;">
+            ${resetLink}
+          </p>
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">
+            This link will expire in 1 hour.
+          </p>
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+            If you didn't request this, you can ignore this email.
+          </p>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+          <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+            \xA9 2026 SkinGuard AI. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `
+  }),
+  emailVerification: (verificationLink, userName) => ({
+    subject: "Verify Your SkinGuard AI Email Address",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">SkinGuard AI</h1>
+        </div>
+        <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
+          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
+          <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
+            Welcome to SkinGuard AI! Please verify your email address to get started.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationLink}" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+              Verify Email
+            </a>
+          </div>
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">
+            Or copy and paste this link in your browser:
+          </p>
+          <p style="color: #06b6d4; font-size: 12px; word-break: break-all; margin-bottom: 30px;">
+            ${verificationLink}
+          </p>
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+            This link will expire in 24 hours.
+          </p>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+          <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+            \xA9 2026 SkinGuard AI. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `
+  }),
+  welcomeEmail: (userName) => ({
+    subject: "Welcome to SkinGuard AI!",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">SkinGuard AI</h1>
+        </div>
+        <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
+          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
+          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">
+            Your email has been verified! You're all set to start tracking your skin health with AI support.
+          </p>
+          <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
+            Get started by taking your first scan or exploring your dashboard.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${APP_ORIGIN}/dashboard" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+              Go to Dashboard
+            </a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+          <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+            \xA9 2026 SkinGuard AI. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `
+  })
+};
+async function sendPasswordResetEmail(email, userName, resetToken) {
+  const resetLink = `${APP_ORIGIN}/reset-password?token=${resetToken}`;
+  const template = emailTemplates.passwordReset(resetLink, userName);
+  try {
+    await transporter.sendMail({
+      from: ENV.emailUser || "noreply@skinguardai.app",
+      to: email,
+      subject: template.subject,
+      html: template.html
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
+    return { success: false, error };
+  }
+}
+async function sendEmailVerificationEmail(email, userName, verificationToken) {
+  const verificationLink = `${APP_ORIGIN}/verify-email?token=${verificationToken}`;
+  const template = emailTemplates.emailVerification(verificationLink, userName);
+  try {
+    await transporter.sendMail({
+      from: ENV.emailUser || "noreply@skinguardai.app",
+      to: email,
+      subject: template.subject,
+      html: template.html
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send email verification email:", error);
+    return { success: false, error };
+  }
+}
+async function sendWelcomeEmail(email, userName) {
+  const template = emailTemplates.welcomeEmail(userName);
+  try {
+    await transporter.sendMail({
+      from: ENV.emailUser || "noreply@skinguardai.app",
+      to: email,
+      subject: template.subject,
+      html: template.html
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send welcome email:", error);
+    return { success: false, error };
+  }
+}
+var MODERATION_INBOX = process.env.MODERATION_EMAIL || "info@skinguardai.app";
+async function sendAiContentReport(report) {
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  try {
+    await transporter.sendMail({
+      from: ENV.emailUser || "noreply@skinguardai.app",
+      to: MODERATION_INBOX,
+      subject: `[SkinGuard AI] AI content report \u2014 ${report.reason} (${report.surface})`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 700px;">
+          <h2 style="color:#0891b2;margin-bottom:4px;">AI content report</h2>
+          <p style="color:#64748b;font-size:13px;margin-top:0;">
+            Filed from the in-app report control (Google Play AI-Generated Content policy).
+          </p>
+          <table style="border-collapse:collapse;font-size:14px;">
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Screen</td><td>${esc(report.surface)}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Reason</td><td><strong>${esc(report.reason)}</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Language</td><td>${esc(report.language)}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">User</td><td>${esc(report.userEmail || report.userId || "not signed in")}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Received</td><td>${(/* @__PURE__ */ new Date()).toISOString()}</td></tr>
+          </table>
+          ${report.details ? `<h3 style="margin-bottom:4px;">What the user wrote</h3><p style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;">${esc(report.details)}</p>` : ""}
+          ${report.content ? `<h3 style="margin-bottom:4px;">Flagged AI output</h3><pre style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;font-size:12px;">${esc(report.content)}</pre>` : ""}
+        </div>
+      `
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send AI content report:", error);
+    return { success: false, error };
+  }
+}
+async function sendAccountDeletionRequest(request) {
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  try {
+    await transporter.sendMail({
+      from: ENV.emailUser || "noreply@skinguardai.app",
+      to: MODERATION_INBOX,
+      subject: `[SkinGuard AI] Account deletion request \u2014 ${request.email}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 700px;">
+          <h2 style="color:#0891b2;margin-bottom:4px;">Account deletion request</h2>
+          <p style="color:#64748b;font-size:13px;margin-top:0;">
+            Filed from https://www.skinguardai.app/delete-account
+          </p>
+          <table style="border-collapse:collapse;font-size:14px;">
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Account e-mail</td><td><strong>${esc(request.email)}</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Received</td><td>${(/* @__PURE__ */ new Date()).toISOString()}</td></tr>
+          </table>
+          ${request.note ? `<h3 style="margin-bottom:4px;">Note</h3><p style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;">${esc(request.note)}</p>` : ""}
+          <p style="color:#64748b;font-size:13px;">Verify ownership of the address before erasing, then delete the account and all associated data within 30 days.</p>
+        </div>
+      `
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send account deletion request:", error);
+    return { success: false, error };
+  }
+}
+
+// server/ai.ts
 var ipLimitMap = /* @__PURE__ */ new Map();
 function checkIpLimit(ip, maxPerDay = 3) {
   const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
@@ -1389,6 +1611,59 @@ var aiRouter = router({
     const parsedAnalysis = await callGeminiWithRetry(base64Data, input.mimeType, 3);
     parsedAnalysis.overallRisk = computeRisk(parsedAnalysis);
     return { ...parsedAnalysis, remainingToday: remaining };
+  }),
+  // ── Report an AI output ────────────────────────────────────────────────────
+  // Google Play's AI-Generated Content policy makes this mandatory, not optional:
+  // an app that generates content with AI "must contain in-app user reporting or
+  // flagging features that allow users to report or flag offensive content to
+  // developers without needing to exit the app", and the reports must feed back
+  // into moderation. Public, because the demo analysis on /test/capture runs
+  // without an account — the person who sees a bad answer there must be able to
+  // flag it too.
+  //
+  // Deliberately NOT rate-limited by the IP counter above: that counter exists to
+  // ration expensive Gemini calls, and rationing safety reports would defeat the
+  // policy. The size caps below are the abuse control instead.
+  reportContent: publicProcedure.input(
+    z2.object({
+      surface: z2.enum([
+        "mole-analysis",
+        "lab-report",
+        "ai-chat",
+        "health-report",
+        "other"
+      ]),
+      reason: z2.enum([
+        "offensive",
+        "harmful",
+        "inaccurate",
+        "irrelevant",
+        "other"
+      ]),
+      details: z2.string().max(2e3).default(""),
+      // The generated text being flagged. Never an image: reporting must not
+      // become a side channel that mails someone's skin photo to our inbox.
+      content: z2.string().max(8e3).default(""),
+      language: z2.string().max(8).default("en")
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const result = await sendAiContentReport({
+      surface: input.surface,
+      reason: input.reason,
+      details: input.details,
+      content: input.content,
+      language: input.language,
+      // User ids are numeric; the report only ever renders them as text.
+      userId: ctx.user?.id != null ? String(ctx.user.id) : null,
+      userEmail: ctx.user?.email ?? null
+    });
+    if (!result.success) {
+      throw new TRPCError4({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Could not deliver the report. Please try again."
+      });
+    }
+    return { success: true };
   })
 });
 
@@ -1401,168 +1676,6 @@ import { z as z3 } from "zod";
 import bcrypt from "bcryptjs";
 import { TRPCError as TRPCError5 } from "@trpc/server";
 import crypto from "crypto";
-
-// server/email.ts
-init_env();
-import nodemailer from "nodemailer";
-var transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: ENV.emailUser || "your-email@gmail.com",
-    pass: ENV.emailPassword || "your-app-password"
-  }
-});
-var APP_ORIGIN = process.env.APP_URL || "https://www.skinguardai.app";
-var emailTemplates = {
-  passwordReset: (resetLink, userName) => ({
-    subject: "Reset Your SkinGuard AI Password",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">SkinGuard AI</h1>
-        </div>
-        <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
-          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
-          <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
-            We received a request to reset your password. Click the button below to create a new password.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-              Reset Password
-            </a>
-          </div>
-          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">
-            Or copy and paste this link in your browser:
-          </p>
-          <p style="color: #06b6d4; font-size: 12px; word-break: break-all; margin-bottom: 30px;">
-            ${resetLink}
-          </p>
-          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">
-            This link will expire in 1 hour.
-          </p>
-          <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
-            If you didn't request this, you can ignore this email.
-          </p>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-          <p style="color: #94a3b8; font-size: 12px; text-align: center;">
-            \xA9 2026 SkinGuard AI. All rights reserved.
-          </p>
-        </div>
-      </div>
-    `
-  }),
-  emailVerification: (verificationLink, userName) => ({
-    subject: "Verify Your SkinGuard AI Email Address",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">SkinGuard AI</h1>
-        </div>
-        <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
-          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
-          <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
-            Welcome to SkinGuard AI! Please verify your email address to get started.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationLink}" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-              Verify Email
-            </a>
-          </div>
-          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">
-            Or copy and paste this link in your browser:
-          </p>
-          <p style="color: #06b6d4; font-size: 12px; word-break: break-all; margin-bottom: 30px;">
-            ${verificationLink}
-          </p>
-          <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
-            This link will expire in 24 hours.
-          </p>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-          <p style="color: #94a3b8; font-size: 12px; text-align: center;">
-            \xA9 2026 SkinGuard AI. All rights reserved.
-          </p>
-        </div>
-      </div>
-    `
-  }),
-  welcomeEmail: (userName) => ({
-    subject: "Welcome to SkinGuard AI!",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">SkinGuard AI</h1>
-        </div>
-        <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
-          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">Hi ${userName},</p>
-          <p style="color: #334155; font-size: 16px; margin-bottom: 20px;">
-            Your email has been verified! You're all set to start tracking your skin health with AI support.
-          </p>
-          <p style="color: #334155; font-size: 16px; margin-bottom: 30px;">
-            Get started by taking your first scan or exploring your dashboard.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${APP_ORIGIN}/dashboard" style="background: #06b6d4; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-              Go to Dashboard
-            </a>
-          </div>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-          <p style="color: #94a3b8; font-size: 12px; text-align: center;">
-            \xA9 2026 SkinGuard AI. All rights reserved.
-          </p>
-        </div>
-      </div>
-    `
-  })
-};
-async function sendPasswordResetEmail(email, userName, resetToken) {
-  const resetLink = `${APP_ORIGIN}/reset-password?token=${resetToken}`;
-  const template = emailTemplates.passwordReset(resetLink, userName);
-  try {
-    await transporter.sendMail({
-      from: ENV.emailUser || "noreply@skinguardai.com",
-      to: email,
-      subject: template.subject,
-      html: template.html
-    });
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to send password reset email:", error);
-    return { success: false, error };
-  }
-}
-async function sendEmailVerificationEmail(email, userName, verificationToken) {
-  const verificationLink = `${APP_ORIGIN}/verify-email?token=${verificationToken}`;
-  const template = emailTemplates.emailVerification(verificationLink, userName);
-  try {
-    await transporter.sendMail({
-      from: ENV.emailUser || "noreply@skinguardai.com",
-      to: email,
-      subject: template.subject,
-      html: template.html
-    });
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to send email verification email:", error);
-    return { success: false, error };
-  }
-}
-async function sendWelcomeEmail(email, userName) {
-  const template = emailTemplates.welcomeEmail(userName);
-  try {
-    await transporter.sendMail({
-      from: ENV.emailUser || "noreply@skinguardai.com",
-      to: email,
-      subject: template.subject,
-      html: template.html
-    });
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to send welcome email:", error);
-    return { success: false, error };
-  }
-}
-
-// server/routers.ts
 init_oauth();
 var appRouter = router({
   system: systemRouter,
@@ -1606,6 +1719,32 @@ var appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
       ctx.res.clearCookie(COOKIE_NAME, { path: "/" });
+      return { success: true };
+    }),
+    // Deletion requested from the PUBLIC /delete-account web page, with no
+    // session. Google Play requires that route to exist next to the in-app
+    // button ("provide a web link resource where users can request app account
+    // deletion") precisely for the person who has already uninstalled the app
+    // or lost access to their login and therefore has no in-app path left.
+    //
+    // This deliberately does not delete anything on its own: an unauthenticated
+    // endpoint that erased whatever address it was handed would be a way to
+    // wipe a stranger's account. It files the request for a human to verify
+    // ownership, which is what the page promises the user.
+    requestAccountDeletion: publicProcedure.input(z3.object({
+      email: z3.string().email("Invalid email address"),
+      note: z3.string().max(1e3).default("")
+    })).mutation(async ({ input }) => {
+      const result = await sendAccountDeletionRequest({
+        email: input.email,
+        note: input.note
+      });
+      if (!result.success) {
+        throw new TRPCError5({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not file the request. Please email privacy@skinguardai.app directly."
+        });
+      }
       return { success: true };
     }),
     // Email signup

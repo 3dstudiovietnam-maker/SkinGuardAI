@@ -132,7 +132,7 @@ export async function sendPasswordResetEmail(email: string, userName: string, re
 
   try {
     await transporter.sendMail({
-      from: ENV.emailUser || "noreply@skinguardai.com",
+      from: ENV.emailUser || "noreply@skinguardai.app",
       to: email,
       subject: template.subject,
       html: template.html,
@@ -150,7 +150,7 @@ export async function sendEmailVerificationEmail(email: string, userName: string
 
   try {
     await transporter.sendMail({
-      from: ENV.emailUser || "noreply@skinguardai.com",
+      from: ENV.emailUser || "noreply@skinguardai.app",
       to: email,
       subject: template.subject,
       html: template.html,
@@ -167,7 +167,7 @@ export async function sendWelcomeEmail(email: string, userName: string) {
 
   try {
     await transporter.sendMail({
-      from: ENV.emailUser || "noreply@skinguardai.com",
+      from: ENV.emailUser || "noreply@skinguardai.app",
       to: email,
       subject: template.subject,
       html: template.html,
@@ -175,6 +175,104 @@ export async function sendWelcomeEmail(email: string, userName: string) {
     return { success: true };
   } catch (error) {
     console.error("Failed to send welcome email:", error);
+    return { success: false, error };
+  }
+}
+
+// Mailbox that receives moderation reports. Kept separate from the "from"
+// address so rotating the SMTP sender does not silently orphan the reports.
+const MODERATION_INBOX = process.env.MODERATION_EMAIL || "info@skinguardai.app";
+
+/**
+ * Google Play's AI-Generated Content policy requires an in-app way for users to
+ * report offensive or harmful AI output "without needing to exit the app", and
+ * requires that we actually use those reports to tune moderation. This is the
+ * delivery leg of that loop: the report lands in the moderation inbox, and the
+ * flagged text is included verbatim so the prompt/safety-threshold change it
+ * implies can be made against the real output rather than a paraphrase.
+ *
+ * The report never carries the user's photo — only the generated text they
+ * objected to — so flagging something cannot leak an image to the mailbox.
+ */
+export async function sendAiContentReport(report: {
+  surface: string;
+  reason: string;
+  details: string;
+  content: string;
+  language: string;
+  userId: string | null;
+  userEmail: string | null;
+}) {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  try {
+    await transporter.sendMail({
+      from: ENV.emailUser || "noreply@skinguardai.app",
+      to: MODERATION_INBOX,
+      subject: `[SkinGuard AI] AI content report — ${report.reason} (${report.surface})`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 700px;">
+          <h2 style="color:#0891b2;margin-bottom:4px;">AI content report</h2>
+          <p style="color:#64748b;font-size:13px;margin-top:0;">
+            Filed from the in-app report control (Google Play AI-Generated Content policy).
+          </p>
+          <table style="border-collapse:collapse;font-size:14px;">
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Screen</td><td>${esc(report.surface)}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Reason</td><td><strong>${esc(report.reason)}</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Language</td><td>${esc(report.language)}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">User</td><td>${esc(report.userEmail || report.userId || "not signed in")}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Received</td><td>${new Date().toISOString()}</td></tr>
+          </table>
+          ${report.details ? `<h3 style="margin-bottom:4px;">What the user wrote</h3><p style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;">${esc(report.details)}</p>` : ""}
+          ${report.content ? `<h3 style="margin-bottom:4px;">Flagged AI output</h3><pre style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;font-size:12px;">${esc(report.content)}</pre>` : ""}
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send AI content report:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Account-deletion request filed from the public /delete-account web page.
+ * Google Play requires that public web route to exist alongside the in-app
+ * "Delete account" button, because someone who has already uninstalled the app
+ * has no in-app path left. Signed-in users delete themselves instantly from the
+ * dashboard; this covers everyone who cannot get back in.
+ */
+export async function sendAccountDeletionRequest(request: {
+  email: string;
+  note: string;
+}) {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  try {
+    await transporter.sendMail({
+      from: ENV.emailUser || "noreply@skinguardai.app",
+      to: MODERATION_INBOX,
+      subject: `[SkinGuard AI] Account deletion request — ${request.email}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 700px;">
+          <h2 style="color:#0891b2;margin-bottom:4px;">Account deletion request</h2>
+          <p style="color:#64748b;font-size:13px;margin-top:0;">
+            Filed from https://www.skinguardai.app/delete-account
+          </p>
+          <table style="border-collapse:collapse;font-size:14px;">
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Account e-mail</td><td><strong>${esc(request.email)}</strong></td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#64748b;">Received</td><td>${new Date().toISOString()}</td></tr>
+          </table>
+          ${request.note ? `<h3 style="margin-bottom:4px;">Note</h3><p style="white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:6px;">${esc(request.note)}</p>` : ""}
+          <p style="color:#64748b;font-size:13px;">Verify ownership of the address before erasing, then delete the account and all associated data within 30 days.</p>
+        </div>
+      `,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send account deletion request:", error);
     return { success: false, error };
   }
 }

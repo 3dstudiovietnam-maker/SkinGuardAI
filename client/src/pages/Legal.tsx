@@ -77,6 +77,8 @@ export default function Legal() {
           <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800/50 space-y-4">
             <p className="text-red-900 dark:text-red-300 font-semibold">
               {t('leg.medWarning')}
+              {/* Play Health apps policy wording for a non-SaMD health app. */}
+              {" "}{t('disclaimer.notDevice')}
             </p>
             <p className="text-slate-700 dark:text-slate-300">
               {t('leg.medIntro')}

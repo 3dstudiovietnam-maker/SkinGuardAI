@@ -322,6 +322,10 @@ export default function Layout({ children }: LayoutProps) {
                 <li><Link href="/terms" className="text-slate-400 hover:text-white no-underline transition-colors">{t('footer.legal.terms')}</Link></li>
                 <li><Link href="/legal" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.legalNotice')}</Link></li>
                 <li><Link href="/disclaimer" className="text-slate-400 hover:text-red-400 no-underline transition-colors flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {t('disclaimer.title')}</Link></li>
+                {/* Web deletion route required by Google Play alongside the
+                    in-app one. Linked on the web only: in the app the real
+                    delete button is already one tap away in the dashboard. */}
+                {!isNative && <li><Link href="/delete-account" className="text-slate-400 hover:text-white no-underline transition-colors">{t('deleteAccount.title')}</Link></li>}
               </ul>
             </div>
 

@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useCaptureConsent } from "@/components/CameraDisclosure";
 
 const BODY_REGION_KEYS = [
   { id: "Head",        key: "bodyMap.regions.head"       },
@@ -36,6 +37,10 @@ export default function Capture() {
   const { moles, addMole, addPhotoToMole } = useSkinStore();
   const { isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
+  // Prominent disclosure gate — must run before getUserMedia() fires Android's
+  // camera permission prompt, and before a gallery photo of someone's skin is
+  // uploaded to the AI provider.
+  const { requestConsent, disclosure } = useCaptureConsent();
 
   const FREE_LIMIT = 10;
   const isPremium = user?.plan === "pro" || user?.plan === "pro_plus" || user?.plan === "lifetime";
@@ -400,7 +405,7 @@ export default function Capture() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
-                onClick={() => startCamera()}
+                onClick={() => requestConsent(() => startCamera())}
                 className="flex flex-col items-center gap-4 p-10 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
               >
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -412,7 +417,7 @@ export default function Capture() {
                 </div>
               </button>
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => requestConsent(() => fileInputRef.current?.click())}
                 className="flex flex-col items-center gap-4 p-10 rounded-2xl border-2 border-dashed border-border hover:border-primary/30 hover:bg-primary/5 transition-colors"
               >
                 <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
@@ -551,6 +556,7 @@ export default function Capture() {
           )}
         </motion.div>
       )}
+      {disclosure}
     </div>
   );
 }

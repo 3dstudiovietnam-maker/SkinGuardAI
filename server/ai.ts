@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { sendAiContentReport } from "./email";
 
 // ── IP-based rate limiter for public AI endpoint ──────────────────────────────
 const ipLimitMap = new Map<string, { count: number; date: string }>();
@@ -539,5 +540,64 @@ export const aiRouter = router({
       parsedAnalysis.overallRisk = computeRisk(parsedAnalysis);
 
       return { ...parsedAnalysis, remainingToday: remaining };
+    }),
+
+  // ── Report an AI output ────────────────────────────────────────────────────
+  // Google Play's AI-Generated Content policy makes this mandatory, not optional:
+  // an app that generates content with AI "must contain in-app user reporting or
+  // flagging features that allow users to report or flag offensive content to
+  // developers without needing to exit the app", and the reports must feed back
+  // into moderation. Public, because the demo analysis on /test/capture runs
+  // without an account — the person who sees a bad answer there must be able to
+  // flag it too.
+  //
+  // Deliberately NOT rate-limited by the IP counter above: that counter exists to
+  // ration expensive Gemini calls, and rationing safety reports would defeat the
+  // policy. The size caps below are the abuse control instead.
+  reportContent: publicProcedure
+    .input(
+      z.object({
+        surface: z.enum([
+          "mole-analysis",
+          "lab-report",
+          "ai-chat",
+          "health-report",
+          "other",
+        ]),
+        reason: z.enum([
+          "offensive",
+          "harmful",
+          "inaccurate",
+          "irrelevant",
+          "other",
+        ]),
+        details: z.string().max(2000).default(""),
+        // The generated text being flagged. Never an image: reporting must not
+        // become a side channel that mails someone's skin photo to our inbox.
+        content: z.string().max(8000).default(""),
+        language: z.string().max(8).default("en"),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const result = await sendAiContentReport({
+        surface: input.surface,
+        reason: input.reason,
+        details: input.details,
+        content: input.content,
+        language: input.language,
+        // User ids are numeric; the report only ever renders them as text.
+        userId: ctx.user?.id != null ? String(ctx.user.id) : null,
+        userEmail: ctx.user?.email ?? null,
+      });
+
+      // Surface a real failure rather than a fake "thanks!" — a report the user
+      // believes was filed but which never arrived is worse than an error.
+      if (!result.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not deliver the report. Please try again.",
+        });
+      }
+      return { success: true } as const;
     }),
 });

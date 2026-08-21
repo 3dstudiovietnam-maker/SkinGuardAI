@@ -16,7 +16,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { TRPCError } from "@trpc/server";
 import crypto from "crypto";
-import { sendPasswordResetEmail, sendEmailVerificationEmail, sendWelcomeEmail } from "./email";
+import { sendPasswordResetEmail, sendEmailVerificationEmail, sendWelcomeEmail, sendAccountDeletionRequest } from "./email";
 import { handleSocialLogin, getGoogleAccessToken, getGoogleUserInfo, getMicrosoftAccessToken, getMicrosoftUserInfo, getTwitterAccessToken, getTwitterUserInfo } from "./oauth";
 
 export const appRouter = router({
@@ -74,6 +74,35 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { path: "/" });
       return { success: true } as const;
     }),
+
+    // Deletion requested from the PUBLIC /delete-account web page, with no
+    // session. Google Play requires that route to exist next to the in-app
+    // button ("provide a web link resource where users can request app account
+    // deletion") precisely for the person who has already uninstalled the app
+    // or lost access to their login and therefore has no in-app path left.
+    //
+    // This deliberately does not delete anything on its own: an unauthenticated
+    // endpoint that erased whatever address it was handed would be a way to
+    // wipe a stranger's account. It files the request for a human to verify
+    // ownership, which is what the page promises the user.
+    requestAccountDeletion: publicProcedure
+      .input(z.object({
+        email: z.string().email("Invalid email address"),
+        note: z.string().max(1000).default(""),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await sendAccountDeletionRequest({
+          email: input.email,
+          note: input.note,
+        });
+        if (!result.success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Could not file the request. Please email privacy@skinguardai.app directly.",
+          });
+        }
+        return { success: true } as const;
+      }),
 
     // Email signup
     signupEmail: publicProcedure.input(z.object({

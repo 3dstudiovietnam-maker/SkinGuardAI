@@ -54,6 +54,15 @@ export default function Disclaimer() {
               {t('disclaimer.warning')}
             </p>
           </div>
+          {/* Google Play's Health apps policy: an app that declares it is NOT a
+              regulated medical device has to say so in this exact framing —
+              "not a medical device and does not diagnose, treat, cure, or
+              prevent any medical condition". Kept as its own sentence rather
+              than folded into the warning above so it survives translation and
+              so a reviewer can find it verbatim. */}
+          <p className="text-red-900 text-sm font-semibold leading-relaxed mb-4 border-t border-red-200 pt-4">
+            {t('disclaimer.notDeviceTitle')}: {t('disclaimer.notDevice')}
+          </p>
           <p className="text-slate-700 dark:text-slate-300 text-sm mb-4">{t('disclaimer.intro')}</p>
           <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
             {[

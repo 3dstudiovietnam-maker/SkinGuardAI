@@ -46,6 +46,10 @@ const TestCapture = lazy(() => import("./pages/TestCapture"));
 const TestKnowledge = lazy(() => import("./pages/TestKnowledge"));
 const TestDoctors = lazy(() => import("./pages/TestDoctors"));
 const Disclaimer = lazy(() => import("./pages/Disclaimer"));
+// Public account-deletion page. The URL goes in the Play Console Data safety
+// form: Google requires a web deletion route in addition to the in-app one,
+// for users who have already uninstalled the app.
+const DeleteAccount = lazy(() => import("./pages/DeleteAccount"));
 
 function RouteFallback() {
   return (
@@ -104,6 +108,7 @@ function Router() {
         <Route path={"/test/knowledge"} component={TestKnowledge} />
         <Route path={"/test/doctors"} component={TestDoctors} />
         <Route path={"/disclaimer"} component={Disclaimer} />
+        <Route path={"/delete-account"} component={DeleteAccount} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
           </Switch>

@@ -2,9 +2,10 @@
   "outputDirectory": "client/dist",
   "buildCommand": "",
   "installCommand": "",
-  "functions": { "api/index.js": { "maxDuration": 60 } },
+  "functions": { "api/index.js": { "maxDuration": 300 } },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/((?!api/|assets/|.*\\.).*)", "destination": "/index.html" }
+    { "source": "/auth/(.*)", "destination": "/api/index.js" },
+    { "source": "/((?!api/|auth/|assets/|.*\\.).*)", "destination": "/index.html" }
   ]
 }
