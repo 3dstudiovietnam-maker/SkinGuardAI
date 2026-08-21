@@ -89,8 +89,10 @@ export default function Layout({ children }: LayoutProps) {
           {/* Auth + Mobile Toggle */}
           <div className="flex items-center gap-2">
 
+            {/* md, not 2xl: the mobile menu that carries these controls stops at md,
+                so anything narrower than 1536px had no way to sign in or out. */}
             {isAuthenticated && user ? (
-              <div className="hidden 2xl:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <Link href="/user-dashboard" className="flex items-center gap-2 no-underline hover:opacity-80 transition-opacity">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <User className="w-4 h-4 text-primary" />
@@ -107,7 +109,7 @@ export default function Layout({ children }: LayoutProps) {
                 </Button>
               </div>
             ) : (
-              <div className="hidden 2xl:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <Link href="/login" className="no-underline">
                   <Button size="sm" variant="ghost" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                     <LogIn className="w-4 h-4 mr-2" />
