@@ -118,3 +118,11 @@ credentials.json
 .env*.local
 .env.vercel.test
 .claude/
+.env*
+
+# Android upload signing keys — NEVER commit these!
+# Losing them means the app can never be updated on Google Play again.
+*.jks
+*.keystore
+keystore.properties
+android/keystore.properties

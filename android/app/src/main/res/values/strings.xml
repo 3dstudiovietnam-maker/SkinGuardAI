@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Launcher label. Written with the space so the icon on the home screen
+         reads the same as the brand and the store listing ("SkinGuard AI…");
+         "SkinGuardAI" looked like a typo next to every other surface. -->
+    <string name="app_name">SkinGuard AI</string>
+    <string name="title_activity_main">SkinGuard AI</string>
+    <string name="package_name">com.skinguardai.app</string>
+    <string name="custom_url_scheme">com.skinguardai.app</string>
+</resources>
