@@ -23,8 +23,9 @@ export default function Layout({ children }: LayoutProps) {
   const { logout: storeLogout } = useSkinStore();
   const { t } = useLanguage();
 
-  // Apple 3.1.1 — hide pricing entry points inside the native (Capacitor) app
-  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  // Apple 2.3.1/3.1.1 — every price, upgrade CTA and pricing link is compiled
+  // OUT of the native build (__NATIVE_BUILD__ is a literal the bundler folds),
+  // instead of being hidden at runtime with the shipped binary still carrying it.
 
   const handleLogout = async () => {
     try {
@@ -61,11 +62,13 @@ export default function Layout({ children }: LayoutProps) {
     // "/test-monitor" (Health Monitor) removed from the nav — see App.tsx: it is
     // fitness-app fork leftover (weight/BMI/hydration/sleep) seeded with fake
     // entries and storing nothing. Its route is gone, so a nav item would 404.
-    { href: "/pricing", label: t('nav.pricing'), icon: CreditCard },
+    // Apple 2.3.1/3.1.1 — the pricing entry is compiled out of the native build,
+    // link and label alike, rather than filtered away at runtime.
+    ...(__NATIVE_BUILD__ ? [] : [{ href: "/pricing", label: t('nav.pricing'), icon: CreditCard }]),
     { href: "/videos", label: t('nav.videos'), icon: Video },
     { href: "/faq", label: t('nav.faq'), icon: HelpCircle },
     { href: "/test", label: t('nav.testKnowledge'), icon: FlaskConical },
-  ].filter((item) => !isNative || item.href !== "/pricing");
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -308,7 +311,7 @@ export default function Layout({ children }: LayoutProps) {
               <ul className="space-y-2 text-sm">
                 <li><Link href="/" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.home')}</Link></li>
                 <li><Link href="/dashboard" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.dashboard')}</Link></li>
-                {!isNative && <li><Link href="/pricing" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.pricing')}</Link></li>}
+                {!__NATIVE_BUILD__ && <li><Link href="/pricing" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.pricing')}</Link></li>}
                 <li><Link href="/test" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.testKnowledge')}</Link></li>
                 <li><Link href="/contact" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.contact')}</Link></li>
                 <li><Link href="/about" className="text-slate-400 hover:text-white no-underline transition-colors">{t('nav.about')}</Link></li>
@@ -327,7 +330,7 @@ export default function Layout({ children }: LayoutProps) {
                 {/* Web deletion route required by Google Play alongside the
                     in-app one. Linked on the web only: in the app the real
                     delete button is already one tap away in the dashboard. */}
-                {!isNative && <li><Link href="/delete-account" className="text-slate-400 hover:text-white no-underline transition-colors">{t('deleteAccount.title')}</Link></li>}
+                {!__NATIVE_BUILD__ && <li><Link href="/delete-account" className="text-slate-400 hover:text-white no-underline transition-colors">{t('deleteAccount.title')}</Link></li>}
               </ul>
             </div>
 

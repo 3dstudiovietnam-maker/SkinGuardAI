@@ -20,7 +20,11 @@ const BodyMap = lazy(() => import("./pages/BodyMap"));
 const Capture = lazy(() => import("./pages/Capture"));
 const MoleDetail = lazy(() => import("./pages/MoleDetail"));
 const Comparison = lazy(() => import("./pages/Comparison"));
-const Pricing = lazy(() => import("./pages/Pricing"));
+// Apple 2.3.1: the paywall must be ABSENT from the native binary, not hidden.
+// __NATIVE_BUILD__ is a compile-time literal, so in the native build the dynamic
+// import below is dead code, the whole Pricing chunk is never emitted, and the
+// route itself (below) is not registered — /pricing falls through to 404.
+const Pricing = __NATIVE_BUILD__ ? NotFound : lazy(() => import("./pages/Pricing"));
 const HealthReport = lazy(() => import("./pages/HealthReport"));
 // TestMonitor ("Health Monitor") is deliberately NOT routed. See the header of
 // client/src/pages/TestMonitor.tsx: it is fork leftover from the fitness app in
@@ -92,7 +96,7 @@ function Router() {
         <Route path={"/capture/:region"} component={Capture} />
         <Route path={"/mole/:id"} component={MoleDetail} />
         <Route path={"/comparison/:id"} component={Comparison} />
-        <Route path={"/pricing"} component={Pricing} />
+        {!__NATIVE_BUILD__ && <Route path={"/pricing"} component={Pricing} />}
         <Route path={"/health-report"} component={HealthReport} />
         <Route path={"/legal"} component={Legal} />
         <Route path={"/privacy"} component={Privacy} />

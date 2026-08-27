@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { openCheckout } from "@/lib/checkout";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type PlanKey = "essential" | "pro" | "proPlus" | "lifetime";
@@ -60,6 +62,9 @@ function FeatureList({ plan, t }: { plan: PlanKey; t: (k: string) => string }) {
 
 // ── Main Pricing page ─────────────────────────────────────────────────────────
 export default function Pricing() {
+  // A signed-in buyer's id travels with the checkout so the webhook can unlock
+  // the plan the moment it is paid, instead of matching on e-mail afterwards.
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -71,9 +76,11 @@ export default function Pricing() {
     if (isNative) navigate("/dashboard", { replace: true });
   }, [isNative, navigate]);
 
-  const openGumroad = (url: string) => {
+  // Native builds never render this page (Apple 3.1.1), and the guard stays
+  // as a second belt in case a future route bypasses the redirect above.
+  const buy = (plan: "pro" | "pro_plus" | "lifetime") => {
     if (isNative) return;
-    window.open(url, "_blank");
+    openCheckout(plan, { id: (user as any)?.id, email: (user as any)?.email });
   };
 
   // FAQ items built from translations
@@ -181,15 +188,15 @@ export default function Pricing() {
               </div>
               <h3 className="font-heading text-xl font-bold mt-2">Pro</h3>
               <div className="flex items-end gap-1 mt-2 mb-1">
-                <span className="font-heading text-4xl font-bold">$6.99</span>
+                <span className="font-heading text-4xl font-bold">$6.90</span>
                 <span className="text-muted-foreground text-sm pb-1">{t('pricing.perMonth')}</span>
               </div>
               <p className="text-sm text-muted-foreground mb-6">{t('pricing.advancedAI')}</p>
               <Button
                 className="w-full mb-4 bg-primary hover:bg-primary/90"
-                onClick={() => openGumroad("https://noxuniverse.gumroad.com/l/skinguardpro")}
+                onClick={() => buy("pro")}
               >
-                {t('pricing.subscribeGumroad')}
+                {t('pricing.subscribeCta')}
               </Button>
               <FeatureList plan="pro" t={t} />
             </motion.div>
@@ -213,9 +220,9 @@ export default function Pricing() {
               </div>
               <Button
                 className="w-full mb-4 bg-primary hover:bg-primary/90"
-                onClick={() => openGumroad("https://noxuniverse.gumroad.com/l/skinguardproplus")}
+                onClick={() => buy("pro_plus")}
               >
-                {t('pricing.subscribeGumroad')}
+                {t('pricing.subscribeCta')}
               </Button>
               <FeatureList plan="proPlus" t={t} />
             </motion.div>
@@ -231,13 +238,13 @@ export default function Pricing() {
               </div>
               <h3 className="font-heading text-xl font-bold mt-2">Lifetime</h3>
               <div className="flex items-end gap-1 mt-2 mb-1">
-                <span className="font-heading text-4xl font-bold">$69</span>
+                <span className="font-heading text-4xl font-bold">$79</span>
                 <span className="text-muted-foreground text-sm pb-1">{t('pricing.oneTime')}</span>
               </div>
               <p className="text-sm text-muted-foreground mb-6">{t('pricing.payOnce')}</p>
               <Button
                 className="w-full mb-4 bg-amber-500 hover:bg-amber-600 text-white"
-                onClick={() => openGumroad("https://noxuniverse.gumroad.com/l/skinguardailifetime")}
+                onClick={() => buy("lifetime")}
               >
                 {t('pricing.getLifetimeAccess')}
               </Button>
@@ -286,9 +293,9 @@ export default function Pricing() {
                 </div>
                 <Button
                   className="w-full mb-6 bg-primary hover:bg-primary/90"
-                  onClick={() => openGumroad("https://noxuniverse.gumroad.com/l/skinguardproplus")}
+                  onClick={() => buy("pro_plus")}
                 >
-                  {t('pricing.subscribeGumroad')}
+                  {t('pricing.subscribeCta')}
                 </Button>
                 <FeatureList plan="proPlus" t={t} />
               </motion.div>
@@ -304,7 +311,7 @@ export default function Pricing() {
                 </div>
                 <h3 className="font-heading text-2xl font-bold mt-2">Lifetime</h3>
                 <div className="flex items-end gap-2 mt-4">
-                  <span className="font-heading text-5xl font-bold">$69</span>
+                  <span className="font-heading text-5xl font-bold">$79</span>
                   <span className="text-muted-foreground text-sm pb-1">{t('pricing.oneTime')}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2 mb-6">
@@ -312,7 +319,7 @@ export default function Pricing() {
                 </p>
                 <Button
                   className="w-full mb-6 bg-amber-500 hover:bg-amber-600 text-white"
-                  onClick={() => openGumroad("https://noxuniverse.gumroad.com/l/skinguardailifetime")}
+                  onClick={() => buy("lifetime")}
                 >
                   {t('pricing.getLifetimeAccess')}
                 </Button>

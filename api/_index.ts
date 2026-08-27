@@ -44,6 +44,18 @@ app.use((req, res, next) => {
   next();
 });
 
+// Lemon Squeezy webhook — registered BEFORE express.json on purpose: the
+// signature is an HMAC of the raw bytes, and a parsed-then-restringified body
+// does not reproduce it (key order and spacing differ). This route therefore
+// takes the body as a Buffer.
+app.post("/api/webhooks/lemon-squeezy", express.raw({ type: "*/*", limit: "1mb" }), async (req, res) => {
+  const { handleWebhookRequest } = await import("../server/_core/lemonSqueezy");
+  const signature = req.header("X-Signature") ?? req.header("x-signature");
+  const raw = Buffer.isBuffer(req.body) ? req.body : Buffer.from(String(req.body ?? ""));
+  const result = await handleWebhookRequest(raw, signature);
+  res.status(result.status).json(result.body);
+});
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 

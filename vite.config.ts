@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
+import { stripPaywallStrings } from "./vite-plugin-strip-paywall.mjs";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 // =============================================================================
@@ -155,10 +156,25 @@ function vitePluginManusDebugCollector(): Plugin {
 // /__manus__/debug-collector.js telemetry script (hooks console/fetch/all user input,
 // POSTs to /__manus__/logs) into the SHIPPED HTML — a privacy + console-noise problem on
 // a health app. SkinGuard deploys from a local prod build, so they are not needed.
-const plugins = [react(), tailwindcss(), jsxLocPlugin()];
+
+// Native (Capacitor) build. Apple 2.3.1 forbids shipping a hidden, dormant
+// paywall, so the App Store / Play builds are produced from the same source
+// with the paywall compiled OUT: __NATIVE_BUILD__ is a literal the bundler
+// folds, which turns every paywall branch into dead code, and the price text in
+// the translations table is deleted by stripPaywallStrings(). Web builds are
+// unaffected. Output goes to client/dist-native (capacitor.config.ts webDir) so
+// a native build can never be mistaken for the website build in client/dist.
+const isNativeBuild = process.env.NATIVE_BUILD === "1";
+
+const plugins = [react(), tailwindcss(), jsxLocPlugin(),
+  ...(isNativeBuild ? [stripPaywallStrings({ projectRoot: import.meta.dirname })] : []),
+];
 
 export default defineConfig({
   plugins,
+  define: {
+    __NATIVE_BUILD__: JSON.stringify(isNativeBuild),
+  },
   base: '/',
   resolve: {
     alias: {
@@ -171,7 +187,7 @@ export default defineConfig({
   root: path.resolve(import.meta.dirname, "client"),
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
   build: {
-    outDir: path.resolve(import.meta.dirname, "client", "dist"), // <--- JAVÍTVA: most a client/dist mappába kerül
+    outDir: path.resolve(import.meta.dirname, "client", isNativeBuild ? "dist-native" : "dist"), // <--- JAVÍTVA: most a client/dist mappába kerül
     emptyOutDir: true,
   },
   server: {

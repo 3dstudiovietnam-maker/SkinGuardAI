@@ -5,6 +5,6 @@
          "SkinGuardAI" looked like a typo next to every other surface. -->
     <string name="app_name">SkinGuard AI</string>
     <string name="title_activity_main">SkinGuard AI</string>
-    <string name="package_name">com.skinguardai.app</string>
-    <string name="custom_url_scheme">com.skinguardai.app</string>
+    <string name="package_name">com.skinguardai.moletracker</string>
+    <string name="custom_url_scheme">com.skinguardai.moletracker</string>
 </resources>

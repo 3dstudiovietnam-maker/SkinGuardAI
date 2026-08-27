@@ -1,5 +1,6 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { grantEntitlement, recomputePlan, claimPendingPurchases } from "./_core/entitlements";
 import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
@@ -153,7 +154,14 @@ export const appRouter = router({
       await db.insert(emailVerificationTokens).values({ userId, token: verificationToken, expiresAt: verificationExpiresAt });
       await sendEmailVerificationEmail(input.email, input.name, verificationToken);
 
-      return { success: true, userId, plan: plan, message: "Verification email sent" };
+      // Buying first and registering afterwards is the normal order for a web
+      // purchase, so the parked purchase is claimed right here.
+      const claimed = await claimPendingPurchases(userId, input.email).catch((e) => {
+        console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        return null;
+      });
+
+      return { success: true, userId, plan: claimed ?? plan, message: "Verification email sent" };
     }),
 
     // Email login
@@ -187,7 +195,14 @@ export const appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      return { success: true, userId: user.id, plan: user.plan };
+      // Someone who paid before creating an account has their purchase parked by
+      // e-mail address; signing in is the moment we know the address is theirs.
+      const claimed = await claimPendingPurchases(user.id, user.email).catch((e) => {
+        console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        return null;
+      });
+
+      return { success: true, userId: user.id, plan: claimed ?? user.plan };
     }),
 
     // Redeem promo code → upgrade plan
@@ -256,17 +271,22 @@ export const appRouter = router({
         dbCodePlan === "pro"       ? "pro"        :
         "pro";
 
-      // ── 4. Upgrade user ───────────────────────────────────────────────────
-      await db.update(users).set({ plan: targetPlan }).where(eq(users.id, ctx.user.id));
+      // ── 4. Record the entitlement ─────────────────────────────────────────
+      // The code is written to `grants` with its source rather than straight
+      // onto users.plan, so the plan stays a derived value: when a purchase or a
+      // refund arrives later, recomputePlan() can work out what the user is
+      // actually left with instead of overwriting whatever was there.
+      // The code itself is the idempotency key — redeeming it twice cannot
+      // create two entitlements.
+      const plan = await grantEntitlement({
+        userId: ctx.user.id,
+        plan: targetPlan,
+        source: "promo_code",
+        externalId: inputCode,
+        note: dbCodePlan ? "activation_codes" : "env promo code",
+      });
 
-      const subscription = await db.select().from(userSubscriptions).where(eq(userSubscriptions.userId, ctx.user.id)).limit(1);
-      if (subscription.length > 0) {
-        await db.update(userSubscriptions).set({ plan: targetPlan, status: "active" }).where(eq(userSubscriptions.userId, ctx.user.id));
-      } else {
-        await db.insert(userSubscriptions).values({ userId: ctx.user.id, plan: targetPlan, status: "active" });
-      }
-
-      return { success: true, plan: targetPlan };
+      return { success: true, plan };
     }),
 
     // Select the free plan, or step back down to it.
@@ -289,16 +309,13 @@ export const appRouter = router({
       }
 
 
-      await db.update(users).set({ plan: input.plan }).where(eq(users.id, ctx.user.id));
+      // Recompute rather than write "essential" straight in: someone who already
+      // holds a lifetime licence and taps the free card must not lose it. With
+      // no entitlements this returns "essential" anyway, which is the case this
+      // screen exists for.
+      const plan = await recomputePlan(ctx.user.id);
 
-      const subscription = await db.select().from(userSubscriptions).where(eq(userSubscriptions.userId, ctx.user.id)).limit(1);
-      if (subscription.length > 0) {
-        await db.update(userSubscriptions).set({ plan: input.plan }).where(eq(userSubscriptions.userId, ctx.user.id));
-      } else {
-        await db.insert(userSubscriptions).values({ userId: ctx.user.id, plan: input.plan, status: "active" });
-      }
-
-      return { success: true, plan: input.plan };
+      return { success: true, plan };
     }),
 
     // Verify email
@@ -748,10 +765,17 @@ export const appRouter = router({
           tokenData.access_token, tokenData.refresh_token, tokenData.expires_in
         );
 
+        // A social signup starts on the free plan, exactly like an email signup:
+        // input.plan is client-controlled, so honouring it here would let anyone
+        // register straight into a paid tier. Paid tiers come only from a grant
+        // (redeemed code or purchase) — see _core/entitlements.ts.
         if (isNewUser) {
           const db = await getDb();
-          if (db) await db.update(users).set({ plan: input.plan }).where(eq(users.id, userId));
+          if (db) await db.update(users).set({ plan: "essential" }).where(eq(users.id, userId));
         }
+        await claimPendingPurchases(userId, userInfo.email).catch((e) => {
+          console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        });
         return { success: true, userId, isNewUser };
       } catch (error) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Google authentication failed" });
@@ -770,10 +794,17 @@ export const appRouter = router({
           tokenData.access_token, tokenData.refresh_token, tokenData.expires_in
         );
 
+        // A social signup starts on the free plan, exactly like an email signup:
+        // input.plan is client-controlled, so honouring it here would let anyone
+        // register straight into a paid tier. Paid tiers come only from a grant
+        // (redeemed code or purchase) — see _core/entitlements.ts.
         if (isNewUser) {
           const db = await getDb();
-          if (db) await db.update(users).set({ plan: input.plan }).where(eq(users.id, userId));
+          if (db) await db.update(users).set({ plan: "essential" }).where(eq(users.id, userId));
         }
+        await claimPendingPurchases(userId, userInfo.mail).catch((e) => {
+          console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        });
         return { success: true, userId, isNewUser };
       } catch (error) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Microsoft authentication failed" });
@@ -792,9 +823,13 @@ export const appRouter = router({
           tokenData.access_token, tokenData.refresh_token, tokenData.expires_in
         );
 
+        // A social signup starts on the free plan, exactly like an email signup:
+        // input.plan is client-controlled, so honouring it here would let anyone
+        // register straight into a paid tier. Paid tiers come only from a grant
+        // (redeemed code or purchase) — see _core/entitlements.ts.
         if (isNewUser) {
           const db = await getDb();
-          if (db) await db.update(users).set({ plan: input.plan }).where(eq(users.id, userId));
+          if (db) await db.update(users).set({ plan: "essential" }).where(eq(users.id, userId));
         }
         return { success: true, userId, isNewUser };
       } catch (error) {

@@ -13,3 +13,20 @@ todo.md
 secrets
 patches
 references
+
+# Native (Capacitor) shells — never part of the web build, but hundreds of MB of
+# upload on every deploy, which kills the connection on a slow link.
+ios
+android
+client/dist-native
+*.aab
+*.apk
+.manus-logs
+
+# Local-only pnpm lockfile. It is never committed, so a git deploy installs with
+# npm (package-lock.json) — but `vercel --prod` uploads untracked files too, and
+# a stray pnpm-lock.yaml silently switches the build to pnpm. pnpm then needs
+# patches/ (excluded above) for `patchedDependencies` and the install dies with
+# "ENOENT patches/wouter@3.7.1.patch". Keep CLI deploys on the same package
+# manager as the committed tree.
+pnpm-lock.yaml

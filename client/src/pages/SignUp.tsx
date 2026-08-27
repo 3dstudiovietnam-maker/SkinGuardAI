@@ -163,7 +163,10 @@ export default function SignUp() {
           )}
 
           {/* Social Login Buttons */}
-          <div className="mb-6 space-y-3" style={(typeof window !== "undefined" && (window as any).Capacitor?.isNativePlatform?.()) ? { display: "none" } : undefined}>
+          {/* Compiled out of the native build rather than hidden with display:none,
+              so no dormant control ships (Apple 2.3.1). */}
+          {!__NATIVE_BUILD__ && (
+          <div className="mb-6 space-y-3">
             <p className="text-xs text-slate-500 dark:text-slate-400 text-center font-medium">{t("auth.signUpWith")}</p>
             <button
               type="button"
@@ -188,6 +191,7 @@ export default function SignUp() {
               </div>
             </div>
           </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name Field */}

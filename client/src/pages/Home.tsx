@@ -23,8 +23,9 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
 
-  // Apple 3.1.1 — no pricing links inside the native (Capacitor) app
-  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  // Apple 2.3.1/3.1.1 — every price, upgrade CTA and pricing link is compiled
+  // OUT of the native build (__NATIVE_BUILD__ is a literal the bundler folds),
+  // instead of being hidden at runtime with the shipped binary still carrying it.
 
   return (
     <div>
@@ -61,7 +62,7 @@ export default function Home() {
                     {t('hero.startMonitoring')} <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
-                {!isNative && (
+                {!__NATIVE_BUILD__ && (
                   <Link href="/pricing">
                     <Button size="lg" variant="outline" className="h-12 px-6 text-base border-cyan-200 text-cyan-700 hover:bg-cyan-50">
                       {t('hero.viewPlans')}

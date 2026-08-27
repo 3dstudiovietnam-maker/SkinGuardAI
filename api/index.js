@@ -172,8 +172,8 @@ import { drizzle } from "drizzle-orm/neon-http";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      const sql2 = neon(process.env.DATABASE_URL);
-      _db = drizzle(sql2);
+      const sql4 = neon(process.env.DATABASE_URL);
+      _db = drizzle(sql4);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -404,6 +404,344 @@ var init_oauth = __esm({
     init_env();
     init_db();
     init_schema();
+  }
+});
+
+// server/_core/entitlements.ts
+import { sql } from "drizzle-orm";
+function rows(result) {
+  const r = result;
+  return r?.rows ?? (Array.isArray(r) ? r : []);
+}
+function ensureSchema() {
+  if (!schemaReady) {
+    schemaReady = createSchema().catch((e) => {
+      schemaReady = null;
+      throw e;
+    });
+  }
+  return schemaReady;
+}
+async function createSchema() {
+  const db = await getDb();
+  if (!db) return;
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS grants (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      plan TEXT NOT NULL,
+      source TEXT NOT NULL,
+      external_id TEXT,
+      status TEXT NOT NULL DEFAULT 'active',
+      starts_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      ends_at TIMESTAMP,
+      note TEXT,
+      payload JSONB,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.execute(sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS grants_source_external_idx
+      ON grants (source, external_id) WHERE external_id IS NOT NULL
+  `);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS grants_user_idx ON grants (user_id)`);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS pending_purchases (
+      id SERIAL PRIMARY KEY,
+      email TEXT NOT NULL,
+      plan TEXT NOT NULL,
+      source TEXT NOT NULL,
+      external_id TEXT,
+      ends_at TIMESTAMP,
+      note TEXT,
+      payload JSONB,
+      claimed_at TIMESTAMP,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.execute(sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS pending_purchases_source_external_idx
+      ON pending_purchases (source, external_id) WHERE external_id IS NOT NULL
+  `);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS pending_purchases_email_idx ON pending_purchases (lower(email))`);
+  await db.execute(sql`
+    INSERT INTO grants (user_id, plan, source, external_id, note)
+    SELECT u.id, u.plan::text, 'legacy', 'legacy:' || u.id,
+           'Backfilled from users.plan when the grants table was introduced'
+    FROM users u
+    WHERE u.plan <> 'essential'
+      AND NOT EXISTS (SELECT 1 FROM grants g WHERE g.user_id = u.id)
+    ON CONFLICT DO NOTHING
+  `);
+}
+async function recomputePlan(userId) {
+  await ensureSchema();
+  const db = await getDb();
+  if (!db) throw new Error("[entitlements] database not available");
+  const live = await db.execute(sql`
+    SELECT plan FROM grants
+    WHERE user_id = ${userId}
+      AND status = 'active'
+      AND (ends_at IS NULL OR ends_at > NOW())
+  `);
+  let plan = "essential";
+  for (const row of rows(live)) {
+    const candidate = row.plan;
+    if (isPlan(candidate) && RANK[candidate] > RANK[plan]) plan = candidate;
+  }
+  await db.execute(sql`UPDATE users SET plan = ${plan}::plan WHERE id = ${userId}`);
+  await db.execute(sql`
+    INSERT INTO "userSubscriptions" ("userId", plan, status)
+    VALUES (${userId}, ${plan}::plan, 'active')
+    ON CONFLICT ("userId") DO UPDATE SET plan = ${plan}::plan, status = 'active', "updatedAt" = NOW()
+  `);
+  return plan;
+}
+async function grantEntitlement(opts) {
+  await ensureSchema();
+  const db = await getDb();
+  if (!db) throw new Error("[entitlements] database not available");
+  const externalId = opts.externalId ?? null;
+  const endsAt = opts.endsAt ?? null;
+  const note = opts.note ?? null;
+  const payload = opts.payload === void 0 ? null : JSON.stringify(opts.payload);
+  if (externalId) {
+    await db.execute(sql`
+      INSERT INTO grants (user_id, plan, source, external_id, status, ends_at, note, payload)
+      VALUES (${opts.userId}, ${opts.plan}, ${opts.source}, ${externalId}, 'active', ${endsAt}, ${note}, ${payload}::jsonb)
+      -- the unique index is partial, so the predicate has to be repeated here
+      -- for Postgres to infer it
+      ON CONFLICT (source, external_id) WHERE external_id IS NOT NULL DO UPDATE
+        SET user_id = EXCLUDED.user_id, plan = EXCLUDED.plan, status = 'active',
+            ends_at = EXCLUDED.ends_at, note = EXCLUDED.note,
+            payload = COALESCE(EXCLUDED.payload, grants.payload), updated_at = NOW()
+    `);
+  } else {
+    await db.execute(sql`
+      INSERT INTO grants (user_id, plan, source, status, ends_at, note, payload)
+      VALUES (${opts.userId}, ${opts.plan}, ${opts.source}, 'active', ${endsAt}, ${note}, ${payload}::jsonb)
+    `);
+  }
+  return recomputePlan(opts.userId);
+}
+async function revokeEntitlement(opts) {
+  await ensureSchema();
+  const db = await getDb();
+  if (!db) throw new Error("[entitlements] database not available");
+  const result = await db.execute(sql`
+    UPDATE grants
+    SET status = ${opts.status ?? "cancelled"},
+        note = COALESCE(${opts.note ?? null}, note),
+        updated_at = NOW()
+    WHERE source = ${opts.source} AND external_id = ${opts.externalId}
+    RETURNING user_id
+  `);
+  const row = rows(result)[0];
+  if (!row) return null;
+  return recomputePlan(Number(row.user_id));
+}
+async function recordPendingPurchase(opts) {
+  await ensureSchema();
+  const db = await getDb();
+  if (!db) throw new Error("[entitlements] database not available");
+  const payload = opts.payload === void 0 ? null : JSON.stringify(opts.payload);
+  await db.execute(sql`
+    INSERT INTO pending_purchases (email, plan, source, external_id, ends_at, note, payload)
+    VALUES (${opts.email.toLowerCase()}, ${opts.plan}, ${opts.source}, ${opts.externalId ?? null},
+            ${opts.endsAt ?? null}, ${opts.note ?? null}, ${payload}::jsonb)
+    ON CONFLICT (source, external_id) WHERE external_id IS NOT NULL DO UPDATE
+      SET email = EXCLUDED.email, plan = EXCLUDED.plan, ends_at = EXCLUDED.ends_at,
+          note = EXCLUDED.note, payload = COALESCE(EXCLUDED.payload, pending_purchases.payload)
+  `);
+}
+async function claimPendingPurchases(userId, email) {
+  if (!email) return null;
+  await ensureSchema();
+  const db = await getDb();
+  if (!db) throw new Error("[entitlements] database not available");
+  const pending = await db.execute(sql`
+    SELECT id, plan, source, external_id, ends_at, note, payload
+    FROM pending_purchases
+    WHERE lower(email) = ${email.toLowerCase()} AND claimed_at IS NULL
+  `);
+  const list = rows(pending);
+  if (list.length === 0) return null;
+  for (const row of list) {
+    if (!isPlan(row.plan)) continue;
+    await grantEntitlement({
+      userId,
+      plan: row.plan,
+      source: row.source,
+      externalId: row.external_id,
+      endsAt: row.ends_at ? new Date(row.ends_at) : null,
+      note: row.note ?? "claimed after sign-in",
+      payload: row.payload ?? void 0
+    });
+    await db.execute(sql`UPDATE pending_purchases SET claimed_at = NOW() WHERE id = ${row.id}`);
+  }
+  return recomputePlan(userId);
+}
+var RANK, isPlan, schemaReady;
+var init_entitlements = __esm({
+  "server/_core/entitlements.ts"() {
+    "use strict";
+    init_db();
+    RANK = { essential: 0, pro: 1, pro_plus: 2, lifetime: 3 };
+    isPlan = (v) => typeof v === "string" && Object.prototype.hasOwnProperty.call(RANK, v);
+    schemaReady = null;
+  }
+});
+
+// server/_core/lemonSqueezy.ts
+var lemonSqueezy_exports = {};
+__export(lemonSqueezy_exports, {
+  handleEvent: () => handleEvent,
+  handleWebhookRequest: () => handleWebhookRequest,
+  verifySignature: () => verifySignature
+});
+import crypto2 from "node:crypto";
+import { sql as sql3 } from "drizzle-orm";
+function verifySignature(rawBody, signature, secret) {
+  if (!signature || !secret) return false;
+  const expected = crypto2.createHmac("sha256", secret).update(rawBody).digest();
+  let received;
+  try {
+    received = Buffer.from(signature, "hex");
+  } catch {
+    return false;
+  }
+  if (received.length !== expected.length) return false;
+  return crypto2.timingSafeEqual(received, expected);
+}
+function variantMap() {
+  const raw = process.env.LEMON_SQUEEZY_VARIANTS ?? "";
+  if (!raw.trim()) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    const out = {};
+    for (const [variant, plan] of Object.entries(parsed)) {
+      if (plan === "pro" || plan === "pro_plus" || plan === "lifetime") out[String(variant)] = plan;
+    }
+    return out;
+  } catch {
+    console.error("[lemon-squeezy] LEMON_SQUEEZY_VARIANTS is not valid JSON \u2014 no purchase can be mapped to a plan");
+    return {};
+  }
+}
+async function findUserIdByEmail(email) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.execute(sql3`SELECT id FROM users WHERE lower(email) = ${email.toLowerCase()} LIMIT 1`);
+  const row = (result.rows ?? result)[0];
+  return row ? Number(row.id) : null;
+}
+async function handleEvent(payload) {
+  const event = payload?.meta?.event_name ?? "";
+  const attributes = payload?.data?.attributes ?? {};
+  const objectId = payload?.data?.id ? String(payload.data.id) : null;
+  if (!event) return { status: 400, body: { ok: false, reason: "missing event name" } };
+  const variantId = attributes.variant_id ?? attributes.first_order_item?.variant_id;
+  const plan = variantMap()[String(variantId)];
+  const customUserId = payload?.meta?.custom_data?.user_id;
+  const email = attributes.user_email ?? attributes.email ?? null;
+  if (ENDING_EVENTS.has(event)) {
+    if (!objectId) return { status: 400, body: { ok: false, reason: "missing object id" } };
+    const left = await revokeEntitlement({
+      source: "lemon_squeezy",
+      externalId: objectId,
+      status: event === "order_refunded" ? "refunded" : "expired",
+      note: `lemon squeezy: ${event}`
+    });
+    return { status: 200, body: { ok: true, handled: event, plan: left } };
+  }
+  if (!GRANTING_EVENTS.has(event)) {
+    return { status: 200, body: { ok: true, handled: `ignored: ${event}` } };
+  }
+  if (!plan) {
+    console.error(`[lemon-squeezy] no plan mapped for variant ${variantId} (event ${event})`);
+    return { status: 200, body: { ok: false, reason: `unmapped variant ${variantId}` } };
+  }
+  if (!objectId) return { status: 400, body: { ok: false, reason: "missing object id" } };
+  const status = attributes.status;
+  if (status && !["active", "on_trial", "cancelled", "paused"].includes(status)) {
+    if (["expired", "unpaid", "past_due"].includes(status)) {
+      const left = await revokeEntitlement({
+        source: "lemon_squeezy",
+        externalId: objectId,
+        status: "expired",
+        note: `lemon squeezy status: ${status}`
+      });
+      return { status: 200, body: { ok: true, handled: `${event} (${status})`, plan: left } };
+    }
+  }
+  const endsRaw = attributes.ends_at ?? attributes.renews_at ?? null;
+  const endsAt = plan === "lifetime" ? null : endsRaw ? new Date(endsRaw) : null;
+  const note = `lemon squeezy: ${event}${status ? ` (${status})` : ""}`;
+  let userId = customUserId ? Number(customUserId) : null;
+  if (userId && !Number.isFinite(userId)) userId = null;
+  if (!userId && email) userId = await findUserIdByEmail(email);
+  if (!userId) {
+    if (!email) return { status: 200, body: { ok: false, reason: "no user and no e-mail on the order" } };
+    await recordPendingPurchase({
+      email,
+      plan,
+      source: "lemon_squeezy",
+      externalId: objectId,
+      endsAt,
+      note,
+      payload
+    });
+    return { status: 200, body: { ok: true, handled: `${event} \u2192 pending (${email})` } };
+  }
+  const resulting = await grantEntitlement({
+    userId,
+    plan,
+    source: "lemon_squeezy",
+    externalId: objectId,
+    endsAt,
+    note,
+    payload
+  });
+  return { status: 200, body: { ok: true, handled: event, plan: resulting } };
+}
+async function handleWebhookRequest(rawBody, signature) {
+  const secret = process.env.LEMON_SQUEEZY_WEBHOOK_SECRET ?? "";
+  if (!secret) {
+    console.error("[lemon-squeezy] LEMON_SQUEEZY_WEBHOOK_SECRET is not set \u2014 rejecting the delivery");
+    return { status: 500, body: { ok: false, reason: "webhook secret not configured" } };
+  }
+  if (!verifySignature(rawBody, signature, secret)) {
+    return { status: 401, body: { ok: false, reason: "invalid signature" } };
+  }
+  let payload;
+  try {
+    payload = JSON.parse(rawBody.toString("utf8"));
+  } catch {
+    return { status: 400, body: { ok: false, reason: "body is not JSON" } };
+  }
+  try {
+    return await handleEvent(payload);
+  } catch (e) {
+    console.error("[lemon-squeezy] handler failed:", e?.message ?? e);
+    return { status: 500, body: { ok: false, reason: "handler failed" } };
+  }
+}
+var ENDING_EVENTS, GRANTING_EVENTS;
+var init_lemonSqueezy = __esm({
+  "server/_core/lemonSqueezy.ts"() {
+    "use strict";
+    init_db();
+    init_entitlements();
+    ENDING_EVENTS = /* @__PURE__ */ new Set(["subscription_expired", "order_refunded"]);
+    GRANTING_EVENTS = /* @__PURE__ */ new Set([
+      "order_created",
+      "subscription_created",
+      "subscription_updated",
+      "subscription_resumed",
+      "subscription_unpaused",
+      "subscription_payment_success"
+    ]);
   }
 });
 
@@ -807,6 +1145,9 @@ function registerOAuthRoutes(app2) {
     }
   });
 }
+
+// server/routers.ts
+init_entitlements();
 
 // server/_core/systemRouter.ts
 import { z } from "zod";
@@ -1670,7 +2011,7 @@ var aiRouter = router({
 // server/routers.ts
 init_db();
 init_schema();
-import { sql } from "drizzle-orm";
+import { sql as sql2 } from "drizzle-orm";
 import { eq as eq3, and, count, inArray } from "drizzle-orm";
 import { z as z3 } from "zod";
 import bcrypt from "bcryptjs";
@@ -1784,7 +2125,11 @@ var appRouter = router({
       const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1e3);
       await db.insert(emailVerificationTokens).values({ userId, token: verificationToken, expiresAt: verificationExpiresAt });
       await sendEmailVerificationEmail(input.email, input.name, verificationToken);
-      return { success: true, userId, plan, message: "Verification email sent" };
+      const claimed = await claimPendingPurchases(userId, input.email).catch((e) => {
+        console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        return null;
+      });
+      return { success: true, userId, plan: claimed ?? plan, message: "Verification email sent" };
     }),
     // Email login
     loginEmail: publicProcedure.input(z3.object({
@@ -1810,7 +2155,11 @@ var appRouter = router({
       });
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      return { success: true, userId: user.id, plan: user.plan };
+      const claimed = await claimPendingPurchases(user.id, user.email).catch((e) => {
+        console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        return null;
+      });
+      return { success: true, userId: user.id, plan: claimed ?? user.plan };
     }),
     // Redeem promo code → upgrade plan
     redeemPromoCode: protectedProcedure.input(z3.object({ code: z3.string().min(1, "Please enter a promo code") })).mutation(async ({ input, ctx }) => {
@@ -1821,7 +2170,7 @@ var appRouter = router({
       let dbCodePlan = null;
       try {
         const dbResult = await db.execute(
-          sql`SELECT id, plan, used, user_id FROM activation_codes WHERE code = ${inputCode} LIMIT 1`
+          sql2`SELECT id, plan, used, user_id FROM activation_codes WHERE code = ${inputCode} LIMIT 1`
         );
         const row = dbResult.rows?.[0] ?? dbResult[0];
         if (row) {
@@ -1829,7 +2178,7 @@ var appRouter = router({
             throw new TRPCError5({ code: "BAD_REQUEST", message: "This code has already been used." });
           }
           await db.execute(
-            sql`UPDATE activation_codes SET used = true, user_id = ${ctx.user.id} WHERE code = ${inputCode}`
+            sql2`UPDATE activation_codes SET used = true, user_id = ${ctx.user.id} WHERE code = ${inputCode}`
           );
           dbCodePlan = row.plan;
         }
@@ -1858,14 +2207,14 @@ var appRouter = router({
         }
       }
       const targetPlan = dbCodePlan === "lifetime" ? "lifetime" : dbCodePlan === "pro_plus" ? "pro_plus" : dbCodePlan === "pro" ? "pro" : "pro";
-      await db.update(users).set({ plan: targetPlan }).where(eq3(users.id, ctx.user.id));
-      const subscription = await db.select().from(userSubscriptions).where(eq3(userSubscriptions.userId, ctx.user.id)).limit(1);
-      if (subscription.length > 0) {
-        await db.update(userSubscriptions).set({ plan: targetPlan, status: "active" }).where(eq3(userSubscriptions.userId, ctx.user.id));
-      } else {
-        await db.insert(userSubscriptions).values({ userId: ctx.user.id, plan: targetPlan, status: "active" });
-      }
-      return { success: true, plan: targetPlan };
+      const plan = await grantEntitlement({
+        userId: ctx.user.id,
+        plan: targetPlan,
+        source: "promo_code",
+        externalId: inputCode,
+        note: dbCodePlan ? "activation_codes" : "env promo code"
+      });
+      return { success: true, plan };
     }),
     // Select the free plan, or step back down to it.
     //
@@ -1884,14 +2233,8 @@ var appRouter = router({
           message: "Paid plans are activated by purchase or promo code, not by selecting them here."
         });
       }
-      await db.update(users).set({ plan: input.plan }).where(eq3(users.id, ctx.user.id));
-      const subscription = await db.select().from(userSubscriptions).where(eq3(userSubscriptions.userId, ctx.user.id)).limit(1);
-      if (subscription.length > 0) {
-        await db.update(userSubscriptions).set({ plan: input.plan }).where(eq3(userSubscriptions.userId, ctx.user.id));
-      } else {
-        await db.insert(userSubscriptions).values({ userId: ctx.user.id, plan: input.plan, status: "active" });
-      }
-      return { success: true, plan: input.plan };
+      const plan = await recomputePlan(ctx.user.id);
+      return { success: true, plan };
     }),
     // Verify email
     verifyEmail: publicProcedure.input(z3.object({ token: z3.string() })).mutation(async ({ input }) => {
@@ -2240,8 +2583,11 @@ var appRouter = router({
         );
         if (isNewUser) {
           const db = await getDb();
-          if (db) await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
+          if (db) await db.update(users).set({ plan: "essential" }).where(eq3(users.id, userId));
         }
+        await claimPendingPurchases(userId, userInfo.email).catch((e) => {
+          console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        });
         return { success: true, userId, isNewUser };
       } catch (error) {
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Google authentication failed" });
@@ -2265,8 +2611,11 @@ var appRouter = router({
         );
         if (isNewUser) {
           const db = await getDb();
-          if (db) await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
+          if (db) await db.update(users).set({ plan: "essential" }).where(eq3(users.id, userId));
         }
+        await claimPendingPurchases(userId, userInfo.mail).catch((e) => {
+          console.error("[auth] claimPendingPurchases failed:", e?.message ?? e);
+        });
         return { success: true, userId, isNewUser };
       } catch (error) {
         throw new TRPCError5({ code: "INTERNAL_SERVER_ERROR", message: "Microsoft authentication failed" });
@@ -2290,7 +2639,7 @@ var appRouter = router({
         );
         if (isNewUser) {
           const db = await getDb();
-          if (db) await db.update(users).set({ plan: input.plan }).where(eq3(users.id, userId));
+          if (db) await db.update(users).set({ plan: "essential" }).where(eq3(users.id, userId));
         }
         return { success: true, userId, isNewUser };
       } catch (error) {
@@ -2370,6 +2719,13 @@ app.use((req, res, next) => {
     }
   }
   next();
+});
+app.post("/api/webhooks/lemon-squeezy", express.raw({ type: "*/*", limit: "1mb" }), async (req, res) => {
+  const { handleWebhookRequest: handleWebhookRequest2 } = await Promise.resolve().then(() => (init_lemonSqueezy(), lemonSqueezy_exports));
+  const signature = req.header("X-Signature") ?? req.header("x-signature");
+  const raw = Buffer.isBuffer(req.body) ? req.body : Buffer.from(String(req.body ?? ""));
+  const result = await handleWebhookRequest2(raw, signature);
+  res.status(result.status).json(result.body);
 });
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));

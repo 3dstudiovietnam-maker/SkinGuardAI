@@ -7,6 +7,17 @@ import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+// Every plan label carries its price ("Pro ($6.90/month)"), and those strings are
+// deleted from the native build's translations table (Apple 2.3.1). The plan
+// still has to be named on screen, so the native build uses these price-free
+// labels; they are product names and are not translated anywhere.
+const NATIVE_PLAN_LABEL: Record<string, string> = {
+  essential: "Essential",
+  pro: "Pro",
+  pro_plus: "Pro Plus",
+  lifetime: "Lifetime Access",
+};
+
 export default function UserDashboard() {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -17,11 +28,9 @@ export default function UserDashboard() {
   const [isDeleting, setIsDeleting] = useState(false);
   const { t } = useLanguage();
 
-  // Apple 3.1.1 — no upgrade CTAs / pricing links inside the native (Capacitor) app
-  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
-  // Strip "( … $ … )" price fragments from plan labels in the native app
-  const planLabel = (label: string) =>
-    isNative ? label.replace(/\s*[（(][^()（）]*\$[^()（）]*[）)]/g, "") : label;
+  // Apple 2.3.1/3.1.1 — every price, upgrade CTA and pricing link is compiled
+  // OUT of the native build (__NATIVE_BUILD__ is a literal the bundler folds),
+  // instead of being hidden at runtime with the shipped binary still carrying it.
 
   if (loading) {
     return (
@@ -90,7 +99,10 @@ export default function UserDashboard() {
       ],
     },
     pro: {
-      nameKey: "userDashboard.planPro",
+      // Web-only: this label carries the price, so the native build holds
+      // neither the text nor a reference to it (Apple 2.3.1) — it shows
+      // NATIVE_PLAN_LABEL instead.
+      nameKey: __NATIVE_BUILD__ ? "" : "userDashboard.planPro",
       color: "bg-purple-50 border-purple-200",
       featureKeys: [
         "pricing.feat_1",
@@ -106,7 +118,10 @@ export default function UserDashboard() {
       ],
     },
     pro_plus: {
-      nameKey: "userDashboard.planProPlus",
+      // Web-only: this label carries the price, so the native build holds
+      // neither the text nor a reference to it (Apple 2.3.1) — it shows
+      // NATIVE_PLAN_LABEL instead.
+      nameKey: __NATIVE_BUILD__ ? "" : "userDashboard.planProPlus",
       color: "bg-amber-50 border-amber-200",
       featureKeys: [
         "pricing.feat_1",
@@ -122,7 +137,10 @@ export default function UserDashboard() {
       ],
     },
     lifetime: {
-      nameKey: "userDashboard.planLifetime",
+      // Web-only: this label carries the price, so the native build holds
+      // neither the text nor a reference to it (Apple 2.3.1) — it shows
+      // NATIVE_PLAN_LABEL instead.
+      nameKey: __NATIVE_BUILD__ ? "" : "userDashboard.planLifetime",
       color: "bg-amber-50 border-amber-400",
       featureKeys: [
         "pricing.feat_1",
@@ -167,7 +185,7 @@ export default function UserDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-xl">{planLabel(t(currentPlan.nameKey))}</CardTitle>
+                <CardTitle className="text-xl">{__NATIVE_BUILD__ ? NATIVE_PLAN_LABEL[user.plan] ?? "" : t(currentPlan.nameKey)}</CardTitle>
                 <CardDescription>{t('userDashboard.currentPlanDesc')}</CardDescription>
               </div>
               <Zap className="w-8 h-8 text-yellow-500" />
@@ -177,7 +195,7 @@ export default function UserDashboard() {
             {user.plan === "essential" && (
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
                 <span className="text-sm font-semibold text-amber-700">{t('userDashboard.freeScansIncluded')}</span>
-                {!isNative && <span className="text-sm text-amber-600">{t('userDashboard.upgradeForUnlimited')}</span>}
+                {!__NATIVE_BUILD__ && <span className="text-sm text-amber-600">{t('userDashboard.upgradeForUnlimited')}</span>}
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
@@ -188,14 +206,14 @@ export default function UserDashboard() {
                 </div>
               ))}
             </div>
-            {!isNative && user.plan === "essential" && (
+            {!__NATIVE_BUILD__ && user.plan === "essential" && (
               <Link href="/pricing">
                 <Button className="bg-cyan-500 hover:bg-cyan-600">
                   {t('userDashboard.upgradeToPro')}
                 </Button>
               </Link>
             )}
-            {!isNative && (user.plan === "pro" || user.plan === "pro_plus") && (
+            {!__NATIVE_BUILD__ && (user.plan === "pro" || user.plan === "pro_plus") && (
               <Link href="/pricing">
                 <Button variant="outline" className="border-slate-300 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
                   {t('userDashboard.viewAllPlans')}

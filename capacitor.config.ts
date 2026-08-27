@@ -1,9 +1,17 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.skinguardai.app',
+  // A Play-en a com.skinguardai.app csomagnevet egy idegen app foglalja, ezért az
+  // Android alkalmazásazonosító 2026-08-22-től com.skinguardai.moletracker.
+  // Az iOS bundle ID szándékosan maradt com.skinguardai.app (ott szabad, és a
+  // meglévő aláírás arra épül) — a kettő eltérése normális.
+  appId: 'com.skinguardai.moletracker',
   appName: 'SkinGuard AI',
-  webDir: 'client/dist',
+  // Deliberately NOT client/dist (the website build). The native shell ships the
+  // paywall-free build produced by `npm run build:native`, so a plain `cap copy`
+  // can never pull the web build's price cards into the App Store binary
+  // (Apple 2.3.1 — no hidden, dormant paywall).
+  webDir: 'client/dist-native',
   // No server.url: the native app ships its own web build from webDir, so it is
   // a real app rather than a WebView pointed at our website (Apple 4.2 Minimum
   // Functionality rejects the latter). API calls go to production explicitly via

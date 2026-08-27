@@ -22,7 +22,10 @@ android {
     namespace = "com.skinguardai.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.skinguardai.app"
+        // A com.skinguardai.app csomagnevet a Play-en egy idegen app ("Skinwise") foglalja,
+        // ezért az alkalmazás azonosítója moletracker-re változott (2026-08-22).
+        // A namespace szándékosan marad com.skinguardai.app: az csak a Java/R névtér.
+        applicationId "com.skinguardai.moletracker"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

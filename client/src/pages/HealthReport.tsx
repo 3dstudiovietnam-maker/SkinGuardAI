@@ -29,8 +29,9 @@ export default function HealthReport() {
 
   const isPremium = user?.plan === "pro" || user?.plan === "pro_plus" || user?.plan === "lifetime";
 
-  // Apple 3.1.1 — no upgrade CTAs / pricing links inside the native (Capacitor) app
-  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  // Apple 2.3.1/3.1.1 — every price, upgrade CTA and pricing link is compiled
+  // OUT of the native build (__NATIVE_BUILD__ is a literal the bundler folds),
+  // instead of being hidden at runtime with the shipped binary still carrying it.
 
   const highRisk   = moles.filter(m => m.riskLevel === "high").length;
   const mediumRisk = moles.filter(m => m.riskLevel === "medium").length;
@@ -59,11 +60,11 @@ export default function HealthReport() {
    * Thai or Hindi user would see in English. Second, inside the native shell an
    * "Upgrade to Pro" nudge is a call to action pointing at a purchase we do not
    * sell through In-App Purchase (App Store 3.1.1) — the rest of the app already
-   * hides every such CTA behind isNative, and these two were missed. Natively we
+   * hides every such CTA behind __NATIVE_BUILD__, and these two were missed. Natively we
    * now say only that the feature belongs to a paid plan, with no upgrade call.
    */
   const premiumOnlyNotice = () =>
-    isNative ? t('moleDetail.proFeature') : t('moleDetail.shareUpgrade');
+    __NATIVE_BUILD__ ? t('moleDetail.proFeature') : t('moleDetail.shareUpgrade');
 
   const handleExportPDF = () => {
     if (!isPremium) {
@@ -449,7 +450,7 @@ export default function HealthReport() {
                             size="sm"
                             variant="ghost"
                             className={`shrink-0 h-8 w-8 p-0 ${isPremium ? "text-slate-400 hover:text-cyan-600" : "text-slate-300 cursor-not-allowed"}`}
-                            title={isPremium ? t('healthReport.shareLink') : (isNative ? t('moleDetail.proFeature') : t('moleDetail.shareUpgrade'))}
+                            title={isPremium ? t('healthReport.shareLink') : (__NATIVE_BUILD__ ? t('moleDetail.proFeature') : t('moleDetail.shareUpgrade'))}
                             disabled={!isPremium}
                             onClick={e => {
                               e.stopPropagation();
@@ -509,7 +510,7 @@ export default function HealthReport() {
                     the button is not offered in the native shell. Bringing it back
                     natively needs @capacitor/filesystem + @capacitor/share (write
                     the bytes, then hand them to the iOS share sheet). */}
-                {!isNative && (
+                {!__NATIVE_BUILD__ && (
                 <Button
                   size="lg"
                   className={`h-12 text-base text-white ${isPremium ? "bg-cyan-600 hover:bg-cyan-700" : "bg-slate-300 hover:bg-slate-300 cursor-not-allowed"}`}
@@ -539,7 +540,7 @@ export default function HealthReport() {
               </div>
               {!isPremium && (
                 <div className="text-center space-y-1">
-                  {!isNative && (
+                  {!__NATIVE_BUILD__ && (
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       🔒 PDF export and sharing are available on <a href="/pricing" className="text-cyan-600 hover:underline font-medium">Pro and Pro+ plans</a>. Upgrade to unlock full reports.
                     </p>

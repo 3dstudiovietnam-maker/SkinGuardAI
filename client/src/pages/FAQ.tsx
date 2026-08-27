@@ -41,16 +41,22 @@ const FAQ_STRUCTURE: FAQItem[] = [
       { qKey: "faq.ps_q4", aKey: "faq.ps_a4" },
     ],
   },
-  {
-    category: "Subscriptions & Billing",
-    categoryKey: "faq.subscriptionsBilling",
-    questions: [
-      { qKey: "faq.sb_q1", aKey: "faq.sb_a1" },
-      { qKey: "faq.sb_q2", aKey: "faq.sb_a2" },
-      { qKey: "faq.sb_q3", aKey: "faq.sb_a3" },
-      { qKey: "faq.sb_q4", aKey: "faq.sb_a4" },
-    ],
-  },
+  // The billing category quotes prices and names the external payment provider,
+  // so it is spread in only for the web build — filtering it out at runtime
+  // would still have shipped its keys and answers inside the native binary
+  // (Apple 2.3.1).
+  ...(__NATIVE_BUILD__ ? [] : [
+    {
+      category: "Subscriptions & Billing",
+      categoryKey: "faq.subscriptionsBilling",
+      questions: [
+        { qKey: "faq.sb_q1", aKey: "faq.sb_a1" },
+        { qKey: "faq.sb_q2", aKey: "faq.sb_a2" },
+        { qKey: "faq.sb_q3", aKey: "faq.sb_a3" },
+        { qKey: "faq.sb_q4", aKey: "faq.sb_a4" },
+      ],
+    },
+  ]),
   {
     category: "Melanoma & Skin Health",
     categoryKey: "faq.melanomaSkinHealth",
@@ -88,8 +94,9 @@ export default function FAQ() {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Apple 3.1.1 — hide the Subscriptions & Billing FAQ (mentions plan prices) in the native app
-  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  // Apple 2.3.1/3.1.1 — every price, upgrade CTA and pricing link is compiled
+  // OUT of the native build (__NATIVE_BUILD__ is a literal the bundler folds),
+  // instead of being hidden at runtime with the shipped binary still carrying it.
 
   const toggleItem = (id: string) => {
     const newOpen = new Set(openItems);
@@ -102,9 +109,7 @@ export default function FAQ() {
   };
 
   // Build translated FAQ data for filtering
-  const translatedFAQ = FAQ_STRUCTURE.filter(
-    cat => !isNative || cat.categoryKey !== "faq.subscriptionsBilling"
-  ).map(cat => ({
+  const translatedFAQ = FAQ_STRUCTURE.map(cat => ({
     ...cat,
     questions: cat.questions.map(q => ({
       ...q,

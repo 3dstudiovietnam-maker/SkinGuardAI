@@ -130,3 +130,6 @@ android/keystore.properties
 # Lifetime / promo activation code dumps — these are sellable goods, not source.
 *-LT-codes.*
 *-PP-codes.*
+
+# Native (Capacitor) web build — Apple 2.3.1 paywall-free output, see vite.config.ts
+client/dist-native/

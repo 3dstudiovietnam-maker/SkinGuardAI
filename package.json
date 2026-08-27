@@ -10,7 +10,8 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "build:native": "NATIVE_BUILD=1 vite build && node scripts/verify-native-bundle.mjs && npx cap copy"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.12",

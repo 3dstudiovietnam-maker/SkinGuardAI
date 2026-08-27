@@ -10,6 +10,18 @@ import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 
 // Plan feature data for the logged-in dashboard card
+
+// Every plan label carries its price ("Pro ($6.90/month)"), and those strings are
+// deleted from the native build's translations table (Apple 2.3.1). The plan
+// still has to be named on screen, so the native build uses these price-free
+// labels; they are product names and are not translated anywhere.
+const NATIVE_PLAN_LABEL: Record<string, string> = {
+  essential: "Essential",
+  pro: "Pro",
+  pro_plus: "Pro Plus",
+  lifetime: "Lifetime Access",
+};
+
 const PLAN_INFO: Record<string, { labelKey: string; color: string; featureKeys: string[] }> = {
   essential: {
     labelKey: "userDashboard.planEssential",
@@ -17,17 +29,26 @@ const PLAN_INFO: Record<string, { labelKey: string; color: string; featureKeys: 
     featureKeys: ["pricing.feat_2", "pricing.feat_3", "pricing.feat_4", "pricing.feat_5"],
   },
   pro: {
-    labelKey: "userDashboard.planPro",
+    // Web-only: this label carries the price, so the native build holds
+      // neither the text nor a reference to it (Apple 2.3.1) — it shows
+      // NATIVE_PLAN_LABEL instead.
+      labelKey: __NATIVE_BUILD__ ? "" : "userDashboard.planPro",
     color: "border-primary/40 bg-primary/5",
     featureKeys: ["pricing.feat_2", "pricing.feat_3", "pricing.feat_5", "pricing.feat_6", "pricing.feat_7", "pricing.feat_8", "pricing.feat_9", "pricing.feat_10", "pricing.feat_11"],
   },
   pro_plus: {
-    labelKey: "userDashboard.planProPlus",
+    // Web-only: this label carries the price, so the native build holds
+      // neither the text nor a reference to it (Apple 2.3.1) — it shows
+      // NATIVE_PLAN_LABEL instead.
+      labelKey: __NATIVE_BUILD__ ? "" : "userDashboard.planProPlus",
     color: "border-primary/40 bg-primary/5",
     featureKeys: ["pricing.feat_2", "pricing.feat_3", "pricing.feat_5", "pricing.feat_6", "pricing.feat_7", "pricing.feat_8", "pricing.feat_9", "pricing.feat_10", "pricing.feat_11"],
   },
   lifetime: {
-    labelKey: "userDashboard.planLifetime",
+    // Web-only: this label carries the price, so the native build holds
+      // neither the text nor a reference to it (Apple 2.3.1) — it shows
+      // NATIVE_PLAN_LABEL instead.
+      labelKey: __NATIVE_BUILD__ ? "" : "userDashboard.planLifetime",
     color: "border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700",
     featureKeys: ["pricing.feat_2", "pricing.feat_3", "pricing.feat_5", "pricing.feat_6", "pricing.feat_7", "pricing.feat_8", "pricing.feat_9", "pricing.feat_10", "pricing.feat_11", "userDashboard.planLifetimeFeature"],
   },
@@ -86,11 +107,9 @@ export default function Dashboard() {
   const plan = (user as any)?.plan as string | undefined;
   const planInfo = PLAN_INFO[plan ?? "essential"] ?? PLAN_INFO["essential"];
 
-  // Apple 3.1.1 — no upgrade CTAs / pricing links inside the native (Capacitor) app
-  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
-  // Strip "( … $ … )" price fragments from plan labels in the native app
-  const planLabel = (label: string) =>
-    isNative ? label.replace(/\s*[（(][^()（）]*\$[^()（）]*[）)]/g, "") : label;
+  // Apple 2.3.1/3.1.1 — every price, upgrade CTA and pricing link is compiled
+  // OUT of the native build (__NATIVE_BUILD__ is a literal the bundler folds),
+  // instead of being hidden at runtime with the shipped binary still carrying it.
 
   // Plan / promo card — kept intact, moved BELOW the primary action (Lien: "explanation after")
   const planCard = (
@@ -107,16 +126,16 @@ export default function Dashboard() {
           ) : (
             <Shield className="w-5 h-5 text-primary" />
           )}
-          <span className="font-semibold text-sm">{planLabel(t(planInfo.labelKey))}</span>
+          <span className="font-semibold text-sm">{__NATIVE_BUILD__ ? NATIVE_PLAN_LABEL[plan ?? "essential"] ?? "" : t(planInfo.labelKey)}</span>
         </div>
-        {!isNative && (plan === "essential" || !plan) && (
+        {!__NATIVE_BUILD__ && (plan === "essential" || !plan) && (
           <Link href="/pricing">
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-xs">
               {t('dashboard.upgradePlan')}
             </Button>
           </Link>
         )}
-        {!isNative && (plan === "pro" || plan === "pro_plus") && (
+        {!__NATIVE_BUILD__ && (plan === "pro" || plan === "pro_plus") && (
           <Link href="/pricing">
             <Button size="sm" variant="outline" className="text-xs border-primary/30 text-primary">
               {t('dashboard.viewPlans')}

@@ -47,8 +47,9 @@ export default function Capture() {
   const totalCaptures = moles.reduce((sum, m) => sum + (m.photoCount ?? 0), 0);
   const limitReached = !isPremium && totalCaptures >= FREE_LIMIT;
 
-  // Apple 3.1.1 — no prices / upgrade CTAs / pricing links inside the native (Capacitor) app
-  const isNative = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  // Apple 2.3.1/3.1.1 — every price, upgrade CTA and pricing link is compiled
+  // OUT of the native build (__NATIVE_BUILD__ is a literal the bundler folds),
+  // instead of being hidden at runtime with the shipped binary still carrying it.
 
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [step, setStep] = useState<"capture" | "details">("capture");
@@ -257,7 +258,7 @@ export default function Capture() {
           <p className="text-slate-600 dark:text-slate-400 mb-2 text-lg">
             {t('capture.limitBody')}
           </p>
-          {!isNative && (
+          {!__NATIVE_BUILD__ && (
             <p className="text-slate-500 dark:text-slate-400 mb-8">
               {t('capture.limitUpgrade')}
             </p>
@@ -270,13 +271,13 @@ export default function Capture() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-8">{totalCaptures} / {FREE_LIMIT} {t('capture.scansUsed')}</p>
 
           {/* Upgrade cards — hidden in the native (Capacitor) app (Apple 3.1.1) */}
-          {!isNative && (
+          {!__NATIVE_BUILD__ && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <Link href="/pricing">
                   <div className="p-5 rounded-2xl border-2 border-cyan-500 bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
                     <p className="font-heading font-bold text-cyan-700 text-lg">Pro</p>
-                    <p className="text-cyan-600 font-semibold">$6.99 / month</p>
+                    <p className="text-cyan-600 font-semibold">$6.90 / month</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('capture.proDesc')}</p>
                   </div>
                 </Link>
@@ -318,7 +319,7 @@ export default function Capture() {
             {FREE_LIMIT - totalCaptures <= 3 ? '⚠️ ' : ''}
             <span className="font-bold">{Math.max(0, FREE_LIMIT - totalCaptures)}</span> {t('capture.scansRemaining')}
           </span>
-          {!isNative && (
+          {!__NATIVE_BUILD__ && (
             <Link href="/pricing">
               <span className="text-xs text-cyan-600 hover:underline font-semibold cursor-pointer">{t('capture.upgradeUnlimited')} →</span>
             </Link>
